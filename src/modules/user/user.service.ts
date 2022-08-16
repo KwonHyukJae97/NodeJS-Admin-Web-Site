@@ -9,23 +9,26 @@ import {User} from "./entities/user";
 export class UserService {
 
   constructor(
-      @InjectRepository(User) private repository: Repository<User>
+      @InjectRepository(User) private userRepository: Repository<User>
   ) {}
 
   create(createUserDto: CreateUserDto) {
-    return this.repository.save(createUserDto);
+    return this.userRepository.save(createUserDto);
   }
 
   findAll() {
-    return this.repository.find();
+    return this.userRepository.find();
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} user`;
+    return this.userRepository.findOneBy({
+      user_id: id,
+    });
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+    const user = updateUserDto.toUpdateUserEntity();
+    return this.userRepository.update(id, user);
   }
 
   remove(id: number) {

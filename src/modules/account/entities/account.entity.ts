@@ -8,6 +8,10 @@ export class Account {
     account_id: number;
 
     @IsString()
+    @Column({unique: true})
+    email: string;
+
+    @IsString()
     @Column({
         nullable: true
     })
@@ -35,8 +39,9 @@ export class Account {
     @Column()
     reg_date: Date;
 
-    static from(password: string, nickname: string, name: string, hp: string) {
+    static from(email: string, password: string, nickname: string, name: string, hp: string) {
         const account = new Account();
+        account.email = email;
         account.password = password;
         account.nickname = nickname;
         account.name = name;
