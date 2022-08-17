@@ -5,9 +5,11 @@ import {AccountModule} from "../modules/account/account.module";
 import {LocalStrategy} from "./local.strategy";
 import { AuthController } from './auth.controller';
 import {ConfigModule, ConfigService} from "@nestjs/config";
-import { JwtModule } from '@nestjs/jwt';
+import {JwtModule, JwtService} from '@nestjs/jwt';
 import {JwtStrategy} from "./jwt.strategy";
 import {AccountService} from "../modules/account/account.service";
+import {APP_GUARD} from "@nestjs/core";
+import {RolesGuard} from "./roles.guard";
 
 @Module({
     imports: [
@@ -28,10 +30,14 @@ import {AccountService} from "../modules/account/account.service";
     providers: [
         AccountService,
         AuthService,
-        LocalStrategy,
+        ConfigService,
         JwtStrategy,
-        ConfigService
+        LocalStrategy,
+        {
+            provide: APP_GUARD,
+            useClass: RolesGuard,
+        },
     ],
-    controllers: [AuthController]
+    controllers: [AuthController],
 })
 export class AuthModule {}

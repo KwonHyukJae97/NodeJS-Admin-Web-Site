@@ -1,6 +1,7 @@
 import {Account} from "../modules/account/entities/account.entity";
 
 interface RequestWithUser extends Request {
-    account: Account;
+    email: string,
+    password: string,
 }
 export default RequestWithUser;

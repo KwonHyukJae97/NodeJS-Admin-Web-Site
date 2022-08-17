@@ -1,7 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req} from '@nestjs/common';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
+import JwtAuthGuard from "../../auth/jwt-auth.guard";
+import {Role, ROLES_ENUM} from "../../auth/roles.decorator";
+import {RolesGuard} from "../../auth/roles.guard";
 
 @Controller('account')
 export class AccountController {
@@ -13,11 +16,15 @@ export class AccountController {
   }
 
   @Get()
-  findAll() {
+  @Role(ROLES_ENUM.ROLE_ADMIN)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  findAll(@Req() req) {
     return this.accountService.findAll();
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   findOne(@Param('id') id: string) {
     return this.accountService.findOne(+id);
   }

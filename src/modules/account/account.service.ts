@@ -91,7 +91,7 @@ export class AccountService {
     return account;
   }
 
-  async getById(account_id: number) {
+  async getByAccountId(account_id: number) {
     const account = await this.accountRepository.findOneBy({account_id: account_id});
     if (account) {
       return account;
