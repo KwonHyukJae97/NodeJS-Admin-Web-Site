@@ -2,17 +2,27 @@ import {Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req} from 
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
-import JwtAuthGuard from "../../auth/jwt-auth.guard";
-import {Role, ROLES_ENUM} from "../../auth/roles.decorator";
-import {RolesGuard} from "../../auth/roles.guard";
+import JwtAuthGuard from "../../guard/jwt-auth.guard";
+import {Role, ROLES_ENUM} from "../../guard/roles.decorator";
+import {RolesGuard} from "../../guard/roles.guard";
+import {CommandBus} from "@nestjs/cqrs";
+import { CreateAccountCommand } from './command/create-account.command';
 
 @Controller('account')
 export class AccountController {
-  constructor(private readonly accountService: AccountService) {}
+  constructor(
+      private readonly accountService: AccountService,
+      private commandBus: CommandBus,
+  ) {}
 
   @Post()
   create(@Body() createAccountDto: CreateAccountDto) {
-    return this.accountService.create(createAccountDto);
+
+    const command = new CreateAccountCommand(createAccountDto.email, createAccountDto.password);
+
+    return this.commandBus.execute(command);
+
+    // return this.accountService.create(createAccountDto);
   }
 
   @Get()

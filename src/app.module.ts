@@ -10,7 +10,7 @@ import {AuthModule} from "./auth/auth.module";
 import {utilities, WinstonModule} from "nest-winston";
 import * as winston from "winston";
 import {error} from "winston";
-import {LoggingModule} from "./logging.module";
+import {LoggingModule} from "./logging/logging.module";
 
 @Module({
   imports: [

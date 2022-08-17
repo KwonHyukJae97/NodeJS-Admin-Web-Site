@@ -2,7 +2,7 @@ import {Controller, Get, Post, Body, Patch, Param, Delete, UseGuards} from '@nes
 import { WordService } from './word.service';
 import { CreateWordDto } from './dto/create-word.dto';
 import { UpdateWordDto } from './dto/update-word.dto';
-import JwtAuthGuard from "../../auth/jwt-auth.guard";
+import JwtAuthGuard from "../../guard/jwt-auth.guard";
 
 @Controller('word')
 @UseGuards(JwtAuthGuard)

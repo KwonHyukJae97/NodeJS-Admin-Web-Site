@@ -1,8 +1,8 @@
 import {Body, Controller, Get, HttpCode, Inject, LoggerService, Post, Req, Res, UseGuards} from '@nestjs/common';
 import {AuthService} from "./auth.service";
-import {LocalAuthGuard} from "./local-auth.guard";
+import {LocalAuthGuard} from "../guard/local-auth.guard";
 import RequestWithUser from "./request-with-user.interface";
-import JwtAuthGuard from "./jwt-auth.guard";
+import JwtAuthGuard from "../guard/jwt-auth.guard";
 import {response} from "express";
 import {WINSTON_MODULE_NEST_PROVIDER} from "nest-winston";
 
