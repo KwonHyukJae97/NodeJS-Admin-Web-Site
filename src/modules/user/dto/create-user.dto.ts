@@ -5,6 +5,6 @@ import {User} from "../entities/user";
 export class CreateUserDto extends OmitType(User, ['user_id']){
 
     public toUserEntity() {
-        return User.from(this.account_id, this.state);
+        return User.from(this.accountId, this.state);
     }
 }

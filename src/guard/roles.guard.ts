@@ -18,12 +18,12 @@ export class RolesGuard implements CanActivate {
         }
 
         const { user } = context.switchToHttp().getRequest();
-        const accountRole = this.getAccountRole(user?.account_id);
+        const accountRole = this.getAccountRole(user?.accountId);
 
         return requiredRoles?.includes(accountRole) ?? true;
     }
 
-    private getAccountRole(account_id: number) {
+    private getAccountRole(accountId: number) {
         // TODO : 권한 체크 필요
         return ROLES_ENUM.ROLE_ADMIN;
     }

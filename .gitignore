@@ -38,3 +38,5 @@ lerna-debug.log*
 ormconfig.json
 /docker/mariadb-data
 *.env
+/test/app.e2e-spec.ts
+/test/jest-e2e.json

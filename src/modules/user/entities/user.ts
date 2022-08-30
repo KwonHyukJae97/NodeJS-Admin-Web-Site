@@ -9,15 +9,15 @@ export class User {
 
     @IsNumber()
     @Column()
-    account_id!: number;
+    accountId!: number;
 
     @IsString()
     @Column()
     state!: string;
 
-    static from(account_id: number, state: string) {
+    static from(accountId: number, state: string) {
         const user = new User();
-        user.account_id = account_id;
+        user.accountId = accountId;
         user.state = state;
         return user;
     }

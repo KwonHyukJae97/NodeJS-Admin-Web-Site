@@ -1,11 +1,13 @@
-import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
-import {IsDate, IsNumber, IsString} from "class-validator";
+import {Column, CreateDateColumn, Entity, PrimaryGeneratedColumn} from "typeorm";
+import {IsNumber, IsOptional, IsString} from "class-validator";
 
 @Entity()
 export class Account {
 
-    @PrimaryGeneratedColumn()
-    account_id: number;
+    @PrimaryGeneratedColumn({
+        name: 'account_id',
+    })
+    accountId: number;
 
     @IsString()
     @Column({unique: true})
@@ -13,7 +15,8 @@ export class Account {
 
     @IsString()
     @Column({
-        nullable: true
+        nullable: true,
+        length: 18
     })
     password: string;
 
@@ -35,9 +38,35 @@ export class Account {
     })
     hp: string;
 
-    @IsDate()
-    @Column()
-    reg_date: Date;
+    @IsOptional()
+    @IsString()
+    @Column({
+        nullable: true
+    })
+    ci: string | null;
+
+    @IsOptional()
+    @IsString()
+    @Column({
+        nullable: true
+    })
+    di: string | null;
+
+    @IsNumber()
+    @Column({
+        name: 'role_id',
+        nullable: true
+    })
+    roleId: number;
+
+    @CreateDateColumn({
+        name: 'reg_date'
+    })
+    regDate: Date;
+
+    @IsString()
+    role: string;
+    ability;
 
     static from(email: string, password: string, nickname: string, name: string, hp: string) {
         const account = new Account();

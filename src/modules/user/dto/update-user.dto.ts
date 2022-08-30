@@ -5,6 +5,6 @@ import {User} from "../entities/user";
 export class UpdateUserDto extends PartialType(CreateUserDto) {
 
     public toUpdateUserEntity() {
-        return User.from(this.account_id, this.state);
+        return User.from(this.accountId, this.state);
     }
 }

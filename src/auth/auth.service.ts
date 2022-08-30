@@ -20,6 +20,15 @@ export class AuthService {
             const account = await this.accountService.getByEmail(email);
             await this.verifyPassword(plainTextPassword, account.password);
             account.password = undefined;
+
+            //TODO : 프론트단 임시 데이터 정의
+            account.role = 'admin';
+            account.ability = [
+                {
+                    action: 'manage',
+                    subject: 'all',
+                }
+            ];
             return account;
 
         } catch (e) {
@@ -45,9 +54,9 @@ export class AuthService {
         }
     }
 
-    public getJwtToken(account_id: number, email: string) {
+    public getJwtToken(accountId: number, email: string) {
         const payload: TokenPayload = {
-            account_id: account_id,
+            accountId: accountId,
             email: email,
         };
         const token = this.jwtService.sign(payload);

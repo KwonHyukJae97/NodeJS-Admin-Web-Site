@@ -22,7 +22,7 @@ export class AccountService {
 
   async create(createAccountDto: CreateAccountDto) {
 
-    const accountExist = await this.checkAccountExists(createAccountDto.email);
+    const accountExist = await this.getByEmail(createAccountDto.email);
     if (accountExist) {
       throw new UnprocessableEntityException('해당 이메일로는 가입할 수 없습니다.');
     }
@@ -38,9 +38,9 @@ export class AccountService {
 
       const account = createAccountDto.toAccountEntity();
       account.password = await bcrypt.hash(account.password, 10);
-      account.reg_date = new Date();
 
       newAccount = await queryRunner.manager.save(account);
+      delete newAccount.password;
 
       // TODO : 회원가입 인증 메일 전송
 
@@ -62,7 +62,7 @@ export class AccountService {
 
   findOne(id: number) {
     return this.accountRepository.findOneBy({
-      account_id: id
+      accountId: id
     });
   }
 
@@ -77,22 +77,13 @@ export class AccountService {
     return `This action removes a #${id} account`;
   }
 
-  /**
-   * 기존에 이메일 주소를 사용중인지 여부 가져오기
-   * @param email
-   */
-  async checkAccountExists(email: string) {
-    const account = await this.accountRepository.findOneBy({email: email});
-    return account !== null;
-  }
-
   async getByEmail(email: string) {
     const account = await this.accountRepository.findOneBy({email: email});
     return account;
   }
 
-  async getByAccountId(account_id: number) {
-    const account = await this.accountRepository.findOneBy({account_id: account_id});
+  async getByAccountId(accountId: number) {
+    const account = await this.accountRepository.findOneBy({accountId: accountId});
     if (account) {
       return account;
     }
