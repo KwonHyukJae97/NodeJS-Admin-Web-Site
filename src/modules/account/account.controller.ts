@@ -2,9 +2,9 @@ import {Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req} from 
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
-import JwtAuthGuard from "../../guard/jwt-auth.guard";
-import {Role, ROLES_ENUM} from "../../guard/roles.decorator";
-import {RolesGuard} from "../../guard/roles.guard";
+import JwtAuthGuard from "../../guard/jwt/jwt-auth.guard";
+import {Role, ROLES_ENUM} from "../../guard/role/roles.decorator";
+import {RolesGuard} from "../../guard/role/roles.guard";
 
 @Controller('account')
 export class AccountController {
@@ -28,17 +28,17 @@ export class AccountController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  findOne(@Param('id') id: string) {
-    return this.accountService.findOne(+id);
+  findOne(@Param('id') id: number) {
+    return this.accountService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAccountDto: UpdateAccountDto) {
-    return this.accountService.update(+id, updateAccountDto);
+  update(@Param('id') id: number, @Body() updateAccountDto: UpdateAccountDto) {
+    return this.accountService.update(id, updateAccountDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.accountService.remove(+id);
+  remove(@Param('id') id: number) {
+    return this.accountService.remove(id);
   }
 }

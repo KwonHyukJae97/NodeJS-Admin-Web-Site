@@ -52,6 +52,14 @@ export class Account {
     })
     di: string | null;
 
+    @IsOptional()
+    @IsString()
+    @Column({
+        name: 'current_hashed_refresh_token',
+        nullable: true
+    })
+    currentHashedRefreshToken: string;
+
     @IsNumber()
     @Column({
         name: 'role_id',

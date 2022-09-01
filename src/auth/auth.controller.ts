@@ -1,9 +1,11 @@
 import {Body, Controller, Get, HttpCode, Inject, LoggerService, Post, Req, Res, UseGuards} from '@nestjs/common';
 import {AuthService} from "./auth.service";
-import {LocalAuthGuard} from "../guard/local-auth.guard";
-import JwtAuthGuard from "../guard/jwt-auth.guard";
+import {LocalAuthGuard} from "../guard/local/local-auth.guard";
+import JwtAuthGuard from "../guard/jwt/jwt-auth.guard";
 import {response} from "express";
 import {WINSTON_MODULE_NEST_PROVIDER} from "nest-winston";
+import JwtRefreshAuthGuard from 'src/guard/jwt/jwt-refresh-auth.guard';
+import {Account} from "../modules/account/entities/account.entity";
 
 @Controller('auth')
 export class AuthController {
@@ -42,53 +44,80 @@ export class AuthController {
     @Post('login/admin')
     async logInAdmin(@Req() request, @Res() response) {
 
-        const jwtToken = this.authService.getJwtToken(request.user.accountId, request.user.email);
+        const { accessToken, accessOption, refreshToken, refreshOption } = await this.authService.getCookieForLogin(request.user.accountId, request.user.email);
+
+        response.cookie('authorization', accessToken, accessOption);
+        response.cookie('refresh', refreshToken, refreshOption);
 
         return response.send({
             userData: request.user,
-            accessToken: jwtToken,
         });
     }
 
-    /**
-     * 앱 사용자 로그인
-     * @param request
-     * @param response
-     */
-    @HttpCode(200)
-    @UseGuards(LocalAuthGuard)
-    @Post('login/user')
-    async logInUser(@Req() request, @Res() response) {
-
-        const jwtToken = this.authService.getJwtToken(request.user.accountId, request.user.email);
-
-        return response.send({
-            userData: request.user,
-            accessToken: jwtToken,
-        });
-    }
+    // /**
+    //  * 앱 사용자 로그인
+    //  * @param request
+    //  * @param response
+    //  */
+    // @HttpCode(200)
+    // @UseGuards(LocalAuthGuard)
+    // @Post('login/user')
+    // async logInUser(@Req() request, @Res() response) {
+    //
+    //     const { accessToken, accessOption, refreshToken, refreshOption } = await this.authService.getCookieForLogin(request.user.accountId, request.user.email);
+    //
+    //     return response.send({
+    //         userData: request.user,
+    //     });
+    // }
 
     /**
      * 웹 관리자 로그아웃
      * @param request
-     * @param Response
+     * @param response
      */
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtRefreshAuthGuard)
     @Post('logout/admin')
-    async logoutAdmin(@Req() request, @Res() Response) {
+    async logoutAdmin(@Req() request, @Res() response) {
+
+        const {accessOption, refreshOption} = this.authService.getCookieForLogOut();
+        await this.authService.removeRefreshToken(request.user.accountId);
+
+        response.cookie('authorization', '', accessOption);
+        response.cookie('refresh', '', refreshOption);
 
         return response.sendStatus(200);
     }
 
-    /**
-     * 앱 사용자 로그아웃
-     * @param request
-     * @param Response
-     */
-    @UseGuards(JwtAuthGuard)
-    @Post('logout/user')
-    async logoutUser(@Req() request, @Res() Response) {
+    // /**
+    //  * 앱 사용자 로그아웃
+    //  * @param request
+    //  * @param Response
+    //  */
+    // @UseGuards(JwtAuthGuard)
+    // @Post('logout/user')
+    // async logoutUser(@Req() request, @Res() Response) {
+    //
+    //     return response.sendStatus(200);
+    // }
 
-        return response.sendStatus(200);
+    @UseGuards(JwtRefreshAuthGuard)
+    @Post('/refresh')
+    async refresh(@Req() request, @Res() response) {
+
+        const account: Account = request.user;
+
+        if (account) {
+            const payload: TokenPayload = {
+                accountId: account.accountId,
+                email: account.email,
+            };
+            const { accessToken, accessOption } = this.authService.getCookieWithJwtAccessToken(payload);
+            response.cookie('authorization', accessToken, accessOption);
+        }
+
+        return response.send({
+            userData: request.user,
+        });
     }
 }
