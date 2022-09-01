@@ -21,6 +21,7 @@ import {LoggingModule} from "./logging/logging.module";
               JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
               JWT_REFRESH_TOKEN_SECRET: Joi.string().required(),
               JWT_REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().required(),
+              JWT_REFRESH_TOKEN_CHANGE_TIME: Joi.string().required(),
           })
       }),
       TypeOrmModule.forRoot({

@@ -3,11 +3,12 @@ import * as bcrypt from 'bcrypt';
 import {JwtService} from "@nestjs/jwt";
 import {ConfigService} from '@nestjs/config';
 import { AccountService } from 'src/modules/account/account.service';
+import {JwtManageService} from "../guard/jwt/jwt-manage.service";
 
 @Injectable()
 export class AuthService {
     constructor(
-        private readonly jwtService: JwtService,
+        private readonly jwtManageService: JwtManageService,
         private readonly configService: ConfigService,
         private readonly accountService: AccountService,
     ) {
@@ -54,56 +55,7 @@ export class AuthService {
         }
     }
 
-    public getJwtAccessToken(payload: TokenPayload) {
 
-        const token = this.jwtService.sign(payload, {
-            secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
-            expiresIn: `${this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}s`,
-        });
-
-        return token;
-    }
-
-    public getCookieWithJwtAccessToken(payload: TokenPayload) {
-
-        const token = this.getJwtAccessToken(payload);
-
-        return {
-            accessToken: token,
-            accessOption: {
-                domain: 'localhost',
-                path: '/',
-                httpOnly: true,
-                maxAge:
-                    Number(this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')) * 1000,
-            },
-        }
-    }
-
-    public getJwtRefreshToken(payload: TokenPayload) {
-
-        const token = this.jwtService.sign(payload, {
-            secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
-            expiresIn: `${this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')}s`,
-        });
-        return token;
-    }
-
-    public getCookieWithJwtRefreshToken(payload: TokenPayload) {
-
-        const token = this.getJwtRefreshToken(payload);
-
-        return {
-            refreshToken: token,
-            refreshOption: {
-                domain: 'localhost',
-                path: '/',
-                httpOnly: true,
-                maxAge:
-                    Number(this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')) * 1000,
-            },
-        };
-    }
 
     /**
      * 로그인 시 jwt 키 정보 연동되는 쿠키 정보 가져오기
@@ -118,8 +70,8 @@ export class AuthService {
             email: email,
         };
 
-        const {accessToken, accessOption} = this.getCookieWithJwtAccessToken(payload);
-        const {refreshToken, refreshOption} = this.getCookieWithJwtRefreshToken(payload);
+        const {accessToken, accessOption} = this.jwtManageService.getCookieWithJwtAccessToken(payload);
+        const {refreshToken, refreshOption} = this.jwtManageService.getCookieWithJwtRefreshToken(payload);
 
         await this.accountService.setCurrentRefreshToken(accountId, refreshToken);
 
@@ -131,18 +83,8 @@ export class AuthService {
      */
     public getCookieForLogOut() {
         return {
-            accessOption: {
-                domain: 'localhost',
-                path: '/',
-                httpOnly: true,
-                maxAge: 0,
-            },
-            refreshOption: {
-                domain: 'localhost',
-                path: '/',
-                httpOnly: true,
-                maxAge: 0,
-            },
+            accessOption: this.jwtManageService.getJwtCookieCleanOptions(),
+            refreshOption: this.jwtManageService.getJwtCookieCleanOptions(),
         };
     }
 
@@ -152,5 +94,22 @@ export class AuthService {
      */
     async removeRefreshToken(accountId: number) {
         return this.accountService.removeRefreshToken(accountId);
+    }
+
+    /**
+     * jwt refresh token 갱신이 필요한지 확인하여 갱신 처리 후
+     * 신규 발급받은 token 정보 가져오기
+     * @param accountId
+     * @param payload
+     * @param refreshToken
+     */
+    public async refreshTokenChange(accountId: number, payload: TokenPayload, refreshToken: string) {
+
+        if (this.jwtManageService.isNeedRefreshTokenChange(refreshToken)) {
+            const newRefreshToken = this.jwtManageService.getCookieWithJwtRefreshToken(payload);
+            await this.accountService.setCurrentRefreshToken(accountId, newRefreshToken.refreshToken);
+
+            return newRefreshToken;
+        }
     }
 }

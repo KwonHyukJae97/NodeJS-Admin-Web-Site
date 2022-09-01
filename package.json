@@ -40,6 +40,7 @@
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.0.1",
     "joi": "^17.6.0",
+    "moment": "^2.29.4",
     "mysql2": "^2.3.3",
     "nest-winston": "^1.7.0",
     "passport": "^0.6.0",

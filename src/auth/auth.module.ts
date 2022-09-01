@@ -11,6 +11,7 @@ import {AccountService} from "../modules/account/account.service";
 import {APP_GUARD} from "@nestjs/core";
 import {RolesGuard} from "../guard/role/roles.guard";
 import {JwtRefreshStrategy} from "../guard/jwt/jwt-refresh.strategy";
+import {JwtManageService} from "../guard/jwt/jwt-manage.service";
 
 @Module({
     imports: [
@@ -18,8 +19,6 @@ import {JwtRefreshStrategy} from "../guard/jwt/jwt-refresh.strategy";
             imports: [ConfigModule],
             inject: [ConfigService],
             useFactory: async (configService: ConfigService) => ({
-                // secret: configService.get('JWT_ACCESS_TOKEN_SECRET'),
-                // expiresIn: `${configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}s`,
             })
         }),
         PassportModule,
@@ -30,6 +29,7 @@ import {JwtRefreshStrategy} from "../guard/jwt/jwt-refresh.strategy";
         AccountService,
         AuthService,
         ConfigService,
+        JwtManageService,
         JwtStrategy,
         JwtRefreshStrategy,
         LocalStrategy,

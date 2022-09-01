@@ -6,12 +6,14 @@ import {response} from "express";
 import {WINSTON_MODULE_NEST_PROVIDER} from "nest-winston";
 import JwtRefreshAuthGuard from 'src/guard/jwt/jwt-refresh-auth.guard';
 import {Account} from "../modules/account/entities/account.entity";
+import {JwtManageService} from "../guard/jwt/jwt-manage.service";
 
 @Controller('auth')
 export class AuthController {
     constructor(
         @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
         private readonly authService: AuthService,
+        private readonly jwtManageService: JwtManageService,
     ) {}
 
     /**
@@ -112,8 +114,15 @@ export class AuthController {
                 accountId: account.accountId,
                 email: account.email,
             };
-            const { accessToken, accessOption } = this.authService.getCookieWithJwtAccessToken(payload);
+            const { accessToken, accessOption } = this.jwtManageService.getCookieWithJwtAccessToken(payload);
             response.cookie('authorization', accessToken, accessOption);
+
+            const refreshToken = request?.cookies?.refresh;
+            const newRefreshToken = await this.authService.refreshTokenChange(account.accountId, payload, refreshToken);
+
+            if (newRefreshToken) {
+                response.cookie('refresh', newRefreshToken.refreshToken, newRefreshToken.refreshOption);
+            }
         }
 
         return response.send({
