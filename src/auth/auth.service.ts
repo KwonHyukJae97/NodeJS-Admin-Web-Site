@@ -18,6 +18,7 @@ export class AuthService {
       const account = await this.accountService.getByEmail(email);
       await this.verifyPassword(plainTextPassword, account.password);
       delete account.password;
+      delete account.currentHashedRefreshToken;
 
       //TODO : 프론트단 임시 데이터 정의
       account.role = 'admin';

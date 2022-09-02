@@ -37,7 +37,7 @@ import { LoggingModule } from './logging/logging.module';
       username: process.env.DATABASE_USER,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_DB,
-      synchronize: Boolean(process.env.DATABASE_DB_SYNCHRONIZE),
+      // synchronize: Boolean(process.env.DATABASE_DB_SYNCHRONIZE),
       autoLoadEntities: true,
       // entities: ["__DIR/**/*.entity{.ts,.js}"],
     }),

@@ -140,4 +140,27 @@ export class AuthController {
       userData: request.user,
     });
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/me')
+  async me(@Req() request, @Res() response) {
+
+    //TODO : 임시로 role 정의
+    request.user.role = 'admin';
+    delete request.user.ci;
+    delete request.user.di;
+    delete request.user.regDate;
+    delete request.user.hp;
+    delete request.user.roleId;
+    //
+    // email: "admin@materialize.com"
+    // fullName: "John Doe"
+    // id: 1
+    // role: "admin"
+    // username: "johndoe"
+
+    return response.send({
+      userData: request.user,
+    })
+  }
 }

@@ -89,7 +89,6 @@ export class AccountService {
     const account = await this.accountRepository.findOneBy({
       email: email,
     });
-    delete account.currentHashedRefreshToken;
 
     return account;
   }
