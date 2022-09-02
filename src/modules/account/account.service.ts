@@ -2,27 +2,27 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  InternalServerErrorException, UnauthorizedException,
-  UnprocessableEntityException
+  InternalServerErrorException,
+  UnauthorizedException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
-import {InjectRepository} from "@nestjs/typeorm";
-import {Account} from "./entities/account.entity";
-import {Connection, Repository} from "typeorm";
+import { InjectRepository } from '@nestjs/typeorm';
+import { Account } from './entities/account.entity';
+import { Connection, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import {compare, hash} from "bcrypt";
+import { compare, hash } from 'bcrypt';
 
 @Injectable()
 export class AccountService {
-
   constructor(
-      @InjectRepository(Account) private accountRepository: Repository<Account>,
-      private connection: Connection
+    @InjectRepository(Account)
+    private accountRepository: Repository<Account>,
+    private connection: Connection,
   ) {}
 
   async create(createAccountDto: CreateAccountDto) {
-
     const accountExist = await this.getByEmail(createAccountDto.email);
     if (accountExist) {
       throw new UnprocessableEntityException('해당 이메일로는 가입할 수 없습니다.');
@@ -36,7 +36,6 @@ export class AccountService {
     let newAccount;
 
     try {
-
       const account = createAccountDto.toAccountEntity();
       account.password = await bcrypt.hash(account.password, 10);
 
@@ -46,7 +45,6 @@ export class AccountService {
       // TODO : 회원가입 인증 메일 전송
 
       await queryRunner.commitTransaction();
-
     } catch (e) {
       await queryRunner.rollbackTransaction();
       newAccount = null;
@@ -58,9 +56,8 @@ export class AccountService {
   }
 
   async findAll() {
-
     const accountList = await this.accountRepository.find();
-    accountList.map( account => {
+    accountList.map((account) => {
       delete account.password;
       delete account.currentHashedRefreshToken;
     });
@@ -70,7 +67,7 @@ export class AccountService {
 
   async findOne(id: number) {
     const account = await this.accountRepository.findOneBy({
-      accountId: id
+      accountId: id,
     });
     delete account.password;
     delete account.currentHashedRefreshToken;
@@ -79,7 +76,6 @@ export class AccountService {
   }
 
   update(id: number, updateAccountDto: UpdateAccountDto) {
-
     const account = updateAccountDto.toUpdateAccountEntity();
 
     return this.accountRepository.update(id, account);
@@ -90,14 +86,18 @@ export class AccountService {
   }
 
   async getByEmail(email: string) {
-    const account = await this.accountRepository.findOneBy({email: email});
+    const account = await this.accountRepository.findOneBy({
+      email: email,
+    });
     delete account.currentHashedRefreshToken;
 
     return account;
   }
 
   async getByAccountId(accountId: number, showCurrentHashedRefreshToken: boolean) {
-    const account = await this.accountRepository.findOneBy({accountId: accountId});
+    const account = await this.accountRepository.findOneBy({
+      accountId: accountId,
+    });
     if (account) {
       delete account.password;
       if (!showCurrentHashedRefreshToken) {
@@ -106,10 +106,7 @@ export class AccountService {
 
       return account;
     }
-    throw new HttpException(
-        '사용자가 존재하지 않습니다.',
-        HttpStatus.NOT_FOUND,
-    );
+    throw new HttpException('사용자가 존재하지 않습니다.', HttpStatus.NOT_FOUND);
   }
 
   /**
@@ -118,10 +115,10 @@ export class AccountService {
    * @param refreshToken
    */
   async setCurrentRefreshToken(accountId: number, refreshToken: string) {
-
     const currentHashedRefreshToken = await hash(refreshToken, 10);
-    await this.accountRepository.update(accountId, {currentHashedRefreshToken});
-
+    await this.accountRepository.update(accountId, {
+      currentHashedRefreshToken,
+    });
   }
 
   /**
@@ -130,13 +127,9 @@ export class AccountService {
    * @param refreshToken
    */
   async getAccountRefreshTokenMatches(accountId: number, refreshToken: string) {
-
     const account = await this.getByAccountId(accountId, true);
 
-    const isRefreshTokenMatching = await compare(
-        refreshToken,
-        account.currentHashedRefreshToken
-    );
+    const isRefreshTokenMatching = await compare(refreshToken, account.currentHashedRefreshToken);
 
     if (isRefreshTokenMatching) {
       return account;
@@ -152,7 +145,6 @@ export class AccountService {
   async removeRefreshToken(accountId: number) {
     return this.accountRepository.update(accountId, {
       currentHashedRefreshToken: null,
-    })
+    });
   }
-
 }

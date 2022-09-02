@@ -1,4 +1,4 @@
 interface TokenPayload {
-    accountId: number;
-    email: string;
+  accountId: number;
+  email: string;
 }

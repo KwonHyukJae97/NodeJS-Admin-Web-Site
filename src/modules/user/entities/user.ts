@@ -1,24 +1,23 @@
-import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
-import {IsNumber, IsString} from "class-validator";
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { IsNumber, IsString } from 'class-validator';
 
 @Entity()
 export class User {
+  @PrimaryGeneratedColumn()
+  user_id: number;
 
-    @PrimaryGeneratedColumn()
-    user_id: number;
+  @IsNumber()
+  @Column()
+  accountId!: number;
 
-    @IsNumber()
-    @Column()
-    accountId!: number;
+  @IsString()
+  @Column()
+  state!: string;
 
-    @IsString()
-    @Column()
-    state!: string;
-
-    static from(accountId: number, state: string) {
-        const user = new User();
-        user.accountId = accountId;
-        user.state = state;
-        return user;
-    }
+  static from(accountId: number, state: string) {
+    const user = new User();
+    user.accountId = accountId;
+    user.state = state;
+    return user;
+  }
 }
