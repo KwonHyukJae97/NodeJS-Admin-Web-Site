@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import { utilities, WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { LoggingModule } from './logging/logging.module';
+import { NoticeModule } from "./modules/board/notice/notice.module";
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { LoggingModule } from './logging/logging.module';
     AccountModule,
     AuthModule,
     LoggingModule,
+    NoticeModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
