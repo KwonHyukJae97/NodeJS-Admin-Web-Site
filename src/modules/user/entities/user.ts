@@ -8,16 +8,16 @@ export class User {
 
   @IsNumber()
   @Column()
-  accountId!: number;
+  account_id!: number;
 
-  @IsString()
+  @IsNumber()
   @Column()
-  state!: string;
+  grade!: number;
 
-  static from(accountId: number, state: string) {
+  static from(account_id: number, grade: number) {
     const user = new User();
-    user.accountId = accountId;
-    user.state = state;
+    user.account_id = account_id;
+    user.grade = grade;
     return user;
   }
 }
