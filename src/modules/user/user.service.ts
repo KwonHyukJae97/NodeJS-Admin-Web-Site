@@ -13,21 +13,40 @@ export class UserService {
     return this.userRepository.save(createUserDto);
   }
 
+  /**
+   * 앱 사용자 리스트 조회
+   */
   findAll() {
-    return this.userRepository.find();
+    return this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.account', 'account')
+      .getMany();
   }
 
+  /**
+   * 앱 사용자 상세 정보 조회
+   * @param account_id
+   */
   findOne(id: number) {
-    return this.userRepository.findOneBy({
-      user_id: id,
-    });
+    return this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.account', 'account')
+      .where('account.account_id = :id', { id: id })
+      .getOne();
   }
 
+  /**
+   * 앱 사용자 정보 수정
+   * @param user
+   */
   update(id: number, updateUserDto: UpdateUserDto) {
     const user = updateUserDto.toUpdateUserEntity();
     return this.userRepository.update(id, user);
   }
 
+  /**
+   * 앱 사용자 정보 삭제
+   */
   remove(id: number) {
     return `This action removes a #${id} user`;
   }

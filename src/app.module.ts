@@ -14,7 +14,8 @@ import { LoggingModule } from './logging/logging.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: `.${process.env.NODE_ENV}.env`,
+      // envFilePath: `.${process.env.NODE_ENV}.env`,
+      envFilePath: '.local.env',
       validationSchema: Joi.object({
         JWT_ACCESS_TOKEN_SECRET: Joi.string().required(),
         JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
