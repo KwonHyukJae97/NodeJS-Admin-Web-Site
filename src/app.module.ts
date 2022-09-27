@@ -11,6 +11,7 @@ import { utilities, WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { LoggingModule } from './logging/logging.module';
 import { NoticeModule } from './modules/board/notice/notice.module';
+import { FileModule } from "./modules/board/file.module";
 
 @Module({
   imports: [
@@ -29,6 +30,8 @@ import { NoticeModule } from './modules/board/notice/notice.module';
         DATABASE_PASSWORD: Joi.string().required(),
         DATABASE_DB: Joi.string().required(),
         DATABASE_DB_SYNCHRONIZE: Joi.string().required(),
+
+        isGlobal: true,
       }),
     }),
     TypeOrmModule.forRoot({
@@ -65,6 +68,7 @@ import { NoticeModule } from './modules/board/notice/notice.module';
     AuthModule,
     LoggingModule,
     NoticeModule,
+    FileModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
