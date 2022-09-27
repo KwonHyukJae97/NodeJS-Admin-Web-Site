@@ -37,6 +37,7 @@ lerna-debug.log*
 # 기타 파일
 ormconfig.json
 /docker/mariadb-data
+package-lock.json
 *.env
 /test/app.e2e-spec.ts
 /test/jest-e2e.json

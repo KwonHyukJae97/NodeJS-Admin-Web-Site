@@ -10,11 +10,14 @@ import { AuthModule } from './auth/auth.module';
 import { utilities, WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { LoggingModule } from './logging/logging.module';
+import { NoticeModule } from './modules/board/notice/notice.module';
+import { FileModule } from "./modules/board/file.module";
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: `.${process.env.NODE_ENV}.env`,
+      // envFilePath: `.${process.env.NODE_ENV}.env`,
+      envFilePath: '.local.env',
       validationSchema: Joi.object({
         JWT_ACCESS_TOKEN_SECRET: Joi.string().required(),
         JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
@@ -28,6 +31,8 @@ import { LoggingModule } from './logging/logging.module';
         DATABASE_PASSWORD: Joi.string().required(),
         DATABASE_DB: Joi.string().required(),
         DATABASE_DB_SYNCHRONIZE: Joi.string().required(),
+
+        isGlobal: true,
       }),
     }),
     TypeOrmModule.forRoot({
@@ -40,6 +45,7 @@ import { LoggingModule } from './logging/logging.module';
       // synchronize: Boolean(process.env.DATABASE_DB_SYNCHRONIZE),
       autoLoadEntities: true,
       // entities: ["__DIR/**/*.entity{.ts,.js}"],
+      timezone: 'Asia/Seoul',
     }),
     WinstonModule.forRoot({
       defaultMeta: {},
@@ -62,6 +68,8 @@ import { LoggingModule } from './logging/logging.module';
     AccountModule,
     AuthModule,
     LoggingModule,
+    NoticeModule,
+    FileModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
