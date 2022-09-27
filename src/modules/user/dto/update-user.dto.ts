@@ -1,9 +1,10 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { IntersectionType, PartialType } from '@nestjs/mapped-types';
 import { CreateUserDto } from './create-user.dto';
 import { User } from '../entities/user';
+import { Account } from '../entities/account';
 
-export class UpdateUserDto extends PartialType(CreateUserDto) {
+export class UpdateUserDto extends IntersectionType(CreateUserDto, PartialType(Account)) {
   public toUpdateUserEntity() {
-    return User.from(this.account_id, this.grade);
+    return Account.from(this.email, this.nickname, this.password, this.phone, this.grade);
   }
 }
