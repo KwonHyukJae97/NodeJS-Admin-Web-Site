@@ -3,13 +3,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './modules/user/user.module';
-import { AccountModule } from './modules/account/account.module';
+import { AccountModule } from './modules/account-bak/account.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
 import { AuthModule } from './auth/auth.module';
 import { utilities, WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { LoggingModule } from './logging/logging.module';
+import { NoticeModule } from './modules/board/notice/notice.module';
+import { FileModule } from "./modules/board/file.module";
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { LoggingModule } from './logging/logging.module';
         DATABASE_PASSWORD: Joi.string().required(),
         DATABASE_DB: Joi.string().required(),
         DATABASE_DB_SYNCHRONIZE: Joi.string().required(),
+
+        isGlobal: true,
       }),
     }),
     TypeOrmModule.forRoot({
@@ -41,6 +45,7 @@ import { LoggingModule } from './logging/logging.module';
       // synchronize: Boolean(process.env.DATABASE_DB_SYNCHRONIZE),
       autoLoadEntities: true,
       // entities: ["__DIR/**/*.entity{.ts,.js}"],
+      timezone: 'Asia/Seoul',
     }),
     WinstonModule.forRoot({
       defaultMeta: {},
@@ -63,6 +68,8 @@ import { LoggingModule } from './logging/logging.module';
     AccountModule,
     AuthModule,
     LoggingModule,
+    NoticeModule,
+    FileModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
