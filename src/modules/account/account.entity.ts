@@ -1,18 +1,20 @@
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { User } from "../user/entities/user";
-import { Admin } from "./admin/entities/account.admin.entity";
+import { Admin } from "./admin/entities/admin.entity";
 
 @Entity('account')
-export class Account extends BaseEntity {
+export class Accounted extends BaseEntity {
 
     //계정번호
     @PrimaryGeneratedColumn({
+        name: "account_id",
         type: "bigint"
     })
-    account_id: number;
+    accountId: number;
     
     //아이디
     @Column({
+        name: "id",
         type: "varchar",
         length: "20",
         unique: true
@@ -21,6 +23,7 @@ export class Account extends BaseEntity {
 
     //비밀번호
     @Column({
+        name: "password",
         type: "varchar",
         length: "80"
     })
@@ -28,6 +31,7 @@ export class Account extends BaseEntity {
 
     //이름
     @Column({
+        name: "name",
         type: "varchar",
         length: "80"
     })
@@ -43,6 +47,7 @@ export class Account extends BaseEntity {
 
     //연락처
     @Column({
+        name: "phone",
         type: "varchar",
         length: "20",
         unique: true
@@ -51,6 +56,7 @@ export class Account extends BaseEntity {
 
     //닉네임
     @Column({
+        name: "nickname",
         type: "varchar",
         length: "20",
         unique: true
@@ -59,6 +65,7 @@ export class Account extends BaseEntity {
 
     //생년월일
     @Column({
+        name: "birth",
         type: "varchar",
         length: "8"
     })
@@ -66,12 +73,14 @@ export class Account extends BaseEntity {
 
     //성별 (0:M, 1:F)
     @Column({
+        name: "gender",
         type: "char"
     })
     gender: string;
 
     //CI고유번호
     @Column({
+        name: "ci",
         type: "varchar",
         length: "255"
     })
@@ -79,56 +88,63 @@ export class Account extends BaseEntity {
 
     //sns아이디
     @Column({
+        name: "sns_id",
         type: "varchar",
         length: "100"
     })
-    sns_id: string;
+    snsId: string;
 
     //sns타입
     @Column({
+        name: "sns_type",
         type: "char",
         length: "2"
     })
-    sns_type: string;
+    snsType: string;
 
     //sns토큰
     @Column({
+        name: "sns_token",
         type: "varchar",
         length: "150"
     })
-    sns_token: string;
+    snsToken: string;
 
     //가입 일시
-    @Column({
+    @CreateDateColumn({
+        name: "reg_date",
         type: "datetime"
     })
-    reg_date: Date;
+    regDate: Date;
 
     //정보수정 일시
-    @Column({
+    @UpdateDateColumn({
+        name: "update_date",
         type: "datetime"
     })
-    update_date: Date;
+    updateDate: Date;
 
     //회원탈퇴 일시
     @Column({
+        name: "del_date",
         type: "datetime"
     })
-    del_date: Date;
+    delDate?: Date | null;
 
     //최근 로그인 일시
     @Column({
+        name: "login_date",
         type: "datetime"
     })
-    login_date: Date;
+    loginDate: Date;
 
     //관리자 번호 가져오기
-    @ManyToOne(() => Admin)
-    @JoinColumn({name: "admin_id"})
+    @OneToOne(() => Admin)
+    @JoinColumn({name: "account_id"})
     admin: Admin;
 
     //사용자 번호 가져오기
-    @ManyToOne(() => User)
-    @JoinColumn({name: "user_id"})
+    @OneToOne(() => User)
+    @JoinColumn({name: "account_id"})
     user: User;
 }
