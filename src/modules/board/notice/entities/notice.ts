@@ -1,5 +1,5 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { IsBoolean, IsNumber, IsString } from 'class-validator';
+import { IsBoolean, IsString } from "class-validator";
 import { Board } from "../../entities/board";
 
 /**
@@ -12,12 +12,6 @@ export class Notice {
     name: 'notice_id',
   })
   noticeId: number;
-
-  // @IsNumber()
-  // @Column({
-  //   name: 'board_id',
-  // })
-  // boardId: number;
 
   @IsString()
   @Column({

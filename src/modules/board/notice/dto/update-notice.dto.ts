@@ -1,10 +1,10 @@
 import { IsNotEmpty } from "class-validator";
 
 /**
- * 공지사항 등록 시, 필요한 필드로 구성한 dto
+ * 공지사항 수정 시, 필요한 필드로 구성한 dto
  */
 
-export class CreateNoticeDto {
+export class UpdateNoticeDto {
   @IsNotEmpty()
   title: string;
 
