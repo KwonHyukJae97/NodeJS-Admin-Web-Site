@@ -10,4 +10,4 @@ jobs:
         uses: dodo4114/issue-to-notion@v1.1.1
         env:
           NOTION_TOKEN: cd0b4ec6cdc6a861238df701d7e64a9ae3cc703855ab5af487cd5dda49206754ceb9d67574d6ee2fa8ec7b32c431de0e6b965ededed39e2bfb40c75d07344b247703daa785b458e747e499cfba2d
-          DATABASE_URL: 252fea9fb51e4c41b60a9dfb78220449
+          DATABASE_URL: https://api.notion.com/v1/databases/252fea9fb51e4c41b60a9dfb78220449
