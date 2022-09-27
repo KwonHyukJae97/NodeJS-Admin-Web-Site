@@ -3,11 +3,13 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { Board } from "../entities/board";
 import { Notice } from "./entities/notice";
 import { NoticeController } from "./notice.controller";
-import { NoticeService } from "./notice.service";
+import { CqrsModule } from "@nestjs/cqrs";
+import { CreateNoticeHandler } from "./command/create-notice.handler";
+import { GetNoticeInfoHandler } from "./query/get-notice-info.handler";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Board, Notice])],
+  imports: [TypeOrmModule.forFeature([Board, Notice]), CqrsModule],
   controllers: [NoticeController],
-  providers: [NoticeService],
+  providers: [CreateNoticeHandler, GetNoticeInfoHandler],
 })
 export class NoticeModule {}

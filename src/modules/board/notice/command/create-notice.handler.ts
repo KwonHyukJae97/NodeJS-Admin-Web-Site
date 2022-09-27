@@ -1,16 +1,18 @@
 import { Injectable } from "@nestjs/common";
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CreateNoticeCommand } from "./create-notice.command";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Board } from "../entities/board";
-import { Notice } from "./entities/notice";
+import { Notice } from "../entities/notice";
 import { Repository } from "typeorm";
-import { CreateNoticeDto } from "./dto/create-notice.dto";
+import { Board } from "../../entities/board";
 
 /**
- * 공지사항 관련 서비스 로직 작성 (추후, CQRS 패턴으로 수정 예정)
+ * 공지사항 등록 시, 커맨드를 처리하는 커맨드 핸들러
  */
 
 @Injectable()
-export class NoticeService {
+@CommandHandler(CreateNoticeCommand)
+export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand> {
   constructor(
     @InjectRepository(Notice)
     private noticeRepository: Repository<Notice>,
@@ -19,9 +21,8 @@ export class NoticeService {
     private boardRepository: Repository<Board>,
   ) {}
 
-  // 공지사항 등록 메서드
-  async createNotice(createNoticeDto: CreateNoticeDto) {
-    const { title, content, isTop, noticeGrant } = createNoticeDto;
+  async execute(command: CreateNoticeCommand) {
+    const { title, content, isTop, noticeGrant } = command;
 
     const board = this.boardRepository.create({
       // 임시 accountId 부여
@@ -43,11 +44,5 @@ export class NoticeService {
     await this.noticeRepository.save(notice);
 
     return '공지사항 등록 성공';
-  }
-
-  // 공지사항 목록 조회 메서드
-  async getAllNotices() {
-    // notice 리스트 반환 (notice + board)
-    return this.noticeRepository.find();
   }
 }
