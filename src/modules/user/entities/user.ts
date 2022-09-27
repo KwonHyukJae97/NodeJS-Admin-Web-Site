@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { IsNumber, IsString } from 'class-validator';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { IsNumber } from 'class-validator';
+import { Account } from './account';
 
 @Entity()
 export class User {
@@ -14,9 +15,12 @@ export class User {
   @Column()
   grade!: number;
 
-  static from(account_id: number, grade: number) {
+  @ManyToOne(() => Account, (account) => account.user)
+  @JoinColumn({ name: 'account_id' })
+  account: Account;
+
+  static from(grade: number) {
     const user = new User();
-    user.account_id = account_id;
     user.grade = grade;
     return user;
   }
