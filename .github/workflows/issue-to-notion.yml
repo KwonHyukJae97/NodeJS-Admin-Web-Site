@@ -1,0 +1,13 @@
+name: issue_to_notion
+on:
+  issues:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Notion Card Creator
+        uses: dodo4114/issue-to-notion@v1.1.1
+        env:
+          NOTION_TOKEN: ${secret_Jc5vUb6tjXNeWWn5Cr0JzG5AyWtJJ9SJCR9WJpj7OUD}
+          DATABASE_URL: 252fea9fb51e4c41b60a9dfb78220449
