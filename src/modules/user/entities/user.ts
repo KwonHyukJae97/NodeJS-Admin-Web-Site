@@ -1,27 +1,27 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { IsNumber } from 'class-validator';
-import { Account } from './account';
+import { type } from 'os';
+import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Account } from '../../account/entities/account';
 
-@Entity()
-export class User {
-  @PrimaryGeneratedColumn()
-  user_id: number;
+@Entity('user')
+export class User extends BaseEntity {
+  //회원 번호
+  @PrimaryGeneratedColumn({
+    name: 'user_id',
+    type: 'bigint',
+  })
+  userId: number;
 
-  @IsNumber()
-  @Column()
-  account_id!: number;
+  //학년 정보
+  @Column({
+    name: 'grade',
+    type: 'tinyint',
+  })
+  grade: number;
 
-  @IsNumber()
-  @Column()
-  grade!: number;
-
-  @ManyToOne(() => Account, (account) => account.user)
-  @JoinColumn({ name: 'account_id' })
-  account: Account;
-
-  static from(grade: number) {
-    const user = new User();
-    user.grade = grade;
-    return user;
-  }
+  //계정번호
+  @OneToOne((type) => Account, (account) => account.userId, { eager: true })
+  @JoinColumn({
+    name: 'account_id',
+  })
+  accountId: Account;
 }

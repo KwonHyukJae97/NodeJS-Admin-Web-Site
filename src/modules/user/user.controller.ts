@@ -1,49 +1,43 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-
+import { Body, Controller, Get, Post, ValidationPipe } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { SignUpUserCommand } from './command/signup-user.command';
+import { SignUpUserDto } from './dto/signup-user.dto';
+import { GetUserListQuery } from './query/get-user-list.query';
+/**
+ * 앱사용자 가입/로그인 처리 컨트롤러
+ */
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private commadBus: CommandBus, private queryBus: QueryBus) {}
 
+  /**
+   * 앱사용자 회원가입 컨트롤러
+   */
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  async signupUser(@Body(ValidationPipe) signUpUserdto: SignUpUserDto): Promise<void> {
+    const { id, password, email, name, phone, nickname, birth, gender, grade } = signUpUserdto;
+
+    const command = new SignUpUserCommand(
+      id,
+      password,
+      email,
+      name,
+      phone,
+      nickname,
+      birth,
+      gender,
+      grade,
+    );
+
+    return this.commadBus.execute(command);
   }
 
   /**
-   * 앱 사용자 리스트 조회
+   * 앱 사용자 조회
    */
   @Get()
-  findAll() {
-    return this.userService.findAll();
-  }
-
-  /**
-   * 앱 사용자 상세 정보 조회
-   * @ param : user_id
-   */
-  @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.userService.findOne(+id);
-  }
-
-  /**
-   * 앱 사용자 정보 수정
-   * @ param : user_id
-   */
-  @Patch(':id')
-  update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
-  }
-
-  /**
-   * 앱 사용자 정보 삭제
-   * @ param : user_id
-   */
-  @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.userService.remove(+id);
+  async getAllUsers() {
+    const getUserListQuery = new GetUserListQuery();
+    return this.queryBus.execute(getUserListQuery);
   }
 }

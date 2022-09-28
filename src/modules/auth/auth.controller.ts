@@ -11,13 +11,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LocalAuthGuard } from '../guard/local/local-auth.guard';
-import JwtAuthGuard from '../guard/jwt/jwt-auth.guard';
+import { LocalAuthGuard } from '../../guard/local/local-auth.guard';
+import JwtAuthGuard from '../../guard/jwt/jwt-auth.guard';
 import { response } from 'express';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import JwtRefreshAuthGuard from 'src/guard/jwt/jwt-refresh-auth.guard';
-import { Account } from '../modules/account-bak/entities/account.entity';
-import { JwtManageService } from '../guard/jwt/jwt-manage.service';
+import { Account } from '../account-bak/entities/account.entity';
+import { JwtManageService } from '../../guard/jwt/jwt-manage.service';
 
 @Controller('auth')
 export class AuthController {
@@ -144,7 +144,6 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('/me')
   async me(@Req() request, @Res() response) {
-
     //TODO : 임시로 role 정의
     request.user.role = 'admin';
     delete request.user.ci;
@@ -161,6 +160,6 @@ export class AuthController {
 
     return response.send({
       userData: request.user,
-    })
+    });
   }
 }

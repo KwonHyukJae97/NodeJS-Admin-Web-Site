@@ -3,7 +3,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AccountService } from 'src/modules/account-bak/account.service';
-import { JwtManageService } from '../guard/jwt/jwt-manage.service';
+import { JwtManageService } from '../../guard/jwt/jwt-manage.service';
 
 @Injectable()
 export class AuthService {

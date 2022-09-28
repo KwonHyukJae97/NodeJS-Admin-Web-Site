@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
-import { UserService } from './user.service';
-import { UserController } from './user.controller';
+import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserController } from 'src/modules/user/user.controller';
+import { Account } from '../account/entities/account';
+import { SignUpUserHandler } from './command/signup-user.handler';
 import { User } from './entities/user';
-import { Account } from './entities/account';
-
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User]), TypeOrmModule.forFeature([Account])],
+  imports: [TypeOrmModule.forFeature([Account, User]), CqrsModule],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [SignUpUserHandler],
 })
 export class UserModule {}

@@ -6,12 +6,13 @@ import { UserModule } from './modules/user/user.module';
 import { AccountModule } from './modules/account-bak/account.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
-import { AuthModule } from './auth/auth.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { utilities, WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { LoggingModule } from './logging/logging.module';
 import { NoticeModule } from './modules/board/notice/notice.module';
-import { FileModule } from "./modules/board/file.module";
+import { FileModule } from './modules/board/file.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -70,6 +71,8 @@ import { FileModule } from "./modules/board/file.module";
     LoggingModule,
     NoticeModule,
     FileModule,
+    UserModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
