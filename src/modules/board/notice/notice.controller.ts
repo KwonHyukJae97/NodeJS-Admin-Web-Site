@@ -21,6 +21,7 @@ import { UpdateNoticeDto } from './dto/update-notice.dto';
 import { UpdateNoticeCommand } from './command/update-notice.command';
 import { DeleteNoticeCommand } from './command/delete-notice.command';
 import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/files.interceptor';
+import { GetNoticeDetailDto } from './dto/get-notice-detail.dto';
 
 /**
  * 공지사항 관련 API 처리하는 컨트롤러
@@ -59,7 +60,7 @@ export class NoticeController {
    * @ param : notice_id
    */
   @Get(':id')
-  async getNoticeDetail(@Param('id') noticeId: number): Promise<Notice> {
+  async getNoticeDetail(@Param('id') noticeId: number): Promise<GetNoticeDetailDto> {
     const getNoticeDetailQuery = new GetNoticeDetailQuery(noticeId);
     return this.queryBus.execute(getNoticeDetailQuery);
   }

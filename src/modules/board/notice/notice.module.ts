@@ -12,10 +12,11 @@ import { DeleteNoticeHandler } from './command/delete-notice.handler';
 import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { multerOptionsFactory } from '../../../common/utils/multer.options';
+import { BoardFile } from '../file/entities/board_file';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Board, Notice]),
+    TypeOrmModule.forFeature([Board, Notice, BoardFile]),
     CqrsModule,
     MulterModule.registerAsync({
       imports: [ConfigModule],
