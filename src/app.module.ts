@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UserModule } from './modules/user/user.module';
+import { UserModule } from './modules/account/user/user.module';
 import { AccountModule } from './modules/account-bak/account.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
@@ -11,13 +11,12 @@ import { utilities, WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { LoggingModule } from './logging/logging.module';
 import { NoticeModule } from './modules/board/notice/notice.module';
-import { FileModule } from "./modules/board/file.module";
+import { FileModule } from './modules/board/file.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      // envFilePath: `.${process.env.NODE_ENV}.env`,
-      envFilePath: '.local.env',
+      envFilePath: `.${process.env.NODE_ENV}.env`,
       validationSchema: Joi.object({
         JWT_ACCESS_TOKEN_SECRET: Joi.string().required(),
         JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
