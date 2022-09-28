@@ -9,8 +9,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from './user/entities/user.entity';
-import { Admin } from './admin/entities/admin.entity';
+import { User } from '../../user/entities/user.entity';
+import { Admin } from '../../admin/entities/admin.entity';
 
 @Entity('account')
 export class Account extends BaseEntity {
