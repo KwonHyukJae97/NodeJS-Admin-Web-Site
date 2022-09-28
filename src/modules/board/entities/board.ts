@@ -1,6 +1,15 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { IsNumber, IsString } from "class-validator";
-import { Notice } from "../notice/entities/notice";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { IsNumber, IsString } from 'class-validator';
+import { Notice } from '../notice/entities/notice';
+import { BoardFile } from '../file/entities/board_file';
 
 /**
  * 게시글에 대한 엔티티 정의
