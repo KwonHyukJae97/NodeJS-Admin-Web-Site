@@ -47,7 +47,6 @@ export class FileService {
 
     // const uploadfiles = [];
 
-    console.log(files);
     for (const element of files) {
       // const file = new BoardFile();
       const ext = path.extname(element.originalname);

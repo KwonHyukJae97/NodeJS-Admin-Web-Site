@@ -1,4 +1,4 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty } from 'class-validator';
 
 /**
  * 공지사항 등록 시, 필요한 필드로 구성한 dto

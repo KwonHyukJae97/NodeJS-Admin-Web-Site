@@ -16,12 +16,12 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateNoticeCommand } from './command/create-notice.command';
 import { GetNoticeInfoQuery } from './query/get-notice-info.query';
 import { Notice } from './entities/notice';
-import { GetNoticeDetailQuery } from './query/get-notice-detail.query';
 import { UpdateNoticeDto } from './dto/update-notice.dto';
 import { UpdateNoticeCommand } from './command/update-notice.command';
 import { DeleteNoticeCommand } from './command/delete-notice.command';
 import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/files.interceptor';
 import { GetNoticeDetailDto } from './dto/get-notice-detail.dto';
+import { GetNoticeDetailCommand } from './command/get-notice-detail.command';
 
 /**
  * 공지사항 관련 API 처리하는 컨트롤러
@@ -61,8 +61,8 @@ export class NoticeController {
    */
   @Get(':id')
   async getNoticeDetail(@Param('id') noticeId: number): Promise<GetNoticeDetailDto> {
-    const getNoticeDetailQuery = new GetNoticeDetailQuery(noticeId);
-    return this.queryBus.execute(getNoticeDetailQuery);
+    const command = new GetNoticeDetailCommand(noticeId);
+    return this.commandBus.execute(command);
   }
 
   /**

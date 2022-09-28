@@ -1,19 +1,19 @@
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { GetNoticeDetailQuery } from './get-notice-detail.query';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { GetNoticeDetailCommand } from './get-notice-detail.command';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Notice } from '../entities/notice';
-import { NotFoundException } from '@nestjs/common';
+import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { BoardFile } from '../../file/entities/board_file';
-import { GetNoticeDetailDto } from '../dto/get-notice-detail.dto';
 
 /**
- * 공지사항 상세 조회 시, 쿼리를 구현하는 쿼리 핸들러
+ * 공지사항 상세조회 시, 커맨드를 처리하는 커맨드 핸들러 (서비스 로직 수행)
  */
 
-@QueryHandler(GetNoticeDetailQuery)
-export class GetNoticeDetailHandler implements IQueryHandler<GetNoticeDetailQuery> {
+@Injectable()
+@CommandHandler(GetNoticeDetailCommand)
+export class GetNoticeDetailHandler implements ICommandHandler<GetNoticeDetailCommand> {
   constructor(
     @InjectRepository(Notice)
     private noticeRepository: Repository<Notice>,
@@ -25,8 +25,8 @@ export class GetNoticeDetailHandler implements IQueryHandler<GetNoticeDetailQuer
     private fileRepository: Repository<BoardFile>,
   ) {}
 
-  async execute(query: GetNoticeDetailQuery): Promise<GetNoticeDetailDto> {
-    const { noticeId } = query;
+  async execute(command: GetNoticeDetailCommand) {
+    const { noticeId } = command;
 
     const notice = await this.noticeRepository.findOneBy({ noticeId: noticeId });
 
