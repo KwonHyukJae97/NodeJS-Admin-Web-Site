@@ -1,10 +1,12 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
-import { UpdateNoticeCommand } from "./update-notice.command";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Notice } from "../entities/notice";
-import { Repository } from "typeorm";
-import { Board } from "../../entities/board";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
+import { UpdateNoticeCommand } from './update-notice.command';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Notice } from '../entities/notice';
+import { Repository } from 'typeorm';
+import { Board } from '../../entities/board';
+import { TestEvent } from '../event/test.event';
+import { FileUpdateEvent } from '../event/file-update-event';
 
 /**
  * 공지사항 수정 시, 커맨드를 처리하는 커맨드 핸들러
@@ -19,10 +21,12 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
 
     @InjectRepository(Board)
     private boardRepository: Repository<Board>,
+
+    private eventBus: EventBus,
   ) {}
 
   async execute(command: UpdateNoticeCommand) {
-    const { title, content, isTop, noticeGrant, noticeId } = command;
+    const { title, content, isTop, noticeGrant, noticeId, files } = command;
 
     const notice = await this.noticeRepository.findOneBy({ noticeId: noticeId });
 
@@ -46,6 +50,11 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
     notice.boardId = board;
 
     await this.noticeRepository.save(notice);
+
+    // 파일 업데이트 이벤트 처리
+    this.eventBus.publish(new FileUpdateEvent(board.boardId, files));
+    this.eventBus.publish(new TestEvent());
+
     // 변경된 공지사항 반환
     return notice;
   }

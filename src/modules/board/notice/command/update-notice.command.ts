@@ -11,5 +11,6 @@ export class UpdateNoticeCommand implements ICommand {
     readonly isTop: boolean,
     readonly noticeGrant: string,
     readonly noticeId: number,
+    readonly files: Express.MulterS3.File[],
   ) {}
 }

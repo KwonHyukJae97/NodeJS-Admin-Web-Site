@@ -36,7 +36,7 @@ export class NoticeController {
    */
   @Post()
   @UsePipes(ValidationPipe)
-  @UseInterceptors(FilesInterceptor('files', 3))
+  @UseInterceptors(FilesInterceptor('files'))
   createNotice(
     @Body() createNoticeDto: CreateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
@@ -70,12 +70,14 @@ export class NoticeController {
    * @ param : notice_id
    */
   @Patch(':id')
+  @UseInterceptors(FilesInterceptor('files'))
   async updateNotice(
     @Param('id') noticeId: number,
     @Body() updateNoticeDto: UpdateNoticeDto,
+    @UploadedFiles() files: Express.MulterS3.File[],
   ): Promise<Notice> {
     const { title, content, isTop, noticeGrant } = updateNoticeDto;
-    const command = new UpdateNoticeCommand(title, content, isTop, noticeGrant, noticeId);
+    const command = new UpdateNoticeCommand(title, content, isTop, noticeGrant, noticeId, files);
     return this.commandBus.execute(command);
   }
 
