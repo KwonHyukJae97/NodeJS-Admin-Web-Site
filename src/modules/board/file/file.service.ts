@@ -21,6 +21,7 @@ export class FileService {
   constructor(
     @InjectRepository(Board)
     private boardRepository: Repository<Board>,
+
     @InjectRepository(BoardFile)
     private fileRepository: Repository<BoardFile>,
   ) {}
