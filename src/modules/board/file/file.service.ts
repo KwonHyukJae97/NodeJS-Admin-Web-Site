@@ -105,4 +105,38 @@ export class FileService {
       this.fileRepository.delete({ boardFileId: file.boardFileId });
     });
   }
+
+  /**
+   * 다중 파일 삭제 기능
+   */
+  async deleteFiles(boardId: number) {
+    const files = await this.fileRepository.findBy({ boardId: boardId });
+
+    // S3에 저장되어 있는 기존 파일 삭제
+    const deleteList = [];
+
+    for (const file of files) {
+      deleteList.push(file.fileName); // S3 key값으로 사용될 속성 추출 후, 새 배열에 추가
+    }
+
+    deleteList.map((file) => {
+      const deleteParams = {
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: file,
+      };
+
+      try {
+        s3.deleteObject(deleteParams, function (err, data) {
+          if (err) {
+            console.log('err: ', err);
+          } else {
+            console.log(data, '정상 삭제 되었습니다.');
+          }
+        });
+      } catch (err) {
+        console.log(err);
+        throw err;
+      }
+    });
+  }
 }

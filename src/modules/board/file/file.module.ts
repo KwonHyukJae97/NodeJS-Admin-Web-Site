@@ -9,6 +9,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { multerOptionsFactory } from '../../../common/utils/multer.options';
 import { FileUpdateEventsHandler } from '../notice/event/file-update-events.handler';
+import { FileDeleteEventsHandler } from '../notice/event/file-delete-events.handler';
 
 @Module({
   imports: [
@@ -20,6 +21,11 @@ import { FileUpdateEventsHandler } from '../notice/event/file-update-events.hand
     }),
   ],
   controllers: [FileController],
-  providers: [FileService, FileCreateEventsHandler, FileUpdateEventsHandler],
+  providers: [
+    FileService,
+    FileCreateEventsHandler,
+    FileUpdateEventsHandler,
+    FileDeleteEventsHandler,
+  ],
 })
 export class FileModule {}
