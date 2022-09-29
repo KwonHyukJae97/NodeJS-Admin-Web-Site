@@ -24,13 +24,13 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
     const account = await this.accountRepository.findOneBy({ accountId: accountId });
 
     user.grade = grade;
-    this.userRepository.save(user);
+    await this.userRepository.save(user);
 
     account.password = password;
     account.email = email;
     account.phone = phone;
     account.nickname = nickname;
-    this.accountRepository.save(account);
+    await this.accountRepository.save(account);
 
     //수정된 내용 반환
     return account;

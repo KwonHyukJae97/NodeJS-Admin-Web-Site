@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateUserCommand } from './command/create-user.command';
 import { UpdateUserCommand } from './command/update-user.command';
+import { DeleteUserCommand } from './command/delete-user.command';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { GetUserInfoQuery } from './query/get-user-info.query';
@@ -54,6 +55,16 @@ export class UserController {
     const { password, email, phone, nickname, grade } = dto;
     const command = new UpdateUserCommand(password, email, phone, nickname, grade, accountId);
 
+    return this.commandBus.execute(command);
+  }
+
+  /**
+   * 앱 사용자 정보 삭제
+   * @ param : user_id
+   */
+  @Delete(':id')
+  deleteUser(@Param('id') accountId: number, delDate: Date) {
+    const command = new DeleteUserCommand(accountId, delDate);
     return this.commandBus.execute(command);
   }
 }
