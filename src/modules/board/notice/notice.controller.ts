@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UploadedFiles,
   UseInterceptors,
   UsePipes,
@@ -69,10 +70,10 @@ export class NoticeController {
 
   /**
    * 공지사항 검색어 조회
-   * @ param : keyword
+   * @ query : keyword
    */
-  @Get(':keyword')
-  async getNoticeSearch(@Param('keyword') keyword: string) {
+  @Get()
+  async getNoticeSearch(@Query() keyword: string) {
     const getNoticeSearchQuery = new GetNoticeSearchQuery(keyword);
     return this.queryBus.execute(getNoticeSearchQuery);
   }
