@@ -52,7 +52,7 @@ export class NoticeController {
   /**
    * 공지사항 리스트 조회
    */
-  @Get()
+  @Get('/list')
   async getAllNotice() {
     const getNoticeInfoQuery = new GetNoticeInfoQuery();
     return this.queryBus.execute(getNoticeInfoQuery);
@@ -73,7 +73,7 @@ export class NoticeController {
    * @ query : keyword
    */
   @Get()
-  async getNoticeSearch(@Query() keyword: string) {
+  async getNoticeSearch(@Query('keyword') keyword: string) {
     const getNoticeSearchQuery = new GetNoticeSearchQuery(keyword);
     return this.queryBus.execute(getNoticeSearchQuery);
   }

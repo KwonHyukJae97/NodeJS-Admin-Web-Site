@@ -22,10 +22,10 @@ export class GetNoticeSearchHandler implements IQueryHandler<GetNoticeSearchQuer
     const notice = await this.noticeRepository
       .createQueryBuilder('notice')
       .leftJoinAndSelect('notice.boardId', 'board')
-      .where('notice.board = :title', { title: Like(`%${keyword}%`) })
+      .where('board.title like :title', { title: `%${keyword}%` })
       .getMany();
 
-    if (!notice) {
+    if (!notice || notice.length === 0) {
       throw new NotFoundException('검색 결과가 없습니다.');
     }
     // 공지사항 리스트 반환
