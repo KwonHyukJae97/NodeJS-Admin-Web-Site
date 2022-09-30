@@ -13,6 +13,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { multerOptionsFactory } from '../../../common/utils/multer.options';
 import { BoardFile } from '../file/entities/board_file';
 import { GetNoticeDetailHandler } from './command/get-notice-detail.handler';
+import { GetNoticeSearchHandler } from './query/get-notice-search.handler';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { GetNoticeDetailHandler } from './command/get-notice-detail.handler';
     GetNoticeDetailHandler,
     UpdateNoticeHandler,
     DeleteNoticeHandler,
+    GetNoticeSearchHandler,
   ],
 })
 export class NoticeModule {}

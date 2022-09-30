@@ -22,6 +22,7 @@ import { DeleteNoticeCommand } from './command/delete-notice.command';
 import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/files.interceptor';
 import { GetNoticeDetailDto } from './dto/get-notice-detail.dto';
 import { GetNoticeDetailCommand } from './command/get-notice-detail.command';
+import { GetNoticeSearchQuery } from './query/get-notice-search.query';
 
 /**
  * 공지사항 관련 API 처리하는 컨트롤러
@@ -34,11 +35,12 @@ export class NoticeController {
   /**
    * 공지사항 등록
    */
-  @Post()
+  @Post(':type')
   @UsePipes(ValidationPipe)
   @UseInterceptors(FilesInterceptor('files'))
   createNotice(
     @Body() createNoticeDto: CreateNoticeDto,
+    @Param('type') type: string,
     @UploadedFiles() files: Express.MulterS3.File[],
   ): Promise<string> {
     const { title, content, isTop, noticeGrant } = createNoticeDto;
@@ -63,6 +65,16 @@ export class NoticeController {
   async getNoticeDetail(@Param('id') noticeId: number): Promise<GetNoticeDetailDto> {
     const command = new GetNoticeDetailCommand(noticeId);
     return this.commandBus.execute(command);
+  }
+
+  /**
+   * 공지사항 검색어 조회
+   * @ param : keyword
+   */
+  @Get(':keyword')
+  async getNoticeSearch(@Param('keyword') keyword: string) {
+    const getNoticeSearchQuery = new GetNoticeSearchQuery(keyword);
+    return this.queryBus.execute(getNoticeSearchQuery);
   }
 
   /**

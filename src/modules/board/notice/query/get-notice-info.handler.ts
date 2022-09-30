@@ -1,9 +1,9 @@
-import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
-import { GetNoticeInfoQuery } from "./get-notice-info.query";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Notice } from "../entities/notice";
-import { Repository } from "typeorm";
-import { NotFoundException } from "@nestjs/common";
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { GetNoticeInfoQuery } from './get-notice-info.query';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Notice } from '../entities/notice';
+import { Repository } from 'typeorm';
+import { NotFoundException } from '@nestjs/common';
 
 /**
  * 공지사항 전체 조회 시, 쿼리를 구현하는 쿼리 핸들러

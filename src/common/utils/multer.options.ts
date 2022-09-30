@@ -23,8 +23,9 @@ export function getTime() {
   const hours = ('0' + date.getHours()).slice(-2);
   const min = ('0' + date.getMinutes()).slice(-2);
   const sec = ('0' + date.getSeconds()).slice(-2);
+  const ms = ('0' + date.getMilliseconds()).slice(-2);
 
-  return hours + min + sec;
+  return hours + min + sec + ms;
 }
 
 export const uuid = randomUUID();
@@ -49,7 +50,8 @@ export const multerOptionsFactory = (configService: ConfigService): MulterOption
         // // 파일 이름 중복 방지를 위해 '파일명_날짜.확장자' 형식으로 설정
         // done(null, `${basename}_${Date.now()}${ext}`);
 
-        console.log(_req);
+        // console.log(_req.);
+        console.log(_req.files);
 
         const boardType = 'notice';
         const today = getToday();
