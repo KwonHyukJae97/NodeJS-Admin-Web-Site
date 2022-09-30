@@ -1,6 +1,6 @@
-import { type } from 'os';
+import { IsNumber } from 'class-validator';
 import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Account } from '../../account/entities/account';
+import { Account } from '../../entities/account';
 
 @Entity('user')
 export class User extends BaseEntity {
@@ -12,6 +12,7 @@ export class User extends BaseEntity {
   userId: number;
 
   //학년 정보
+  @IsNumber()
   @Column({
     name: 'grade',
     type: 'tinyint',

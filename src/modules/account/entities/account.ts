@@ -1,3 +1,4 @@
+import { IsOptional, IsString } from 'class-validator';
 import {
   BaseEntity,
   Column,
@@ -5,12 +6,14 @@ import {
   Entity,
   OneToOne,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
-import { Admin } from '../../admin/entities/admin';
-import { User } from '../../user/entities/user';
+import { Admin } from '../admin/entities/admin';
+import { User } from '../user/entities/user';
 
 @Entity('account')
+@Unique(['id'])
 export class Account extends BaseEntity {
   //계정번호
   @PrimaryGeneratedColumn({
@@ -20,6 +23,7 @@ export class Account extends BaseEntity {
   accountId: number;
 
   //아이디
+  @IsString()
   @Column({
     name: 'id',
     type: 'varchar',
@@ -28,6 +32,7 @@ export class Account extends BaseEntity {
   id: string;
 
   //비밀번호
+  @IsString()
   @Column({
     name: 'password',
     type: 'varchar',
@@ -36,6 +41,7 @@ export class Account extends BaseEntity {
   password: string;
 
   //이름
+  @IsString()
   @Column({
     name: 'name',
     type: 'varchar',
@@ -44,6 +50,7 @@ export class Account extends BaseEntity {
   name: string;
 
   //이메일
+  @IsString()
   @Column({
     type: 'varchar',
     length: '100',
@@ -51,6 +58,7 @@ export class Account extends BaseEntity {
   email: string;
 
   //연락처
+  @IsString()
   @Column({
     name: 'phone',
     type: 'varchar',
@@ -59,6 +67,7 @@ export class Account extends BaseEntity {
   phone: string;
 
   //닉네임
+  @IsString()
   @Column({
     name: 'nickname',
     type: 'varchar',
@@ -67,6 +76,7 @@ export class Account extends BaseEntity {
   nickname: string;
 
   //생년월일
+  @IsString()
   @Column({
     name: 'birth',
     type: 'varchar',
@@ -75,13 +85,23 @@ export class Account extends BaseEntity {
   birth: string;
 
   //성별 (0:M, 1:F)
+  @IsString()
   @Column({
     name: 'gender',
     type: 'char',
   })
   gender: string;
 
+  @IsOptional()
+  @IsString()
+  @Column({
+    name: 'current_hashed_refresh_token',
+    nullable: true,
+  })
+  currentHashedRefreshToken: string;
+
   //CI고유번호
+  @IsString()
   @Column({
     name: 'ci',
     type: 'varchar',
@@ -90,6 +110,7 @@ export class Account extends BaseEntity {
   ci: string;
 
   //sns아이디
+  @IsString()
   @Column({
     name: 'sns_id',
     type: 'varchar',
@@ -98,6 +119,7 @@ export class Account extends BaseEntity {
   snsId: string;
 
   //sns타입
+  @IsString()
   @Column({
     name: 'sns_type',
     type: 'char',
@@ -106,6 +128,7 @@ export class Account extends BaseEntity {
   snsType: string;
 
   //sns토큰
+  @IsString()
   @Column({
     name: 'sns_token',
     type: 'varchar',

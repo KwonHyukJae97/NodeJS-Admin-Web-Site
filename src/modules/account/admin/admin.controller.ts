@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
+import { Body, Controller, Post, ValidationPipe } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { SignUpAdminCommand } from './command/signup-admin.command';
-import { SignUpAdminDto } from './dto/signup-admin.dto';
+import { SignUpAdminCommand } from '../auth/command/signup-admin.command';
+import { SignUpAdminDto } from '../auth/dto/signup-admin.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -11,7 +11,7 @@ export class AdminController {
    * 앱사용자 회원가입 컨트롤러
    */
   @Post()
-  async signupAdmin(@Body() signUpAdmindto: SignUpAdminDto): Promise<void> {
+  async signupAdmin(@Body(ValidationPipe) signUpAdmindto: SignUpAdminDto): Promise<void> {
     const {
       id,
       password,

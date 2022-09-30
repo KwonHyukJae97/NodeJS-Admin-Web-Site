@@ -1,7 +1,6 @@
 import { IsEmail, IsNotEmpty, IsString, Matches, MaxLength, MinLength } from 'class-validator';
-import { Unique } from 'typeorm';
-@Unique(['id', 'email', 'phone', 'nickname'])
-export class SignUpUserDto {
+
+export class SignUpAdminDto {
   @IsNotEmpty()
   @IsString()
   @MaxLength(20)
@@ -45,5 +44,11 @@ export class SignUpUserDto {
   readonly gender: string;
 
   @IsNotEmpty()
-  readonly grade: number;
+  readonly companyId: number;
+
+  @IsNotEmpty()
+  readonly roleId: number;
+
+  @IsNotEmpty()
+  readonly isSuper: boolean;
 }

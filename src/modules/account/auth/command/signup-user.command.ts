@@ -1,7 +1,7 @@
 import { ICommand } from '@nestjs/cqrs';
 
 /**
- * 앱 사용자 회원가입
+ * 사용자 회원가입
  */
 export class SignUpUserCommand implements ICommand {
   constructor(

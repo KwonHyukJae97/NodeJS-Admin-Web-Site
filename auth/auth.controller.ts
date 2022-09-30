@@ -11,13 +11,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LocalAuthGuard } from '../../guard/local/local-auth.guard';
-import JwtAuthGuard from '../../guard/jwt/jwt-auth.guard';
+import { LocalAuthGuard } from '../src/guard/local/local-auth.guard';
+import JwtAuthGuard from '../src/guard/jwt/jwt-auth.guard';
 import { response } from 'express';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import JwtRefreshAuthGuard from 'src/guard/jwt/jwt-refresh-auth.guard';
-import { Account } from '../account-bak/entities/account.entity';
-import { JwtManageService } from '../../guard/jwt/jwt-manage.service';
+import { Account } from '../src/modules/account-bak/entities/account.entity';
+import { JwtManageService } from '../src/guard/jwt/jwt-manage.service';
 
 @Controller('auth')
 export class AuthController {
@@ -33,7 +33,7 @@ export class AuthController {
    * @param request
    */
   @HttpCode(200)
-  @Post('register/admin')
+  @Post('register/admin11')
   registerAdmin(@Req() request) {}
 
   /**

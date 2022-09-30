@@ -1,5 +1,6 @@
+import { IsBoolean, IsNumber } from 'class-validator';
 import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Account } from '../../account/entities/account';
+import { Account } from '../../entities/account';
 
 @Entity('admin')
 export class Admin extends BaseEntity {
@@ -11,13 +12,21 @@ export class Admin extends BaseEntity {
   adminId: number;
 
   //회원사 번호
+  @IsNumber()
   @Column({
     name: 'company_id',
     type: 'int',
   })
   companyId: number;
+  @IsNumber()
+  @Column({
+    name: 'role_id',
+    type: 'int',
+  })
+  roleId: number;
 
   //관리자 타입
+  @IsBoolean()
   @Column({
     name: 'is_super',
     type: 'boolean',

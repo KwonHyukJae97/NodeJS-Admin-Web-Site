@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserController } from 'src/modules/user/user.controller';
-import { Account } from '../account/entities/account';
-import { SignUpUserHandler } from './command/signup-user.handler';
+import { SignUpUserHandler } from '../auth/command/signup-user.handler';
+
+import { Account } from '../entities/account';
+
 import { User } from './entities/user';
+import { UserController } from './user.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Account, User]), CqrsModule],
