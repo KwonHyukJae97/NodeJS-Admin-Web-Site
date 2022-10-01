@@ -8,23 +8,12 @@ import { CreateNoticeHandler } from './command/create-notice.handler';
 import { GetNoticeInfoHandler } from './query/get-notice-info.handler';
 import { UpdateNoticeHandler } from './command/update-notice.handler';
 import { DeleteNoticeHandler } from './command/delete-notice.handler';
-import { MulterModule } from '@nestjs/platform-express';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { multerOptionsFactory } from '../../../common/utils/multer.options';
 import { BoardFile } from '../file/entities/board_file';
 import { GetNoticeDetailHandler } from './command/get-notice-detail.handler';
 import { GetNoticeSearchHandler } from './query/get-notice-search.handler';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Board, Notice, BoardFile]),
-    CqrsModule,
-    MulterModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: multerOptionsFactory,
-      inject: [ConfigService],
-    }),
-  ],
+  imports: [TypeOrmModule.forFeature([Board, Notice, BoardFile]), CqrsModule],
   controllers: [NoticeController],
   providers: [
     CreateNoticeHandler,

@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Board } from '../entities/board';
 import { Repository } from 'typeorm';
 import * as AWS from 'aws-sdk';
+import { randomUUID } from 'crypto';
 
 /**
  * 파일 업로드 시, 필요 로직을 실질적으로 수행
@@ -15,6 +16,27 @@ const s3 = new AWS.S3({
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   region: process.env.AWS_REGION,
 });
+
+export function getToday() {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = ('0' + (1 + date.getMonth())).slice(-2);
+  const day = ('0' + date.getDate()).slice(-2);
+
+  return year + '-' + month + '-' + day;
+}
+
+export function getTime() {
+  const date = new Date();
+  const hours = ('0' + date.getHours()).slice(-2);
+  const min = ('0' + date.getMinutes()).slice(-2);
+  const sec = ('0' + date.getSeconds()).slice(-2);
+  const ms = ('0' + date.getMilliseconds()).slice(-2);
+
+  return hours + min + sec + ms;
+}
+
+export const uuid = randomUUID();
 
 @Injectable()
 export class FileService {
@@ -29,24 +51,78 @@ export class FileService {
   /**
    * 다중 파일 업로드 기능
    */
-  async uploadFiles(boardId: number, files: Express.MulterS3.File[]) {
+  async uploadFiles(boardId: number, boardType: string, files: Express.MulterS3.File[]) {
     if (!files) {
       throw new BadRequestException('파일이 존재하지 않습니다.');
     }
-    console.log(files);
 
-    files.map((file) => {
+    files.map(async (file) => {
+      const today = getToday();
+      const time = getTime();
+
+      // S3 업로드
+      const uploadParams = {
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Body: file.buffer,
+        Key: `${boardType}/${today}/${time}_${uuid}`,
+      };
+
+      try {
+        s3.putObject(uploadParams, function (error, data) {
+          if (error) {
+            console.log('err: ', error, error.stack);
+          } else {
+            console.log(data, '정상 업로드 되었습니다.');
+          }
+        });
+      } catch (err) {
+        console.log(err);
+        throw new BadRequestException('업로드에 실패하였습니다.');
+      }
+
+      // 업로드 된 파일 url 가져오기
+      const getParams = {
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: `${boardType}/${today}/${time}_${uuid}`,
+      };
+
+      // try {
+      //   const url = s3.getSignedUrl('getObject', getParams, function (error, data) {
+      //     if (error) {
+      //       console.log('err: ', error, error.stack);
+      //     } else {
+      //       return data.split('?')[0];
+      //       console.log(data, 'file path 가져오기 성공');
+      //     }
+      //   });
+      // } catch (err) {
+      //   console.log(err);
+      //   throw new BadRequestException('file path 가져오기 실패');
+      // }
+
+      const url: string = await new Promise((r) =>
+        s3.getSignedUrl('getObject', getParams, async (error, url) => {
+          if (error) {
+            throw new BadRequestException('file path 가져오기 실패');
+          }
+          r(url.split('?')[0]);
+        }),
+      );
+
       const ext = path.extname(file.originalname);
+
       const boardFile = this.fileRepository.create({
         boardId: boardId,
         originalFileName: path.basename(file.originalname, ext),
-        fileName: file.key,
+        fileName: url.substring(40, url.length), // 전체 url - 공통 url(https://b2c-board-test.s3.amazonaws.com/)
         fileExt: ext,
-        filePath: file.location,
+        filePath: url,
         fileSize: file.size,
       });
 
-      this.fileRepository.save(boardFile);
+      console.log(boardFile);
+
+      await this.fileRepository.save(boardFile);
     });
   }
 

@@ -16,4 +16,7 @@ export class CreateNoticeDto {
 
   @IsNotEmpty()
   noticeGrant: string;
+
+  @IsNotEmpty()
+  boardType: string;
 }

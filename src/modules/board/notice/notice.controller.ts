@@ -36,16 +36,15 @@ export class NoticeController {
   /**
    * 공지사항 등록
    */
-  @Post(':type')
+  @Post()
   @UsePipes(ValidationPipe)
   @UseInterceptors(FilesInterceptor('files'))
   createNotice(
     @Body() createNoticeDto: CreateNoticeDto,
-    @Param('type') type: string,
     @UploadedFiles() files: Express.MulterS3.File[],
   ): Promise<string> {
-    const { title, content, isTop, noticeGrant } = createNoticeDto;
-    const command = new CreateNoticeCommand(title, content, isTop, noticeGrant, files);
+    const { title, content, isTop, noticeGrant, boardType } = createNoticeDto;
+    const command = new CreateNoticeCommand(title, content, isTop, noticeGrant, boardType, files);
     return this.commandBus.execute(command);
   }
 

@@ -10,6 +10,7 @@ export class CreateNoticeCommand implements ICommand {
     readonly content: string,
     readonly isTop: boolean,
     readonly noticeGrant: string,
+    readonly boardType: string,
     readonly files: Express.MulterS3.File[],
   ) {}
 }
