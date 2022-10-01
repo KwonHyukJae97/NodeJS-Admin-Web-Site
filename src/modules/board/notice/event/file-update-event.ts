@@ -6,7 +6,11 @@ import { CqrsEvent } from './cqrs-event';
  */
 
 export class FileUpdateEvent extends CqrsEvent implements IEvent {
-  constructor(readonly boardId: number, readonly files: Express.MulterS3.File[]) {
+  constructor(
+    readonly boardId: number,
+    readonly boardType: string,
+    readonly files: Express.MulterS3.File[],
+  ) {
     super(FileUpdateEvent.name);
   }
 }

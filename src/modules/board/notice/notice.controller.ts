@@ -88,8 +88,16 @@ export class NoticeController {
     @Body() updateNoticeDto: UpdateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
   ): Promise<Notice> {
-    const { title, content, isTop, noticeGrant } = updateNoticeDto;
-    const command = new UpdateNoticeCommand(title, content, isTop, noticeGrant, noticeId, files);
+    const { title, content, isTop, noticeGrant, boardType } = updateNoticeDto;
+    const command = new UpdateNoticeCommand(
+      title,
+      content,
+      isTop,
+      noticeGrant,
+      noticeId,
+      boardType,
+      files,
+    );
     return this.commandBus.execute(command);
   }
 

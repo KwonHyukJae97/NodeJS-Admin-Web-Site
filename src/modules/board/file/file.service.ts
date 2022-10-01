@@ -38,6 +38,9 @@ export function getTime() {
 
 export const uuid = randomUUID();
 
+// export const today = getToday();
+// export const time = getTime();
+
 @Injectable()
 export class FileService {
   constructor(
@@ -114,7 +117,7 @@ export class FileService {
       const boardFile = this.fileRepository.create({
         boardId: boardId,
         originalFileName: path.basename(file.originalname, ext),
-        fileName: url.substring(40, url.length), // 전체 url - 공통 url(https://b2c-board-test.s3.amazonaws.com/)
+        fileName: url.substring(55, url.length), // 전체 url - 공통 url(https://b2c-board-test.s3.amazonaws.com/)
         fileExt: ext,
         filePath: url,
         fileSize: file.size,
@@ -129,20 +132,59 @@ export class FileService {
   /**
    * 다중 파일 업데이트 기능
    */
-  async updateFiles(boardId: number, files: Express.MulterS3.File[]) {
-    // 신규 파일 DB 저장
-    files.map((file) => {
+  async updateFiles(boardId: number, boardType: string, files: Express.MulterS3.File[]) {
+    files.map(async (file) => {
+      const today = getToday();
+      const time = getTime();
+
+      // S3 업로드
+      const uploadParams = {
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Body: file.buffer,
+        Key: `${boardType}/${today}/${time}_${uuid}`,
+      };
+
+      try {
+        s3.putObject(uploadParams, function (error, data) {
+          if (error) {
+            console.log('err: ', error, error.stack);
+          } else {
+            console.log(data, '정상 업로드 되었습니다.');
+          }
+        });
+      } catch (err) {
+        console.log(err);
+        throw new BadRequestException('업로드에 실패하였습니다.');
+      }
+
+      // 업로드 된 파일 url 가져오기
+      const getParams = {
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: `${boardType}/${today}/${time}_${uuid}`,
+      };
+
+      const url: string = await new Promise((r) =>
+        s3.getSignedUrl('getObject', getParams, async (error, url) => {
+          if (error) {
+            throw new BadRequestException('file path 가져오기 실패');
+          }
+          r(url.split('?')[0]);
+        }),
+      );
+
       const ext = path.extname(file.originalname);
+
       const boardFile = this.fileRepository.create({
         boardId: boardId,
         originalFileName: path.basename(file.originalname, ext),
-        fileName: file.key,
+        fileName: url.substring(55, url.length),
         fileExt: ext,
-        filePath: file.location,
+        filePath: url,
         fileSize: file.size,
       });
 
-      this.fileRepository.save(boardFile);
+      // 신규 파일 DB 저장
+      await this.fileRepository.save(boardFile);
     });
 
     // 기존 파일 조회 후, 삭제
@@ -173,7 +215,7 @@ export class FileService {
         });
       } catch (err) {
         console.log(err);
-        throw err;
+        throw new BadRequestException('파일 삭제에 실패하였습니다.');
       }
     });
 
