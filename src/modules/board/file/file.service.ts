@@ -38,9 +38,6 @@ export function getTime() {
 
 export const uuid = randomUUID();
 
-// export const today = getToday();
-// export const time = getTime();
-
 @Injectable()
 export class FileService {
   constructor(
@@ -89,20 +86,6 @@ export class FileService {
         Key: `${boardType}/${today}/${time}_${uuid}`,
       };
 
-      // try {
-      //   const url = s3.getSignedUrl('getObject', getParams, function (error, data) {
-      //     if (error) {
-      //       console.log('err: ', error, error.stack);
-      //     } else {
-      //       return data.split('?')[0];
-      //       console.log(data, 'file path 가져오기 성공');
-      //     }
-      //   });
-      // } catch (err) {
-      //   console.log(err);
-      //   throw new BadRequestException('file path 가져오기 실패');
-      // }
-
       const url: string = await new Promise((r) =>
         s3.getSignedUrl('getObject', getParams, async (error, url) => {
           if (error) {
@@ -117,7 +100,7 @@ export class FileService {
       const boardFile = this.fileRepository.create({
         boardId: boardId,
         originalFileName: path.basename(file.originalname, ext),
-        fileName: url.substring(55, url.length), // 전체 url - 공통 url(https://b2c-board-test.s3.amazonaws.com/)
+        fileName: url.split('com/')[1], // 전체 url - 공통 url(https://b2c-board-test.s3.amazonaws.com/)
         fileExt: ext,
         filePath: url,
         fileSize: file.size,
@@ -177,7 +160,7 @@ export class FileService {
       const boardFile = this.fileRepository.create({
         boardId: boardId,
         originalFileName: path.basename(file.originalname, ext),
-        fileName: url.substring(55, url.length),
+        fileName: url.split('com/')[1],
         fileExt: ext,
         filePath: url,
         fileSize: file.size,
@@ -189,13 +172,11 @@ export class FileService {
 
     // 기존 파일 조회 후, 삭제
     const oldFiles = await this.fileRepository.findBy({ boardId: boardId });
-    // console.log(oldFiles);
 
     // S3에 저장되어 있는 기존 파일 삭제
     const deleteList = [];
 
     for (const file of oldFiles) {
-      // console.log(file.fileName);
       deleteList.push(file.fileName); // S3 key값으로 사용될 속성 추출 후, 새 배열에 추가
     }
 
