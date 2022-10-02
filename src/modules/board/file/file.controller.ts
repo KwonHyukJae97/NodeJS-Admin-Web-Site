@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { GetFileDownloadQuery } from './query/get-file-download.query';
 import { QueryBus } from '@nestjs/cqrs';
+import { GetAllFileDownloadQuery } from './query/get-files-download.query';
 
 /**
  * 파일 다운로드 관련 API 처리하는 컨트롤러
@@ -29,5 +30,15 @@ export class FileController {
   downloadFile(@Param('id') fileId: number, @Response() res) {
     const getFileDownloadQuery = new GetFileDownloadQuery(fileId, res);
     return this.queryBus.execute(getFileDownloadQuery);
+  }
+
+  /**
+   * 다중 파일 다운로드
+   * @ param : board_id
+   */
+  @Get('all/:id')
+  downloadFileAll(@Param('id') boardId: number, @Response() res) {
+    const getAllFileDownloadQuery = new GetAllFileDownloadQuery(boardId, res);
+    return this.queryBus.execute(getAllFileDownloadQuery);
   }
 }

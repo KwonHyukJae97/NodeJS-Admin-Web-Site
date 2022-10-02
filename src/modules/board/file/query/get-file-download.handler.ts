@@ -7,7 +7,7 @@ import { BoardFile } from '../entities/board_file';
 import * as AWS from 'aws-sdk';
 
 /**
- * 파일 다운로드 시, 쿼리를 구현하는 쿼리 핸들러
+ * 단일 파일 다운로드 시, 쿼리를 구현하는 쿼리 핸들러
  */
 
 const s3 = new AWS.S3({

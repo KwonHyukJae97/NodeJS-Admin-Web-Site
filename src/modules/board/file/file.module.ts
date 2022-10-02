@@ -9,6 +9,7 @@ import { FileUpdateEventsHandler } from '../notice/event/file-update-events.hand
 import { FileDeleteEventsHandler } from '../notice/event/file-delete-events.handler';
 import { GetFileDownloadHandler } from './query/get-file-download.handler';
 import { CqrsModule } from '@nestjs/cqrs';
+import { GetAllFileDownloadHandler } from './query/get-files-download.handler';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Board, BoardFile]), CqrsModule],
@@ -19,6 +20,7 @@ import { CqrsModule } from '@nestjs/cqrs';
     FileUpdateEventsHandler,
     FileDeleteEventsHandler,
     GetFileDownloadHandler,
+    GetAllFileDownloadHandler,
   ],
 })
 export class FileModule {}
