@@ -1,6 +1,6 @@
 import { IsNumber } from 'class-validator';
-import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Account2 } from '../../entities/account';
+import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('user')
 export class User extends BaseEntity {

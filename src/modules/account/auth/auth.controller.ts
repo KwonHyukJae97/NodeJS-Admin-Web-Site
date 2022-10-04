@@ -14,9 +14,8 @@ import { request } from 'http';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import JwtRefreshAuthGuard from 'src/guard/jwt/jwt-refresh-auth.guard';
 import { LocalAuthGuard } from 'src/guard/local/local-auth.guard';
-import { AuthService2 } from './auth2.service';
 import { Account2 } from '../entities/account';
-
+import { AuthService2 } from './auth2.service';
 import { SignUpAdminCommand } from './command/signup-admin.command';
 import { SignUpUserCommand } from './command/signup-user.command';
 import { SignInAdminDto } from './dto/signin-admin.dto';
