@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
-import { CreateFaqCommand } from './create-Faq.command';
+import { CreateFaqCommand } from './create-faq.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Faq } from '../entities/faq';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { FileCreateEvent } from '../event/file-create-event';
 import { TestEvent } from '../event/test.event';
+import { FaqCategory } from '../entities/faq_category';
 
 /**
  * FAQ 등록 시, 커맨드를 처리하는 커맨드 핸들러
@@ -22,31 +23,54 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
     @InjectRepository(Board)
     private boardRepository: Repository<Board>,
 
+    @InjectRepository(FaqCategory)
+    private categoryRepository: Repository<FaqCategory>,
+
     private eventBus: EventBus,
   ) {}
 
   async execute(command: CreateFaqCommand) {
-    const { title, content, files } = command;
+    const { title, content, categoryName, isUse, boardType, files } = command;
 
     const board = this.boardRepository.create({
       // 임시 accountId 부여
       accountId: 1,
-      boardTypeCode: '0',
+      boardTypeCode: '1',
       title,
       content,
       viewCount: 0,
     });
 
-    await this.boardRepository.save(board);
+    try {
+      await this.boardRepository.save(board);
+    } catch (err) {
+      console.log(err);
+    }
+
+    const category = this.categoryRepository.create({
+      categoryName,
+      isUse,
+    });
+
+    try {
+      await this.categoryRepository.save(category);
+    } catch (err) {
+      console.log(err);
+    }
 
     const faq = this.faqRepository.create({
       boardId: board,
+      categoryId: category.categoryId,
     });
 
-    await this.faqRepository.save(faq);
+    try {
+      await this.faqRepository.save(faq);
+    } catch (err) {
+      console.log(err);
+    }
 
     // 파일 업로드 이벤트 처리
-    this.eventBus.publish(new FileCreateEvent(board.boardId, files));
+    this.eventBus.publish(new FileCreateEvent(board.boardId, boardType, files));
     this.eventBus.publish(new TestEvent());
 
     return 'FAQ 등록 성공';

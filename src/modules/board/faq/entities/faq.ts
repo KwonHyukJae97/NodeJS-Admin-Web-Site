@@ -1,5 +1,5 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { IsBoolean, IsString } from 'class-validator';
+import { IsNumber } from 'class-validator';
 import { Board } from '../../entities/board';
 
 /**
@@ -8,23 +8,20 @@ import { Board } from '../../entities/board';
 
 @Entity()
 export class Faq {
+  // FAQ 번호
   @PrimaryGeneratedColumn({
     name: 'faq_id',
   })
   faqId: number;
 
-  @IsString()
+  // 분류 번호
+  @IsNumber()
   @Column({
-    name: 'faq_grant',
+    name: 'category_id',
   })
-  faqGrant: string;
+  categoryId: number;
 
-  @IsBoolean()
-  @Column({
-    name: 'is_top',
-  })
-  isTop: boolean;
-
+  // 게시글 번호
   @OneToOne((type) => Board, (board) => board.faqId, { eager: true })
   @JoinColumn({
     name: 'board_id',

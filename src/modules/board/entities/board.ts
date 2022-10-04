@@ -1,15 +1,5 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IsNumber, IsString } from 'class-validator';
-import { Notice } from '../notice/entities/notice';
-import { BoardFile } from '../file/entities/board_file';
 import { Faq } from '../faq/entities/faq';
 
 /**
@@ -65,9 +55,6 @@ export class Board {
     nullable: true,
   })
   delDate: Date;
-
-  @OneToOne((type) => Notice, (notice) => notice.boardId)
-  noticeId: number;
 
   @OneToOne((type) => Faq, (faq) => faq.boardId)
   faqId: number;

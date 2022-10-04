@@ -9,8 +9,6 @@ import {
   Query,
   UploadedFiles,
   UseInterceptors,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 import { CreateFaqDto } from './dto/create-faq.dto';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -29,23 +27,21 @@ import { GetFaqSearchQuery } from './query/get-faq-search.query';
  * FAQ 관련 API 처리하는 컨트롤러
  */
 
-@Controller('notice')
+@Controller('faq')
 export class FaqController {
   constructor(private commandBus: CommandBus, private queryBus: QueryBus) {}
 
   /**
    * FAQ 등록
    */
-  @Post(':type')
-  @UsePipes(ValidationPipe)
+  @Post()
   @UseInterceptors(FilesInterceptor('files'))
   createFaq(
     @Body() createFaqDto: CreateFaqDto,
-    @Param('type') type: string,
     @UploadedFiles() files: Express.MulterS3.File[],
   ): Promise<string> {
-    const { title, content } = createFaqDto;
-    const command = new CreateFaqCommand(title, content, files);
+    const { title, content, categoryName, isUse, boardType } = createFaqDto;
+    const command = new CreateFaqCommand(title, content, categoryName, isUse, boardType, files);
     return this.commandBus.execute(command);
   }
 
@@ -96,7 +92,7 @@ export class FaqController {
 
   /**
    * FAQ 삭제
-   * @ param : notice_id
+   * @ param : faq_id
    */
   @Delete(':id')
   async deleteFaq(@Param('id') faqId: number): Promise<string> {
