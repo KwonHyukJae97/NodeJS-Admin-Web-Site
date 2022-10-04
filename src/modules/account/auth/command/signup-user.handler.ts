@@ -21,19 +21,18 @@ export class SignUpUserHandler implements ICommandHandler<SignUpUserCommand> {
     private accountRepository: Repository<Account>,
   ) {}
 
-  //회원가입 부분
   async execute(command: SignUpUserCommand) {
     const { id, password, name, email, phone, nickname, birth, gender, grade } = command;
-    console.log('handler log', command);
+
     /**
      * 비밀번호 암호화 저장 (bcrypt)
      */
-    const salt2 = await bcrypt.genSalt();
-    const hashedPassword2 = await bcrypt.hash(password, salt2);
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     const accountUser = this.accountRepository.create({
       id,
-      password: hashedPassword2,
+      password: hashedPassword,
       name,
       email,
       phone,
@@ -64,10 +63,8 @@ export class SignUpUserHandler implements ICommandHandler<SignUpUserCommand> {
       accountId: accountUser,
       grade,
     });
-
-    //User 저장
+    console.log('grade result!', user);
     await this.userRepository.save(user);
-    console.log('Auth account 가입 테스트 로그2', accountUser);
     return '회원가입 완료 (사용자)';
   }
 }

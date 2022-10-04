@@ -41,7 +41,7 @@ export class AuthController {
    * @param request
    */
   @HttpCode(200)
-  @Post('register/user')
+  @Post('register/user11')
   registerUser(@Req() request) {}
 
   /**

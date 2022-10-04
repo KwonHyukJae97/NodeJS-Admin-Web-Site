@@ -11,8 +11,6 @@ import * as winston from 'winston';
 import { LoggingModule } from './logging/logging.module';
 import { NoticeModule } from './modules/board/notice/notice.module';
 import { FileModule } from './modules/board/file.module';
-import { UserModule } from './modules/account/user/user.module';
-import { AdminModule } from './modules/account/admin/admin.module';
 import { SecondAuthModule } from './modules/account/auth/auth.module';
 
 @Module({
@@ -66,13 +64,11 @@ import { SecondAuthModule } from './modules/account/auth/auth.module';
         }),
       ],
     }),
-    UserModule,
     AccountModule,
     AuthModule,
     LoggingModule,
     NoticeModule,
     FileModule,
-    AdminModule,
     SecondAuthModule,
   ],
   controllers: [AppController],

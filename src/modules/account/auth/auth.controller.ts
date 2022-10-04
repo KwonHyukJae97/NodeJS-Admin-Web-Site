@@ -33,7 +33,7 @@ export class SignController {
       isSuper,
     } = SignUpAdminDto;
     console.log('컨트롤러 나오냐!!!!로그', SignUpAdminDto);
-    const commandAdmin = new SignUpAdminCommand(
+    const command = new SignUpAdminCommand(
       id,
       password,
       name,
@@ -46,7 +46,7 @@ export class SignController {
       roleId,
       isSuper,
     );
-    return this.commandBus.execute(commandAdmin);
+    return this.commandBus.execute(command);
   }
 
   @Post('/register/user')
@@ -54,7 +54,7 @@ export class SignController {
     const { id, password, name, email, phone, nickname, birth, gender, grade } = SignUpUserDto;
 
     console.log('컨트롤러 로그', SignUpUserDto);
-    const commandUser = new SignUpUserCommand(
+    const command = new SignUpUserCommand(
       id,
       password,
       name,
@@ -65,7 +65,7 @@ export class SignController {
       gender,
       grade,
     );
-    return this.commandBus.execute(commandUser);
+    return this.commandBus.execute(command);
   }
 
   // @Post('/login/user')

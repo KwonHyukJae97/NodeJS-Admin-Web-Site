@@ -17,6 +17,8 @@ export class Admin extends BaseEntity {
     name: 'company_id',
     type: 'int',
   })
+
+  //역할 번호
   companyId: number;
   @IsNumber()
   @Column({

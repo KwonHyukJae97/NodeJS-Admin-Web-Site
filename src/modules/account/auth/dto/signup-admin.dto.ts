@@ -14,16 +14,16 @@ export class SignUpAdminDto {
   readonly password: string;
 
   @IsNotEmpty()
+  @IsString()
+  @MaxLength(80)
+  readonly name: string;
+
+  @IsNotEmpty()
   @IsEmail()
   @Matches(/^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i, {
     message: '이메일 양식에 맞게 입력해주세요.',
   })
   readonly email: string;
-
-  @IsNotEmpty()
-  @IsString()
-  @MaxLength(80)
-  readonly name: string;
 
   @IsNotEmpty()
   @IsString()
