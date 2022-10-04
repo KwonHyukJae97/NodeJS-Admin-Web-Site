@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { DeleteFaqCommand } from './delete-faq.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,7 +18,7 @@ import { BoardFile } from '../../file/entities/board_file';
 export class DeleteFaqHandler implements ICommandHandler<DeleteFaqCommand> {
   constructor(
     @InjectRepository(Faq)
-    private noticeRepository: Repository<Faq>,
+    private faqRepository: Repository<Faq>,
 
     @InjectRepository(Board)
     private boardRepository: Repository<Board>,
@@ -32,7 +32,11 @@ export class DeleteFaqHandler implements ICommandHandler<DeleteFaqCommand> {
   async execute(command: DeleteFaqCommand) {
     const { faqId } = command;
 
-    const faq = await this.noticeRepository.findOneBy({ faqId: faqId });
+    const faq = await this.faqRepository.findOneBy({ faqId: faqId });
+
+    if (!faq) {
+      throw new NotFoundException('존재하지 않는 FAQ입니다.');
+    }
 
     const board = await this.boardRepository.findOneBy({ boardId: faq.boardId.boardId });
 
@@ -48,10 +52,18 @@ export class DeleteFaqHandler implements ICommandHandler<DeleteFaqCommand> {
     this.eventBus.publish(new TestEvent());
 
     // faq db 삭제
-    await this.noticeRepository.delete(faq);
+    try {
+      await this.faqRepository.delete(faq);
+    } catch (err) {
+      console.log(err);
+    }
 
     // board db 삭제 (fk)
-    await this.boardRepository.delete({ boardId: board.boardId });
+    try {
+      await this.boardRepository.delete({ boardId: board.boardId });
+    } catch (err) {
+      console.log(err);
+    }
 
     return 'FAQ 삭제 성공';
   }
