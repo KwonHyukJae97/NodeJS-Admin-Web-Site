@@ -42,13 +42,13 @@ export class GetFileDownloadHandler implements IQueryHandler<GetFileDownloadQuer
 
     // headObject()를 통해 S3에 해당 파일이 있는지 확인
     try {
-      s3.headObject(getParam, function (error, data) {
-        if (error) {
+      s3.headObject(getParam, function (err, data) {
+        if (err) {
           // 비동기 함수는 일반 throw로 예외 처리 불가 > throw 사용 시, process 중단됨
           res.status(200).json({
-            statusCode: error.statusCode,
+            statusCode: err.statusCode,
             message: 'S3에 파일이 존재하지 않습니다.',
-            error: error.code,
+            err: err.code,
           });
           // try {
           //   await new NotFoundException('S3에 파일이 존재하지 않습니다.');

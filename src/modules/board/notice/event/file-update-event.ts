@@ -11,7 +11,6 @@ export class FileUpdateEvent extends CqrsEvent implements IEvent {
     readonly boardId: number,
     readonly boardType: string,
     readonly files: Express.MulterS3.File[],
-    readonly res: Response,
   ) {
     super(FileUpdateEvent.name);
   }

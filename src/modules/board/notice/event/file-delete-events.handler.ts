@@ -15,9 +15,9 @@ export class FileDeleteEventsHandler implements IEventHandler<FileDeleteEvent | 
     switch (event.name) {
       case FileDeleteEvent.name: {
         console.log('파일 삭제 이벤트 발생!');
-        const { boardId, res } = event as FileDeleteEvent;
+        const { boardId } = event as FileDeleteEvent;
         // 기존 파일 S3 삭제
-        await this.fileService.deleteFiles(boardId, res);
+        await this.fileService.deleteFiles(boardId);
         break;
       }
       case TestEvent.name: {

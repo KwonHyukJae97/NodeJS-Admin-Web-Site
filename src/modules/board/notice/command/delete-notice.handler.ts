@@ -30,7 +30,7 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
   ) {}
 
   async execute(command: DeleteNoticeCommand) {
-    const { noticeId, res } = command;
+    const { noticeId } = command;
 
     const notice = await this.noticeRepository.findOneBy({ noticeId: noticeId });
 
@@ -48,7 +48,7 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
     });
 
     // 파일 삭제 이벤트 처리
-    this.eventBus.publish(new FileDeleteEvent(board.boardId, res));
+    this.eventBus.publish(new FileDeleteEvent(board.boardId));
     this.eventBus.publish(new TestEvent());
 
     // notice db 삭제

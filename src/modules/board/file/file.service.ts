@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import * as path from 'path';
 import { BoardFile } from './entities/board_file';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -52,12 +52,7 @@ export class FileService {
   /**
    * 다중 파일 업로드 기능
    */
-  async uploadFiles(
-    boardId: number,
-    boardType: string,
-    files: Express.MulterS3.File[],
-    res: Response,
-  ) {
+  async uploadFiles(boardId: number, boardType: string, files: Express.MulterS3.File[]) {
     if (!files) {
       throw new BadRequestException('파일이 존재하지 않습니다.');
     }
@@ -74,14 +69,9 @@ export class FileService {
       };
 
       try {
-        s3.putObject(uploadParams, function (error, data) {
-          if (error) {
-            res.status(200).json({
-              statusCode: error.statusCode,
-              message: 'S3에 파일 업로드를 실패하였습니다.',
-              error: error.code,
-            });
-            // console.log('err: ', error, error.stack);
+        s3.putObject(uploadParams, function (err, data) {
+          if (err) {
+            console.log('err: ', err, err.stack);
           } else {
             console.log(data, '정상 업로드 되었습니다.');
           }
@@ -98,8 +88,8 @@ export class FileService {
       };
 
       const url: string = await new Promise((r) =>
-        s3.getSignedUrl('getObject', getParams, async (error, url) => {
-          if (error) {
+        s3.getSignedUrl('getObject', getParams, async (err, url) => {
+          if (err) {
             throw new BadRequestException('file path 가져오기 실패');
           }
           r(url.split('?')[0]);
@@ -128,12 +118,7 @@ export class FileService {
   /**
    * 다중 파일 업데이트 기능
    */
-  async updateFiles(
-    boardId: number,
-    boardType: string,
-    files: Express.MulterS3.File[],
-    res: Response,
-  ) {
+  async updateFiles(boardId: number, boardType: string, files: Express.MulterS3.File[]) {
     files.map(async (file) => {
       const today = getToday();
       const time = getTime();
@@ -146,14 +131,9 @@ export class FileService {
       };
 
       try {
-        s3.putObject(uploadParams, function (error, data) {
-          if (error) {
-            res.status(200).json({
-              statusCode: error.statusCode,
-              message: 'S3에 파일 업로드를 실패하였습니다.',
-              error: error.code,
-            });
-            // console.log('err: ', error, error.stack);
+        s3.putObject(uploadParams, function (err, data) {
+          if (err) {
+            console.log('err: ', err, err.stack);
           } else {
             console.log(data, '정상 업로드 되었습니다.');
           }
@@ -170,8 +150,8 @@ export class FileService {
       };
 
       const url: string = await new Promise((r) =>
-        s3.getSignedUrl('getObject', getParams, async (error, url) => {
-          if (error) {
+        s3.getSignedUrl('getObject', getParams, async (err, url) => {
+          if (err) {
             throw new BadRequestException('file path 가져오기 실패');
           }
           r(url.split('?')[0]);
@@ -214,14 +194,9 @@ export class FileService {
       };
 
       try {
-        s3.deleteObject(deleteParams, function (error, data) {
-          if (error) {
-            res.status(200).json({
-              statusCode: error.statusCode,
-              message: 'S3의 파일 삭제를 실패하였습니다.',
-              error: error.code,
-            });
-            // console.log('err: ', err);
+        s3.deleteObject(deleteParams, function (err, data) {
+          if (err) {
+            console.log('err: ', err);
           } else {
             console.log(data, '정상 삭제 되었습니다.');
           }
@@ -241,7 +216,7 @@ export class FileService {
   /**
    * 다중 파일 삭제 기능
    */
-  async deleteFiles(boardId: number, res: Response) {
+  async deleteFiles(boardId: number) {
     const files = await this.fileRepository.findBy({ boardId: boardId });
 
     // S3에 저장되어 있는 기존 파일 삭제
@@ -258,14 +233,9 @@ export class FileService {
       };
 
       try {
-        s3.deleteObject(deleteParams, function (error, data) {
-          if (error) {
-            res.status(200).json({
-              statusCode: error.statusCode,
-              message: 'S3의 파일 삭제를 실패하였습니다.',
-              error: error.code,
-            });
-            // console.log('err: ', err);
+        s3.deleteObject(deleteParams, function (err, data) {
+          if (err) {
+            console.log('err: ', err);
           } else {
             console.log(data, '정상 삭제 되었습니다.');
           }

@@ -7,7 +7,7 @@ import {
   Patch,
   Post,
   Query,
-  Response,
+  Res,
   UploadedFiles,
   UseInterceptors,
   UsePipes,
@@ -25,6 +25,7 @@ import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/f
 import { GetNoticeDetailDto } from './dto/get-notice-detail.dto';
 import { GetNoticeDetailCommand } from './command/get-notice-detail.command';
 import { GetNoticeSearchQuery } from './query/get-notice-search.query';
+import { Response } from 'express';
 
 /**
  * 공지사항 관련 API 처리하는 컨트롤러
@@ -43,18 +44,10 @@ export class NoticeController {
   createNotice(
     @Body() createNoticeDto: CreateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
-    @Response() res,
+    // @Res() res: Response,
   ): Promise<string> {
     const { title, content, isTop, noticeGrant, boardType } = createNoticeDto;
-    const command = new CreateNoticeCommand(
-      title,
-      content,
-      isTop,
-      noticeGrant,
-      boardType,
-      files,
-      res,
-    );
+    const command = new CreateNoticeCommand(title, content, isTop, noticeGrant, boardType, files);
     return this.commandBus.execute(command);
   }
 
@@ -97,7 +90,7 @@ export class NoticeController {
     @Param('id') noticeId: number,
     @Body() updateNoticeDto: UpdateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
-    @Response() res,
+    // @Res() res: Response,
   ): Promise<Notice> {
     const { title, content, isTop, noticeGrant, boardType } = updateNoticeDto;
     const command = new UpdateNoticeCommand(
@@ -108,7 +101,6 @@ export class NoticeController {
       noticeId,
       boardType,
       files,
-      res,
     );
     return this.commandBus.execute(command);
   }
@@ -118,8 +110,8 @@ export class NoticeController {
    * @ param : notice_id
    */
   @Delete(':id')
-  async deleteNotice(@Param('id') noticeId: number, @Response() res): Promise<string> {
-    const command = new DeleteNoticeCommand(noticeId, res);
+  async deleteNotice(@Param('id') noticeId: number): Promise<string> {
+    const command = new DeleteNoticeCommand(noticeId);
     return this.commandBus.execute(command);
   }
 }

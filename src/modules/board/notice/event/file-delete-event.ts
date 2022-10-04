@@ -7,7 +7,7 @@ import { Response } from 'express';
  */
 
 export class FileDeleteEvent extends CqrsEvent implements IEvent {
-  constructor(readonly boardId: number, readonly res: Response) {
+  constructor(readonly boardId: number) {
     super(FileDeleteEvent.name);
   }
 }

@@ -26,7 +26,7 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
   ) {}
 
   async execute(command: UpdateNoticeCommand) {
-    const { title, content, isTop, noticeGrant, noticeId, boardType, files, res } = command;
+    const { title, content, isTop, noticeGrant, noticeId, boardType, files } = command;
 
     const notice = await this.noticeRepository.findOneBy({ noticeId: noticeId });
 
@@ -56,7 +56,7 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
     }
 
     // 파일 업데이트 이벤트 처리
-    this.eventBus.publish(new FileUpdateEvent(board.boardId, boardType, files, res));
+    this.eventBus.publish(new FileUpdateEvent(board.boardId, boardType, files));
     this.eventBus.publish(new TestEvent());
 
     // 변경된 공지사항 반환

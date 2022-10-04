@@ -6,5 +6,5 @@ import { Response } from 'express';
  */
 
 export class DeleteNoticeCommand implements ICommand {
-  constructor(readonly noticeId: number, readonly res: Response) {}
+  constructor(readonly noticeId: number) {}
 }

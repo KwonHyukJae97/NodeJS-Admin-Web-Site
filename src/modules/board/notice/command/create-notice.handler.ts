@@ -26,7 +26,7 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
   ) {}
 
   async execute(command: CreateNoticeCommand) {
-    const { title, content, isTop, noticeGrant, boardType, files, res } = command;
+    const { title, content, isTop, noticeGrant, boardType, files } = command;
 
     const board = this.boardRepository.create({
       // 임시 accountId 부여
@@ -56,7 +56,7 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
     }
 
     // 파일 업로드 이벤트 처리
-    this.eventBus.publish(new FileCreateEvent(board.boardId, boardType, files, res));
+    this.eventBus.publish(new FileCreateEvent(board.boardId, boardType, files));
     this.eventBus.publish(new TestEvent());
 
     return '공지사항 등록 성공';
