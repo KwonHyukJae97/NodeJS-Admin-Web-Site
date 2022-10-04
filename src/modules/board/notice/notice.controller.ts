@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  Response,
   UploadedFiles,
   UseInterceptors,
   UsePipes,
@@ -42,9 +43,18 @@ export class NoticeController {
   createNotice(
     @Body() createNoticeDto: CreateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
+    @Response() res,
   ): Promise<string> {
     const { title, content, isTop, noticeGrant, boardType } = createNoticeDto;
-    const command = new CreateNoticeCommand(title, content, isTop, noticeGrant, boardType, files);
+    const command = new CreateNoticeCommand(
+      title,
+      content,
+      isTop,
+      noticeGrant,
+      boardType,
+      files,
+      res,
+    );
     return this.commandBus.execute(command);
   }
 
@@ -87,6 +97,7 @@ export class NoticeController {
     @Param('id') noticeId: number,
     @Body() updateNoticeDto: UpdateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
+    @Response() res,
   ): Promise<Notice> {
     const { title, content, isTop, noticeGrant, boardType } = updateNoticeDto;
     const command = new UpdateNoticeCommand(
@@ -97,6 +108,7 @@ export class NoticeController {
       noticeId,
       boardType,
       files,
+      res,
     );
     return this.commandBus.execute(command);
   }
@@ -106,8 +118,8 @@ export class NoticeController {
    * @ param : notice_id
    */
   @Delete(':id')
-  async deleteNotice(@Param('id') noticeId: number): Promise<string> {
-    const command = new DeleteNoticeCommand(noticeId);
+  async deleteNotice(@Param('id') noticeId: number, @Response() res): Promise<string> {
+    const command = new DeleteNoticeCommand(noticeId, res);
     return this.commandBus.execute(command);
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { DeleteNoticeCommand } from './delete-notice.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -30,9 +30,13 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
   ) {}
 
   async execute(command: DeleteNoticeCommand) {
-    const { noticeId } = command;
+    const { noticeId, res } = command;
 
     const notice = await this.noticeRepository.findOneBy({ noticeId: noticeId });
+
+    if (!notice) {
+      throw new NotFoundException('존재하지 않는 공지사항입니다.');
+    }
 
     const board = await this.boardRepository.findOneBy({ boardId: notice.boardId.boardId });
 
@@ -44,14 +48,22 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
     });
 
     // 파일 삭제 이벤트 처리
-    this.eventBus.publish(new FileDeleteEvent(board.boardId));
+    this.eventBus.publish(new FileDeleteEvent(board.boardId, res));
     this.eventBus.publish(new TestEvent());
 
     // notice db 삭제
-    await this.noticeRepository.delete(notice);
+    try {
+      await this.noticeRepository.delete(notice);
+    } catch (err) {
+      console.log(err);
+    }
 
     // board db 삭제 (fk)
-    await this.boardRepository.delete({ boardId: board.boardId });
+    try {
+      await this.boardRepository.delete({ boardId: board.boardId });
+    } catch (err) {
+      console.log(err);
+    }
 
     return '공지사항 삭제 성공';
   }

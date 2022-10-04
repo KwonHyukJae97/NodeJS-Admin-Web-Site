@@ -1,4 +1,6 @@
 import { ICommand } from '@nestjs/cqrs';
+import { BoardType } from '../../entities/board-type.enum';
+import { Response } from 'express';
 
 /**
  * 공지사항 수정 시, 사용되는 커맨드 정의
@@ -11,7 +13,8 @@ export class UpdateNoticeCommand implements ICommand {
     readonly isTop: boolean,
     readonly noticeGrant: string,
     readonly noticeId: number,
-    readonly boardType: string,
+    readonly boardType: BoardType.NOTICE,
     readonly files: Express.MulterS3.File[],
+    readonly res: Response,
   ) {}
 }

@@ -15,9 +15,9 @@ export class FileUpdateEventsHandler implements IEventHandler<FileUpdateEvent | 
     switch (event.name) {
       case FileUpdateEvent.name: {
         console.log('파일 업데이트 이벤트 발생!');
-        const { boardId, boardType, files } = event as FileUpdateEvent;
+        const { boardId, boardType, files, res } = event as FileUpdateEvent;
         // 업로드 된 파일을 해당 db에 저장 및 기존 파일 db/S3 삭제
-        await this.fileService.updateFiles(boardId, boardType, files);
+        await this.fileService.updateFiles(boardId, boardType, files, res);
         break;
       }
       case TestEvent.name: {

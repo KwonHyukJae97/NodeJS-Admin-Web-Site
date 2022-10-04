@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { GetFileDownloadQuery } from './query/get-file-download.query';
 import { QueryBus } from '@nestjs/cqrs';
 import { GetAllFileDownloadQuery } from './query/get-files-download.query';
+import { Response as Res } from 'express';
 
 /**
  * 파일 다운로드 관련 API 처리하는 컨트롤러
@@ -27,7 +28,7 @@ export class FileController {
    * @ param : board_file_id
    */
   @Get(':id')
-  downloadFile(@Param('id') fileId: number, @Response() res) {
+  downloadFile(@Param('id') fileId: number, @Response() res: Res) {
     const getFileDownloadQuery = new GetFileDownloadQuery(fileId, res);
     return this.queryBus.execute(getFileDownloadQuery);
   }

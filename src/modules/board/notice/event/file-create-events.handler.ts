@@ -15,9 +15,9 @@ export class FileCreateEventsHandler implements IEventHandler<FileCreateEvent | 
     switch (event.name) {
       case FileCreateEvent.name: {
         console.log('파일 업로드 이벤트 발생!');
-        const { boardId, boardType, files } = event as FileCreateEvent;
+        const { boardId, boardType, files, res } = event as FileCreateEvent;
         // 업로드 된 파일을 해당 db에 저장하는 로직
-        await this.fileService.uploadFiles(boardId, boardType, files);
+        await this.fileService.uploadFiles(boardId, boardType, files, res);
         break;
       }
       case TestEvent.name: {

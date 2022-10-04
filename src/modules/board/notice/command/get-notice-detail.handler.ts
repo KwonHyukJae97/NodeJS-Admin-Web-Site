@@ -39,11 +39,19 @@ export class GetNoticeDetailHandler implements ICommandHandler<GetNoticeDetailCo
     /* 데이터 수정 및 새로고침 등의 경우, 무한대로 조회수가 증가할 수 있는 문제점은 추후 보완 예정 */
     board.viewCount++;
 
-    await this.boardRepository.save(board);
+    try {
+      await this.boardRepository.save(board);
+    } catch (err) {
+      console.log(err);
+    }
 
     notice.boardId = board;
 
-    await this.noticeRepository.save(notice);
+    try {
+      await this.noticeRepository.save(notice);
+    } catch (err) {
+      console.log(err);
+    }
 
     const files = await this.fileRepository.findBy({ boardId: board.boardId });
     // console.log({ fileList: files });

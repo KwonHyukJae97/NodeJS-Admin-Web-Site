@@ -1,4 +1,5 @@
 import { IsNotEmpty } from 'class-validator';
+import { BoardType } from '../../entities/board-type.enum';
 
 /**
  * 공지사항 등록 시, 필요한 필드로 구성한 dto
@@ -18,5 +19,5 @@ export class CreateNoticeDto {
   noticeGrant: string;
 
   @IsNotEmpty()
-  boardType: string;
+  boardType: BoardType.NOTICE;
 }
