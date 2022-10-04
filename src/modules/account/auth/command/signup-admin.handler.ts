@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Admin } from 'src/modules/account/admin/entities/admin';
-import { Account } from 'src/modules/account/entities/account';
+import { Account2 } from 'src/modules/account/entities/account';
 import { Repository } from 'typeorm';
 import { SignUpAdminCommand } from './signup-admin.command';
 import * as bcrypt from 'bcryptjs';
@@ -17,8 +17,8 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
     @InjectRepository(Admin)
     private adminRepository: Repository<Admin>,
 
-    @InjectRepository(Account)
-    private accountRepository: Repository<Account>,
+    @InjectRepository(Account2)
+    private accountRepository: Repository<Account2>,
   ) {}
 
   async execute(command: SignUpAdminCommand) {

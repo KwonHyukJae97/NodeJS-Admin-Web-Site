@@ -5,13 +5,15 @@ import { AppService } from './app.service';
 import { AccountModule } from './modules/account-bak/account.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
-import { AuthModule } from '../auth/auth.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { utilities, WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { LoggingModule } from './logging/logging.module';
 import { NoticeModule } from './modules/board/notice/notice.module';
 import { FileModule } from './modules/board/file.module';
 import { SecondAuthModule } from './modules/account/auth/auth.module';
+import { UserModule } from './modules/account/user/user.module';
+import { AdminModule } from './modules/account/admin/admin.module';
 
 @Module({
   imports: [
@@ -70,6 +72,8 @@ import { SecondAuthModule } from './modules/account/auth/auth.module';
     NoticeModule,
     FileModule,
     SecondAuthModule,
+    UserModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],

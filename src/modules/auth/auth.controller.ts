@@ -11,15 +11,15 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LocalAuthGuard } from '../src/guard/local/local-auth.guard';
-import JwtAuthGuard from '../src/guard/jwt/jwt-auth.guard';
+import { LocalAuthGuard } from '../../guard/local/local-auth.guard';
+import JwtAuthGuard2 from '../../guard/jwt/jwt-auth.guard';
 import { response } from 'express';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import JwtRefreshAuthGuard from 'src/guard/jwt/jwt-refresh-auth.guard';
-import { Account } from '../src/modules/account-bak/entities/account.entity';
-import { JwtManageService } from '../src/guard/jwt/jwt-manage.service';
+import { Account } from '../account-bak/entities/account.entity';
+import { JwtManageService } from '../../guard/jwt/jwt-manage.service';
 
-@Controller('auth')
+@Controller('auth1')
 export class AuthController {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
@@ -141,7 +141,7 @@ export class AuthController {
     });
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard2)
   @Get('/me')
   async me(@Req() request, @Res() response) {
     //TODO : 임시로 role 정의

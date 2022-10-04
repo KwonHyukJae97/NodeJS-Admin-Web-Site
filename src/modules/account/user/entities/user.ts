@@ -1,6 +1,6 @@
 import { IsNumber } from 'class-validator';
 import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Account } from '../../entities/account';
+import { Account2 } from '../../entities/account';
 
 @Entity('user')
 export class User extends BaseEntity {
@@ -20,9 +20,9 @@ export class User extends BaseEntity {
   grade: number;
 
   //계정번호
-  @OneToOne((type) => Account, (account) => account.userId, { eager: true })
+  @OneToOne((type) => Account2, (account) => account.userId, { eager: true })
   @JoinColumn({
     name: 'account_id',
   })
-  accountId: Account;
+  accountId: Account2;
 }

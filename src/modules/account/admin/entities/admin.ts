@@ -1,6 +1,6 @@
 import { IsBoolean, IsNumber } from 'class-validator';
 import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Account } from '../../entities/account';
+import { Account2 } from '../../entities/account';
 
 @Entity('admin')
 export class Admin extends BaseEntity {
@@ -36,9 +36,9 @@ export class Admin extends BaseEntity {
   isSuper: boolean;
 
   //계정번호
-  @OneToOne((type) => Account, (account) => account.adminId, { eager: true })
+  @OneToOne((type) => Account2, (account) => account.adminId, { eager: true })
   @JoinColumn({
     name: 'account_id',
   })
-  accountId: Account;
+  accountId: Account2;
 }

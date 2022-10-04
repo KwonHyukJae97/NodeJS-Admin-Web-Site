@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } fro
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
-import JwtAuthGuard from '../../guard/jwt/jwt-auth.guard';
+import JwtAuthGuard2 from '../../guard/jwt/jwt-auth.guard';
 import { Role, ROLES_ENUM } from '../../guard/role/roles.decorator';
 import { RolesGuard } from '../../guard/role/roles.guard';
 
@@ -18,13 +18,13 @@ export class AccountController {
   @Get()
   @Role(ROLES_ENUM.ROLE_ADMIN)
   @UseGuards(RolesGuard)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard2)
   findAll(@Req() req) {
     return this.accountService.findAll();
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard2)
   findOne(@Param('id') id: number) {
     return this.accountService.findOne(id);
   }

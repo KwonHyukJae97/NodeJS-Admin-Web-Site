@@ -14,7 +14,7 @@ import { User } from '../user/entities/user';
 
 @Entity('account')
 @Unique(['id'])
-export class Account extends BaseEntity {
+export class Account2 extends BaseEntity {
   //계정번호
   @PrimaryGeneratedColumn({
     name: 'account_id',
@@ -28,6 +28,7 @@ export class Account extends BaseEntity {
     name: 'id',
     type: 'varchar',
     length: '20',
+    unique: true,
   })
   id: string;
 
@@ -54,6 +55,7 @@ export class Account extends BaseEntity {
   @Column({
     type: 'varchar',
     length: '100',
+    unique: true,
   })
   email: string;
 
@@ -72,6 +74,7 @@ export class Account extends BaseEntity {
     name: 'nickname',
     type: 'varchar',
     length: '20',
+    unique: true,
   })
   nickname: string;
 
@@ -163,6 +166,13 @@ export class Account extends BaseEntity {
     type: 'datetime',
   })
   loginDate: Date;
+
+  //관리자 or 사용자 구분(true: 관리자, false: 사용자)
+  @Column({
+    name: 'division',
+    type: 'boolean',
+  })
+  devision: Boolean;
 
   @OneToOne((type) => User, (user) => user.accountId)
   userId: number;
