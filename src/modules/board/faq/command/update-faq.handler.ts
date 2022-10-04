@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { TestEvent } from '../event/test.event';
 import { FileUpdateEvent } from '../event/file-update-event';
+import { FaqCategory } from '../entities/faq_category';
 
 /**
  * FAQ 수정 시, 커맨드를 처리하는 커맨드 핸들러
@@ -22,35 +23,54 @@ export class UpdateFaqHandler implements ICommandHandler<UpdateFaqCommand> {
     @InjectRepository(Board)
     private boardRepository: Repository<Board>,
 
+    @InjectRepository(FaqCategory)
+    private categoryRepository: Repository<FaqCategory>,
+
     private eventBus: EventBus,
   ) {}
 
   async execute(command: UpdateFaqCommand) {
-    const { title, content, faqId, files } = command;
+    const { title, content, categoryName, isUse, boardType, faqId, files } = command;
 
     const faq = await this.faqRepository.findOneBy({ faqId: faqId });
 
-    const board = await this.boardRepository.findOneBy({ boardId: faq.boardId.boardId });
-
-    if (!board) {
+    if (!faq) {
       throw new NotFoundException('존재하지 않는 FAQ입니다.');
     }
+
+    const board = await this.boardRepository.findOneBy({ boardId: faq.boardId.boardId });
 
     board.title = title;
     board.content = content;
 
-    await this.boardRepository.save(board);
+    try {
+      await this.boardRepository.save(board);
+    } catch (err) {
+      console.log(err);
+    }
 
-    if (!faq) {
-      throw new NotFoundException('존재하지 않는 게시글입니다.');
+    const category = await this.categoryRepository.findOneBy({ categoryId: faq.categoryId });
+
+    category.categoryName = categoryName;
+    category.isUse = isUse;
+
+    try {
+      await this.categoryRepository.save(category);
+    } catch (err) {
+      console.log(err);
     }
 
     faq.boardId = board;
+    faq.categoryId = category.categoryId;
 
-    await this.faqRepository.save(faq);
+    try {
+      await this.faqRepository.save(faq);
+    } catch (err) {
+      console.log(err);
+    }
 
     // 파일 업데이트 이벤트 처리
-    this.eventBus.publish(new FileUpdateEvent(board.boardId, files));
+    this.eventBus.publish(new FileUpdateEvent(board.boardId, boardType, files));
     this.eventBus.publish(new TestEvent());
 
     // 변경된 FAQ 반환

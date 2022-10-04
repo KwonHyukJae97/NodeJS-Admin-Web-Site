@@ -117,31 +117,72 @@ export class FileService {
   /**
    * 다중 파일 업데이트 기능
    */
-  async updateFiles(boardId: number, files: Express.MulterS3.File[]) {
-    // 신규 파일 DB 저장
-    files.map((file) => {
+  async updateFiles(boardId: number, boardType: string, files: Express.MulterS3.File[]) {
+    files.map(async (file) => {
+      const today = getToday();
+      const time = getTime();
+
+      // S3 업로드
+      const uploadParams = {
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Body: file.buffer,
+        Key: `${boardType}/${today}/${time}_${uuid}`,
+      };
+
+      try {
+        s3.putObject(uploadParams, function (err, data) {
+          if (err) {
+            console.log('err: ', err, err.stack);
+          } else {
+            console.log(data, '정상 업로드 되었습니다.');
+          }
+        });
+      } catch (err) {
+        console.log(err);
+        throw new BadRequestException('업로드에 실패하였습니다.');
+      }
+
+      // 업로드 된 파일 url 가져오기
+      const getParams = {
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: `${boardType}/${today}/${time}_${uuid}`,
+      };
+
+      const url: string = await new Promise((r) =>
+        s3.getSignedUrl('getObject', getParams, async (err, url) => {
+          if (err) {
+            throw new BadRequestException('file path 가져오기 실패');
+          }
+          r(url.split('?')[0]);
+        }),
+      );
+
       const ext = path.extname(file.originalname);
+
       const boardFile = this.fileRepository.create({
         boardId: boardId,
         originalFileName: path.basename(file.originalname, ext),
-        fileName: file.key,
+        fileName: url.split('com/')[1],
         fileExt: ext,
-        filePath: file.location,
+        filePath: url,
         fileSize: file.size,
       });
 
-      this.fileRepository.save(boardFile);
+      try {
+        // 신규 파일 DB 저장
+        await this.fileRepository.save(boardFile);
+      } catch (err) {
+        console.log(err);
+      }
     });
 
     // 기존 파일 조회 후, 삭제
     const oldFiles = await this.fileRepository.findBy({ boardId: boardId });
-    // console.log(oldFiles);
 
     // S3에 저장되어 있는 기존 파일 삭제
     const deleteList = [];
 
     for (const file of oldFiles) {
-      // console.log(file.fileName);
       deleteList.push(file.fileName); // S3 key값으로 사용될 속성 추출 후, 새 배열에 추가
     }
 
@@ -161,7 +202,7 @@ export class FileService {
         });
       } catch (err) {
         console.log(err);
-        throw err;
+        throw new BadRequestException('파일 삭제에 실패하였습니다.');
       }
     });
 

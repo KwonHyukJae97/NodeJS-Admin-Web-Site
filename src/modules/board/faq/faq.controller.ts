@@ -85,8 +85,16 @@ export class FaqController {
     @Body() updateFaqDto: UpdateFaqDto,
     @UploadedFiles() files: Express.MulterS3.File[],
   ): Promise<Faq> {
-    const { title, content } = updateFaqDto;
-    const command = new UpdateFaqCommand(title, content, faqId, files);
+    const { title, content, categoryName, isUse, boardType } = updateFaqDto;
+    const command = new UpdateFaqCommand(
+      title,
+      content,
+      categoryName,
+      isUse,
+      boardType,
+      faqId,
+      files,
+    );
     return this.commandBus.execute(command);
   }
 
