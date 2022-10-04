@@ -9,8 +9,8 @@ import { Admin } from '../admin/entities/admin';
 import { User } from '../user/entities/user';
 import { Account2 } from '../entities/account';
 import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
 import { AuthService2 } from './auth2.service';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
