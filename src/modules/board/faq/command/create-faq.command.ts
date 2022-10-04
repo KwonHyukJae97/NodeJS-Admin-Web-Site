@@ -10,7 +10,6 @@ export class CreateFaqCommand implements ICommand {
     readonly title: string,
     readonly content: string,
     readonly categoryName: string,
-    readonly isUse: boolean,
     readonly boardType: BoardType.FAQ,
     readonly files: Express.MulterS3.File[],
   ) {}

@@ -1,6 +1,6 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { IsNumber } from 'class-validator';
+import { Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Board } from '../../entities/board';
+import { FaqCategory } from './faq_category';
 
 /**
  * FAQ에 대한 엔티티 정의
@@ -15,8 +15,8 @@ export class Faq {
   faqId: number;
 
   // 분류 번호
-  @IsNumber()
-  @Column({
+  @ManyToOne((type) => FaqCategory, (category) => category.faqList, { eager: true })
+  @JoinColumn({
     name: 'category_id',
   })
   categoryId: number;

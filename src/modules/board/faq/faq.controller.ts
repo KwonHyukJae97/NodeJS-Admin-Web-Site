@@ -22,6 +22,7 @@ import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/f
 import { GetFaqDetailDto } from './dto/get-faq-detail.dto';
 import { GetFaqDetailCommand } from './command/get-faq-detail.command';
 import { GetFaqSearchQuery } from './query/get-faq-search.query';
+import { GetFaqInfoDto } from './dto/get-faq-info.dto';
 
 /**
  * FAQ 관련 API 처리하는 컨트롤러
@@ -40,17 +41,18 @@ export class FaqController {
     @Body() createFaqDto: CreateFaqDto,
     @UploadedFiles() files: Express.MulterS3.File[],
   ): Promise<string> {
-    const { title, content, categoryName, isUse, boardType } = createFaqDto;
-    const command = new CreateFaqCommand(title, content, categoryName, isUse, boardType, files);
+    const { title, content, categoryName, boardType } = createFaqDto;
+    const command = new CreateFaqCommand(title, content, categoryName, boardType, files);
     return this.commandBus.execute(command);
   }
 
   /**
    * FAQ 리스트 조회
    */
-  @Get()
-  async getAllFaq() {
-    const getFaqInfoQuery = new GetFaqInfoQuery();
+  @Get('list')
+  async getAllFaq(@Body() getFaqInfoDto: GetFaqInfoDto) {
+    const { role } = getFaqInfoDto;
+    const getFaqInfoQuery = new GetFaqInfoQuery(role);
     return this.queryBus.execute(getFaqInfoQuery);
   }
 
@@ -85,16 +87,8 @@ export class FaqController {
     @Body() updateFaqDto: UpdateFaqDto,
     @UploadedFiles() files: Express.MulterS3.File[],
   ): Promise<Faq> {
-    const { title, content, categoryName, isUse, boardType } = updateFaqDto;
-    const command = new UpdateFaqCommand(
-      title,
-      content,
-      categoryName,
-      isUse,
-      boardType,
-      faqId,
-      files,
-    );
+    const { title, content, categoryName, boardType } = updateFaqDto;
+    const command = new UpdateFaqCommand(title, content, categoryName, boardType, faqId, files);
     return this.commandBus.execute(command);
   }
 

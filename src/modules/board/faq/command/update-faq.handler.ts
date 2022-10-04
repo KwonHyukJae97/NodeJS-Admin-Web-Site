@@ -30,7 +30,7 @@ export class UpdateFaqHandler implements ICommandHandler<UpdateFaqCommand> {
   ) {}
 
   async execute(command: UpdateFaqCommand) {
-    const { title, content, categoryName, isUse, boardType, faqId, files } = command;
+    const { title, content, categoryName, boardType, faqId, files } = command;
 
     const faq = await this.faqRepository.findOneBy({ faqId: faqId });
 
@@ -49,16 +49,7 @@ export class UpdateFaqHandler implements ICommandHandler<UpdateFaqCommand> {
       console.log(err);
     }
 
-    const category = await this.categoryRepository.findOneBy({ categoryId: faq.categoryId });
-
-    category.categoryName = categoryName;
-    category.isUse = isUse;
-
-    try {
-      await this.categoryRepository.save(category);
-    } catch (err) {
-      console.log(err);
-    }
+    const category = await this.categoryRepository.findOneBy({ categoryName: categoryName });
 
     faq.boardId = board;
     faq.categoryId = category.categoryId;

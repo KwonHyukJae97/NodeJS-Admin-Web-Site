@@ -16,8 +16,5 @@ export class UpdateFaqDto {
   categoryName: string;
 
   @IsNotEmpty()
-  isUse: boolean;
-
-  @IsNotEmpty()
   boardType: BoardType.FAQ;
 }

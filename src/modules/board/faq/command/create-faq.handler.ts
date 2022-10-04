@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { CreateFaqCommand } from './create-faq.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -30,7 +30,7 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
   ) {}
 
   async execute(command: CreateFaqCommand) {
-    const { title, content, categoryName, isUse, boardType, files } = command;
+    const { title, content, categoryName, boardType, files } = command;
 
     const board = this.boardRepository.create({
       // 임시 accountId 부여
@@ -47,15 +47,10 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
       console.log(err);
     }
 
-    const category = this.categoryRepository.create({
-      categoryName,
-      isUse,
-    });
+    const category = await this.categoryRepository.findOneBy({ categoryName: categoryName });
 
-    try {
-      await this.categoryRepository.save(category);
-    } catch (err) {
-      console.log(err);
+    if (!category) {
+      throw new NotFoundException('존재하지 않는 카테고리입니다.');
     }
 
     const faq = this.faqRepository.create({

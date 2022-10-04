@@ -6,6 +6,7 @@ import { Faq } from '../entities/faq';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { BoardFile } from '../../file/entities/board_file';
+import { FaqCategory } from '../entities/faq_category';
 
 /**
  * FAQ 상세조회 시, 커맨드를 처리하는 커맨드 핸들러 (서비스 로직 수행)
@@ -23,6 +24,9 @@ export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand>
 
     @InjectRepository(BoardFile)
     private fileRepository: Repository<BoardFile>,
+
+    @InjectRepository(FaqCategory)
+    private categoryRepository: Repository<FaqCategory>,
   ) {}
 
   async execute(command: GetFaqDetailCommand) {
@@ -31,7 +35,7 @@ export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand>
     const faq = await this.faqRepository.findOneBy({ faqId: faqId });
 
     if (!faq) {
-      throw new NotFoundException('존재하지 않는 게시글입니다.');
+      throw new NotFoundException('존재하지 않는 FAQ입니다.');
     }
 
     const board = await this.boardRepository.findOneBy({ boardId: faq.boardId.boardId });
@@ -39,17 +43,26 @@ export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand>
     /* 데이터 수정 및 새로고침 등의 경우, 무한대로 조회수가 증가할 수 있는 문제점은 추후 보완 예정 */
     board.viewCount++;
 
-    await this.boardRepository.save(board);
+    try {
+      await this.boardRepository.save(board);
+    } catch (err) {
+      console.log(err);
+    }
 
     faq.boardId = board;
 
-    await this.faqRepository.save(faq);
+    try {
+      await this.faqRepository.save(faq);
+    } catch (err) {
+      console.log(err);
+    }
 
     const files = await this.fileRepository.findBy({ boardId: board.boardId });
 
     const getFaqDetailDto = {
       faqId: faqId,
       boardId: board,
+      categoryId: faq.categoryId,
       fileList: files,
     };
 

@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { IsBoolean, IsString } from 'class-validator';
+import { Faq } from './faq';
 
 /**
  * FAQ 카테고리에 대한 엔티티 정의
@@ -26,4 +27,7 @@ export class FaqCategory {
     name: 'is_use',
   })
   isUse: boolean;
+
+  @OneToMany((type) => Faq, (faq) => faq.categoryId)
+  faqList: Faq[];
 }

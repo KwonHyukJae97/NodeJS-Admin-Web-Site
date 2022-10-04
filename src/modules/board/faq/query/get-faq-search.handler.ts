@@ -19,8 +19,6 @@ export class GetFaqSearchHandler implements IQueryHandler<GetFaqSearchQuery> {
   async execute(query: GetFaqSearchQuery) {
     const { keyword } = query;
 
-    console.log(keyword);
-
     const faq = await this.faqRepository
       .createQueryBuilder('notice')
       .leftJoinAndSelect('notice.boardId', 'board')
