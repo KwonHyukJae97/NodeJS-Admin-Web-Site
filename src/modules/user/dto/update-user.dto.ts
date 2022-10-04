@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { IsEmail, IsNumber, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 
 export class UpdateUserDto {
@@ -19,5 +20,6 @@ export class UpdateUserDto {
   readonly phone: string;
 
   @IsNumber()
+  @Type(() => Number)
   readonly grade: number;
 }
