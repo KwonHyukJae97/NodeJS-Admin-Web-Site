@@ -12,6 +12,7 @@ import * as winston from 'winston';
 import { LoggingModule } from './logging/logging.module';
 import { NoticeModule } from './modules/board/notice/notice.module';
 import { FileModule } from './modules/board/file.module';
+import { CompanyModule } from './modules/company/company.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { FileModule } from './modules/board/file.module';
     LoggingModule,
     NoticeModule,
     FileModule,
+    CompanyModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
