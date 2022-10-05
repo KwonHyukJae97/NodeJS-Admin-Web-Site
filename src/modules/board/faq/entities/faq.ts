@@ -15,7 +15,7 @@ export class Faq {
   faqId: number;
 
   // 분류 번호
-  @ManyToOne((type) => FaqCategory, (category) => category.faqList, { eager: true })
+  @ManyToOne((type) => FaqCategory, { eager: true })
   @JoinColumn({
     name: 'category_id',
   })

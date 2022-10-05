@@ -12,6 +12,7 @@ import { GetFaqDetailHandler } from './command/get-faq-detail.handler';
 import { GetFaqSearchHandler } from './query/get-faq-search.handler';
 import { FaqCategory } from './entities/faq_category';
 import { CreateFaqHandler } from './command/create-faq.handler';
+import { GetCategoryInfoHandler } from './query/get-category-info.handler';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Board, Faq, BoardFile, FaqCategory]), CqrsModule],
@@ -23,6 +24,7 @@ import { CreateFaqHandler } from './command/create-faq.handler';
     UpdateFaqHandler,
     DeleteFaqHandler,
     GetFaqSearchHandler,
+    GetCategoryInfoHandler,
   ],
 })
 export class FaqModule {}

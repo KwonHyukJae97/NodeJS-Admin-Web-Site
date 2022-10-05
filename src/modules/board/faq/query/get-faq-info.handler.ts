@@ -40,6 +40,7 @@ export class GetFaqInfoHandler implements IQueryHandler<GetFaqInfoQuery> {
       const faq = await this.faqRepository
         .createQueryBuilder('faq')
         .leftJoinAndSelect('faq.categoryId', 'categoryId')
+        .leftJoinAndSelect('faq.boardId', 'board')
         .where('categoryId.isUse = :isUse', { isUse: true })
         .getMany();
 
