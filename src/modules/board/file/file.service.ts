@@ -6,7 +6,6 @@ import { Board } from '../entities/board';
 import { Repository } from 'typeorm';
 import * as AWS from 'aws-sdk';
 import { randomUUID } from 'crypto';
-import { Response } from 'express';
 
 /**
  * 파일 업로드 시, 필요 로직을 실질적으로 수행
@@ -18,6 +17,7 @@ const s3 = new AWS.S3({
   region: process.env.AWS_REGION,
 });
 
+// 오늘 날짜 구하는 메서드
 export function getToday() {
   const date = new Date();
   const year = date.getFullYear();
@@ -27,6 +27,7 @@ export function getToday() {
   return year + '-' + month + '-' + day;
 }
 
+// 현재 시각 구하는 메서드
 export function getTime() {
   const date = new Date();
   const hours = ('0' + date.getHours()).slice(-2);
@@ -38,6 +39,67 @@ export function getTime() {
 }
 
 export const uuid = randomUUID();
+
+// S3 파일 업로드 메서드
+function putObjectS3(file: Express.MulterS3.File, boardType: string, today: string, time: string) {
+  const uploadParams = {
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Body: file.buffer,
+    Key: `${boardType}/${today}/${time}_${uuid}`,
+  };
+
+  try {
+    s3.putObject(uploadParams, function (err, data) {
+      if (err) {
+        console.log('err: ', err, err.stack);
+      } else {
+        console.log(data, '정상 업로드 되었습니다.');
+      }
+    });
+  } catch (err) {
+    console.log(err);
+    throw new BadRequestException('업로드에 실패하였습니다.');
+  }
+}
+
+// S3에 업로드 된 파일의 Url 가져오는 메서드
+async function getObjectUrlS3(boardType: string, today: string, time: string) {
+  const getParams = {
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Key: `${boardType}/${today}/${time}_${uuid}`,
+  };
+
+  const url: string = await new Promise((r) =>
+    s3.getSignedUrl('getObject', getParams, async (err, url) => {
+      if (err) {
+        throw new BadRequestException('file path 가져오기 실패');
+      }
+      r(url.split('?')[0]);
+    }),
+  );
+  return url;
+}
+
+// S3 파일 삭제 메서드
+function deleteObjectS3(file) {
+  const deleteParams = {
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Key: file,
+  };
+
+  try {
+    s3.deleteObject(deleteParams, function (err, data) {
+      if (err) {
+        console.log('err: ', err);
+      } else {
+        console.log(data, '정상 삭제 되었습니다.');
+      }
+    });
+  } catch (err) {
+    console.log(err);
+    throw new BadRequestException('파일 삭제에 실패하였습니다.');
+  }
+}
 
 @Injectable()
 export class FileService {
@@ -62,39 +124,10 @@ export class FileService {
       const time = getTime();
 
       // S3 업로드
-      const uploadParams = {
-        Bucket: process.env.AWS_BUCKET_NAME,
-        Body: file.buffer,
-        Key: `${boardType}/${today}/${time}_${uuid}`,
-      };
-
-      try {
-        s3.putObject(uploadParams, function (err, data) {
-          if (err) {
-            console.log('err: ', err, err.stack);
-          } else {
-            console.log(data, '정상 업로드 되었습니다.');
-          }
-        });
-      } catch (err) {
-        console.log(err);
-        throw new BadRequestException('업로드에 실패하였습니다.');
-      }
+      putObjectS3(file, boardType, today, time);
 
       // 업로드 된 파일 url 가져오기
-      const getParams = {
-        Bucket: process.env.AWS_BUCKET_NAME,
-        Key: `${boardType}/${today}/${time}_${uuid}`,
-      };
-
-      const url: string = await new Promise((r) =>
-        s3.getSignedUrl('getObject', getParams, async (err, url) => {
-          if (err) {
-            throw new BadRequestException('file path 가져오기 실패');
-          }
-          r(url.split('?')[0]);
-        }),
-      );
+      const url = await getObjectUrlS3(boardType, today, time);
 
       const ext = path.extname(file.originalname);
 
@@ -124,39 +157,10 @@ export class FileService {
       const time = getTime();
 
       // S3 업로드
-      const uploadParams = {
-        Bucket: process.env.AWS_BUCKET_NAME,
-        Body: file.buffer,
-        Key: `${boardType}/${today}/${time}_${uuid}`,
-      };
-
-      try {
-        s3.putObject(uploadParams, function (err, data) {
-          if (err) {
-            console.log('err: ', err, err.stack);
-          } else {
-            console.log(data, '정상 업로드 되었습니다.');
-          }
-        });
-      } catch (err) {
-        console.log(err);
-        throw new BadRequestException('업로드에 실패하였습니다.');
-      }
+      putObjectS3(file, boardType, today, time);
 
       // 업로드 된 파일 url 가져오기
-      const getParams = {
-        Bucket: process.env.AWS_BUCKET_NAME,
-        Key: `${boardType}/${today}/${time}_${uuid}`,
-      };
-
-      const url: string = await new Promise((r) =>
-        s3.getSignedUrl('getObject', getParams, async (err, url) => {
-          if (err) {
-            throw new BadRequestException('file path 가져오기 실패');
-          }
-          r(url.split('?')[0]);
-        }),
-      );
+      const url = await getObjectUrlS3(boardType, today, time);
 
       const ext = path.extname(file.originalname);
 
@@ -188,23 +192,7 @@ export class FileService {
     }
 
     deleteList.map((file) => {
-      const deleteParams = {
-        Bucket: process.env.AWS_BUCKET_NAME,
-        Key: file,
-      };
-
-      try {
-        s3.deleteObject(deleteParams, function (err, data) {
-          if (err) {
-            console.log('err: ', err);
-          } else {
-            console.log(data, '정상 삭제 되었습니다.');
-          }
-        });
-      } catch (err) {
-        console.log(err);
-        throw new BadRequestException('파일 삭제에 실패하였습니다.');
-      }
+      deleteObjectS3(file);
     });
 
     // DB에 저장되어 있는 기존 파일 삭제
@@ -227,23 +215,7 @@ export class FileService {
     }
 
     deleteList.map((file) => {
-      const deleteParams = {
-        Bucket: process.env.AWS_BUCKET_NAME,
-        Key: file,
-      };
-
-      try {
-        s3.deleteObject(deleteParams, function (err, data) {
-          if (err) {
-            console.log('err: ', err);
-          } else {
-            console.log(data, '정상 삭제 되었습니다.');
-          }
-        });
-      } catch (err) {
-        console.log(err);
-        throw err;
-      }
+      deleteObjectS3(file);
     });
   }
 }

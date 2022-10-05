@@ -7,11 +7,8 @@ import {
   Patch,
   Post,
   Query,
-  Res,
   UploadedFiles,
   UseInterceptors,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 import { CreateNoticeDto } from './dto/create-notice.dto';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -25,7 +22,6 @@ import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/f
 import { GetNoticeDetailDto } from './dto/get-notice-detail.dto';
 import { GetNoticeDetailCommand } from './command/get-notice-detail.command';
 import { GetNoticeSearchQuery } from './query/get-notice-search.query';
-import { Response } from 'express';
 
 /**
  * 공지사항 관련 API 처리하는 컨트롤러
@@ -39,7 +35,6 @@ export class NoticeController {
    * 공지사항 등록
    */
   @Post()
-  @UsePipes(ValidationPipe)
   @UseInterceptors(FilesInterceptor('files'))
   createNotice(
     @Body() createNoticeDto: CreateNoticeDto,
