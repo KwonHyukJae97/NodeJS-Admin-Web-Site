@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { GetQnaDetailCommand } from './get-qna-detail.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,7 +26,7 @@ export class GetQnaDetailHandler implements ICommandHandler<GetQnaDetailCommand>
   ) {}
 
   async execute(command: GetQnaDetailCommand) {
-    const { qnaId } = command;
+    const { qnaId, role, accountId } = command;
 
     const qna = await this.qnaRepository.findOneBy({ qnaId: qnaId });
 
@@ -34,33 +34,38 @@ export class GetQnaDetailHandler implements ICommandHandler<GetQnaDetailCommand>
       throw new NotFoundException('존재하지 않는 문의 내역입니다.');
     }
 
-    const board = await this.boardRepository.findOneBy({ boardId: qna.boardId.boardId });
-    // 문의 내역 상세 조회할 때마다 조회수 반영
-    /* 데이터 수정 및 새로고침 등의 경우, 무한대로 조회수가 증가할 수 있는 문제점은 추후 보완 예정 */
-    board.viewCount++;
+    // role = 본사 관리자 이거나 qna 작성자가 본인일 경우에만 상세 조회
+    if (role === '본사 관리자' || accountId == qna.boardId.accountId) {
+      const board = await this.boardRepository.findOneBy({ boardId: qna.boardId.boardId });
+      // 문의 내역 상세 조회할 때마다 조회수 반영
+      /* 데이터 수정 및 새로고침 등의 경우, 무한대로 조회수가 증가할 수 있는 문제점은 추후 보완 예정 */
+      board.viewCount++;
 
-    try {
-      await this.boardRepository.save(board);
-    } catch (err) {
-      console.log(err);
+      try {
+        await this.boardRepository.save(board);
+      } catch (err) {
+        console.log(err);
+      }
+
+      qna.boardId = board;
+
+      try {
+        await this.qnaRepository.save(qna);
+      } catch (err) {
+        console.log(err);
+      }
+
+      const files = await this.fileRepository.findBy({ boardId: board.boardId });
+
+      const getQnaDetailDto = {
+        qnaId: qnaId,
+        boardId: board,
+        fileList: files,
+      };
+
+      return getQnaDetailDto;
+    } else {
+      throw new BadRequestException('본인 또는 해당 관리자만 조회 가능합니다.');
     }
-
-    qna.boardId = board;
-
-    try {
-      await this.qnaRepository.save(qna);
-    } catch (err) {
-      console.log(err);
-    }
-
-    const files = await this.fileRepository.findBy({ boardId: board.boardId });
-
-    const getQnaDetailDto = {
-      qnaId: qnaId,
-      boardId: board,
-      fileList: files,
-    };
-
-    return getQnaDetailDto;
   }
 }

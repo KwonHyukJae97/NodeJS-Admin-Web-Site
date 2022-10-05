@@ -5,5 +5,5 @@ import { ICommand } from '@nestjs/cqrs';
  */
 
 export class GetQnaDetailCommand implements ICommand {
-  constructor(readonly qnaId: number) {}
+  constructor(readonly qnaId: number, readonly role: string, readonly accountId: number) {}
 }

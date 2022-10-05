@@ -62,8 +62,12 @@ export class QnaController {
    * @ param : qna_id
    */
   @Get(':id')
-  async getQnaDetail(@Param('id') qnaId: number): Promise<GetQnaDetailDto> {
-    const command = new GetQnaDetailCommand(qnaId);
+  async getQnaDetail(
+    @Param('id') qnaId: number,
+    @Body() getQnaInfoDto: GetQnaInfoDto,
+  ): Promise<GetQnaDetailDto> {
+    const { role, accountId } = getQnaInfoDto;
+    const command = new GetQnaDetailCommand(qnaId, role, accountId);
     return this.commandBus.execute(command);
   }
 
