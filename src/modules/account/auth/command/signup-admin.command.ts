@@ -13,5 +13,6 @@ export class SignUpAdminCommand implements ICommand {
     readonly companyId: number,
     readonly roleId: number,
     readonly isSuper: boolean,
+    readonly division: boolean,
   ) {}
 }

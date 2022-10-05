@@ -24,6 +24,7 @@ export class AdminController {
       companyId,
       roleId,
       isSuper,
+      division,
     } = signUpAdmindto;
 
     const command = new SignUpAdminCommand(
@@ -38,6 +39,7 @@ export class AdminController {
       companyId,
       roleId,
       isSuper,
+      division,
     );
 
     return this.commadBus.execute(command);

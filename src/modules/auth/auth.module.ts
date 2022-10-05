@@ -17,6 +17,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { User } from '../account/user/entities/user';
 import { Admin } from '../account/admin/entities/admin';
 import { Account2 } from '../account/entities/account';
+import { AuthService2 } from '../account/auth/auth2.service';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { Account2 } from '../account/entities/account';
     JwtStrategy,
     JwtRefreshStrategy,
     LocalStrategy,
+    AuthService2,
     {
       provide: APP_GUARD,
       useClass: RolesGuard,

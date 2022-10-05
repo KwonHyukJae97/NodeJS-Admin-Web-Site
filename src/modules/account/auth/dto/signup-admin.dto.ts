@@ -51,4 +51,8 @@ export class SignUpAdminDto {
 
   @IsNotEmpty()
   readonly isSuper: boolean;
+
+  //관리자 사용자 구분 (true: 1(관리자), false: 0(사용자))
+  @IsNotEmpty()
+  readonly division: boolean;
 }

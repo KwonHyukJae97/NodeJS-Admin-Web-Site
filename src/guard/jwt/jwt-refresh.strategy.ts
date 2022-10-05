@@ -32,4 +32,10 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh-
 
     return account;
   }
+
+  //Account 엔티티와 연동
+  async validate2(req, id: string) {
+    const refreshToken = req.cookies?.refresh;
+    return this.accountService.getAccountRefreshTokenMatches2(refreshToken, id);
+  }
 }

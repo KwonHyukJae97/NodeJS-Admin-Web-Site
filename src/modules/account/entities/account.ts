@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { IsOptional, IsString } from 'class-validator';
 import {
   BaseEntity,
@@ -95,8 +96,10 @@ export class Account2 extends BaseEntity {
   })
   gender: string;
 
+  //리프레쉬 토큰
   @IsOptional()
   @IsString()
+  @Exclude()
   @Column({
     name: 'current_hashed_refresh_token',
     nullable: true,
@@ -172,7 +175,7 @@ export class Account2 extends BaseEntity {
     name: 'division',
     type: 'boolean',
   })
-  devision: Boolean;
+  division: Boolean;
 
   @OneToOne((type) => User, (user) => user.accountId)
   userId: number;

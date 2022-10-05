@@ -34,6 +34,7 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
       companyId,
       roleId,
       isSuper,
+      division,
     } = command;
 
     /**
@@ -50,6 +51,7 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
       nickname,
       birth,
       gender,
+      division,
     });
 
     //중복체크

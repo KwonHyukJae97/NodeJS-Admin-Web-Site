@@ -13,12 +13,17 @@ import { Account } from './entities/account.entity';
 import { Connection, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { compare, hash } from 'bcrypt';
-
+import { Account2 } from '../account/entities/account';
+/**
+ * Account.hp 확인, LogOut, refresh API, 사용자 로그인(RefreshToken) 기능 구현
+ */
 @Injectable()
 export class AccountService {
   constructor(
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
+    @InjectRepository(Account2)
+    private accountRepository2: Repository<Account2>,
     private connection: Connection,
   ) {}
 
@@ -91,6 +96,68 @@ export class AccountService {
     });
 
     return account;
+  }
+
+  //Account2 엔티티와 연동
+  async getById(id: string) {
+    const account = await this.accountRepository2.findOneBy({
+      id: id,
+    });
+
+    return account;
+  }
+  //Account2 엔티티와 연동
+
+  async setCurrentRefreshToken2(refreshToken: string, id: string) {
+    if (refreshToken) {
+      refreshToken = await bcrypt.hash(refreshToken, 10);
+    }
+    await this.accountRepository2.update({ id }, { currentHashedRefreshToken: refreshToken });
+  }
+  // async setCurrentRefreshToken2(accountId: number, refreshToken: string) {
+  //   const currentHashedRefreshToken = await hash(refreshToken, 10);
+  //   await this.accountRepository2.update(accountId, { currentHashedRefreshToken });
+  // }
+  //Account2 엔티티와 연동 here
+  async getAccountRefreshTokenMatches2(
+    refreshToken: string,
+    id: string,
+  ): Promise<{ result: boolean }> {
+    const account = await this.accountRepository2.findOne({ where: { id } });
+
+    if (!account) {
+      throw new UnauthorizedException('존재하지 않는 사용자입니다.');
+    }
+
+    const isRefreshTokenMatching = await compare(refreshToken, account.currentHashedRefreshToken);
+
+    if (isRefreshTokenMatching) {
+      return { result: true };
+    } else {
+      throw new UnauthorizedException('여기에서 접근에러입니다111');
+    }
+  }
+
+  //Account2 엔티티와 연동
+  async getByAccountId2(accountId: number, showCurrentHashedRefreshToken: boolean) {
+    const account = await this.accountRepository2.findOneBy({
+      accountId: accountId,
+    });
+    if (account) {
+      delete account.password;
+      if (!showCurrentHashedRefreshToken) {
+        delete account.currentHashedRefreshToken;
+      }
+
+      return account;
+    }
+  }
+
+  //Account2 엔티티와 연동
+  async removeRefreshToken2(accountId: number) {
+    return this.accountRepository2.update(accountId, {
+      currentHashedRefreshToken: null,
+    });
   }
 
   async getByAccountId(accountId: number, showCurrentHashedRefreshToken: boolean) {

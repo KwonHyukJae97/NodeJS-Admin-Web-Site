@@ -11,11 +11,14 @@ import { Account2 } from '../entities/account';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthService2 } from './auth2.service';
 import { PassportModule } from '@nestjs/passport';
+import { AccountService } from 'src/modules/account-bak/account.service';
+import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
+import { Account } from 'src/modules/account-bak/entities/account.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forFeature([User, Admin, Account2]),
+    TypeOrmModule.forFeature([User, Admin, Account, Account2]),
     CqrsModule,
     PassportModule.register({
       defaultStrategy: 'jwt',
@@ -30,6 +33,12 @@ import { PassportModule } from '@nestjs/passport';
     }),
   ],
   controllers: [SignController],
-  providers: [SignUpUserHandler, SignUpAdminHandler, AuthService2],
+  providers: [
+    SignUpUserHandler,
+    SignUpAdminHandler,
+    AuthService2,
+    AccountService,
+    JwtManageService,
+  ],
 })
 export class SecondAuthModule {}
