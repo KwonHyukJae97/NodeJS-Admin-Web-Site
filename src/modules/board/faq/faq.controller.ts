@@ -21,9 +21,9 @@ import { DeleteFaqCommand } from './command/delete-faq.command';
 import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/files.interceptor';
 import { GetFaqDetailDto } from './dto/get-faq-detail.dto';
 import { GetFaqDetailCommand } from './command/get-faq-detail.command';
-import { GetFaqSearchQuery } from './query/get-faq-search.query';
 import { GetFaqInfoDto } from './dto/get-faq-info.dto';
 import { GetCategoryInfoQuery } from './query/get-category-info.query';
+import { GetFaqSearchQuery } from './query/get-faq-search.query';
 
 /**
  * FAQ 관련 API 처리하는 컨트롤러
@@ -79,11 +79,17 @@ export class FaqController {
 
   /**
    * FAQ 검색어 조회
+   * @ query : category_name
    * @ query : keyword
    */
   @Get()
-  async getFaqSearch(@Query('keyword') keyword: string) {
-    const getFaqSearchQuery = new GetFaqSearchQuery(keyword);
+  async getFaqSearch(
+    @Query('categoryName') categoryName: string,
+    @Query('keyword') keyword: string,
+    @Body() getFaqInfoDto: GetFaqInfoDto,
+  ) {
+    const { role } = getFaqInfoDto;
+    const getFaqSearchQuery = new GetFaqSearchQuery(categoryName, keyword, role);
     return this.queryBus.execute(getFaqSearchQuery);
   }
 

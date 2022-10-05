@@ -9,10 +9,10 @@ import { UpdateFaqHandler } from './command/update-faq.handler';
 import { DeleteFaqHandler } from './command/delete-faq.handler';
 import { BoardFile } from '../file/entities/board_file';
 import { GetFaqDetailHandler } from './command/get-faq-detail.handler';
-import { GetFaqSearchHandler } from './query/get-faq-search.handler';
 import { FaqCategory } from './entities/faq_category';
 import { CreateFaqHandler } from './command/create-faq.handler';
 import { GetCategoryInfoHandler } from './query/get-category-info.handler';
+import { GetFaqSearchHandler } from './query/get-faq-search.handler';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Board, Faq, BoardFile, FaqCategory]), CqrsModule],
@@ -23,8 +23,8 @@ import { GetCategoryInfoHandler } from './query/get-category-info.handler';
     GetFaqDetailHandler,
     UpdateFaqHandler,
     DeleteFaqHandler,
-    GetFaqSearchHandler,
     GetCategoryInfoHandler,
+    GetFaqSearchHandler,
   ],
 })
 export class FaqModule {}
