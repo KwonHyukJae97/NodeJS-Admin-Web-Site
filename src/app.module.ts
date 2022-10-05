@@ -13,6 +13,7 @@ import { LoggingModule } from './logging/logging.module';
 import { NoticeModule } from './modules/board/notice/notice.module';
 import { FileModule } from './modules/board/file.module';
 import { CompanyModule } from './modules/company/company.module';
+import { PermissionModule } from './modules/permission/permission.module';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { CompanyModule } from './modules/company/company.module';
     NoticeModule,
     FileModule,
     CompanyModule,
+    PermissionModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
