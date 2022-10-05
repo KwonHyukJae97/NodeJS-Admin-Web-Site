@@ -17,14 +17,34 @@ export class GetQnaInfoHandler implements IQueryHandler<GetQnaInfoQuery> {
   ) {}
 
   async execute(query: GetQnaInfoQuery) {
-    const qna = await this.qnaRepository.find({
-      order: { qnaId: 'DESC' },
-    });
+    const { role, accountId } = query;
 
-    if (!qna) {
-      throw new NotFoundException('작성된 문의 내역이 없습니다.');
+    // role = 본사 관리자일 경우 전체 데이터 조회
+    if (role === '본사 관리자') {
+      const qna = await this.qnaRepository.find({
+        order: { qnaId: 'DESC' },
+      });
+
+      if (!qna) {
+        throw new NotFoundException('작성된 문의 내역이 없습니다.');
+      }
+      // 문의 내역 리스트 반환
+      return qna;
+
+      // role = 일반 사용자 && 회원사 관리자일 경우 본인 데이터만 조회
+    } else {
+      const qna = await this.qnaRepository
+        .createQueryBuilder('qna')
+        .leftJoinAndSelect('qna.boardId', 'board')
+        .where('board.accountId like :accountId', { accountId: `%${accountId}%` })
+        .orderBy('qna.qnaId', 'DESC')
+        .getMany();
+
+      if (!qna) {
+        throw new NotFoundException('작성된 문의 내역이 없습니다.');
+      }
+      // 문의 내역 리스트 반환
+      return qna;
     }
-    // 문의 내역 리스트 반환
-    return qna;
   }
 }

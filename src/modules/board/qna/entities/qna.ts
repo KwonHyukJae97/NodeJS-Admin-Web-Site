@@ -1,5 +1,4 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { IsBoolean, IsString } from 'class-validator';
+import { Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Board } from '../../entities/board';
 
 /**

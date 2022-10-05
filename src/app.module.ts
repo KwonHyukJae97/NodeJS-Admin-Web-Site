@@ -12,6 +12,7 @@ import * as winston from 'winston';
 import { LoggingModule } from './logging/logging.module';
 import { NoticeModule } from './modules/board/notice/notice.module';
 import { FileModule } from './modules/board/file/file.module';
+import { QnaModule } from './modules/board/qna/qna.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { FileModule } from './modules/board/file/file.module';
     LoggingModule,
     NoticeModule,
     FileModule,
+    QnaModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],

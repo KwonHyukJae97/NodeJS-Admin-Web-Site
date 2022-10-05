@@ -8,7 +8,7 @@ import { FileService } from '../../file/file.service';
  */
 
 @EventsHandler(FileCreateEvent, TestEvent)
-export class FileCreateEventsHandler implements IEventHandler<FileCreateEvent | TestEvent> {
+export class QnaFileCreateEventsHandler implements IEventHandler<FileCreateEvent | TestEvent> {
   constructor(private fileService: FileService) {}
 
   async handle(event: FileCreateEvent | TestEvent) {

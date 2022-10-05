@@ -22,6 +22,7 @@ import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/f
 import { GetQnaDetailDto } from './dto/get-qna-detail.dto';
 import { GetQnaDetailCommand } from './command/get-qna-detail.command';
 import { GetQnaSearchQuery } from './query/get-qna-search.query';
+import { GetQnaInfoDto } from './dto/get-qna-info.dto';
 
 /**
  * 1:1 문의 관련 API 처리하는 컨트롤러
@@ -50,8 +51,9 @@ export class QnaController {
    * 1:1 문의 리스트 조회
    */
   @Get('/list')
-  async getAllQna() {
-    const getQnaInfoQuery = new GetQnaInfoQuery();
+  async getAllQna(@Body() getQnaInfoDto: GetQnaInfoDto) {
+    const { role, accountId } = getQnaInfoDto;
+    const getQnaInfoQuery = new GetQnaInfoQuery(role, accountId);
     return this.queryBus.execute(getQnaInfoQuery);
   }
 
