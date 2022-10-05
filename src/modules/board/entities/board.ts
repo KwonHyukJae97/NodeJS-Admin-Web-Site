@@ -10,6 +10,7 @@ import {
 import { IsNumber, IsString } from 'class-validator';
 import { Notice } from '../notice/entities/notice';
 import { BoardFile } from '../file/entities/board_file';
+import { Qna } from '../qna/entities/qna';
 
 /**
  * 게시글에 대한 엔티티 정의
@@ -76,4 +77,7 @@ export class Board {
 
   @OneToOne((type) => Notice, (notice) => notice.boardId)
   noticeId: number;
+
+  @OneToOne((type) => Qna, (qna) => qna.boardId)
+  qnaId: number;
 }
