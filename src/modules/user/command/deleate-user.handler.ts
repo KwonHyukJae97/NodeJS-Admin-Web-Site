@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteUserCommand } from './delete-user.command';
 import { Account } from '../../account/entities/account.entity';
 import { Repository } from 'typeorm';
 import { AccountFile } from 'src/modules/account/file/entities/account-file';
+import { FileDeleteEvent } from '../event/file-delete-event';
+import { TestEvent } from '../event/test.event';
 
 /**
  * 앱 사용자 정보 삭제용 커맨드 핸들러
@@ -14,13 +16,14 @@ import { AccountFile } from 'src/modules/account/file/entities/account-file';
 export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand> {
   constructor(
     @InjectRepository(Account) private accountRepository: Repository<Account>,
-    @InjectRepository(AccountFile) private accountFileRepository: Repository<AccountFile>,
+    @InjectRepository(AccountFile) private fileRepository: Repository<AccountFile>,
+    private eventBus: EventBus,
   ) {}
 
   async execute(command: DeleteUserCommand) {
     const { accountId, delDate } = command;
     const account = await this.accountRepository.findOneBy({ accountId: accountId, delDate });
-    const file = await this.accountFileRepository.findBy({ accountId: accountId });
+    const file = await this.fileRepository.findBy({ accountId: accountId });
 
     // new Date()에서 반환하는 UTC시간을 KST시간으로 변경
     const getDate = new Date();
@@ -51,7 +54,13 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand> {
       .execute();
 
     //account_file DB 삭제
-    this.accountFileRepository.delete({ accountId: accountId });
+    file.map((file) => {
+      this.fileRepository.delete({ accountFileId: file.accountFileId });
+    });
+
+    //파일 삭제 이벤트 처리
+    this.eventBus.publish(new FileDeleteEvent(account.accountId));
+    this.eventBus.publish(new TestEvent());
 
     //삭제처리 메시지 반환
     return '삭제가 완료 되었습니다.';

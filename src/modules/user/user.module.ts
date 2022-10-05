@@ -10,22 +10,11 @@ import { GetAllUserQueryHandler } from './query/get-all-user.handler';
 import { DeleteUserHandler } from './command/deleate-user.handler';
 import { UpdateUserHandler } from './command/update-user.handler';
 import { AccountFile } from '../account/file/entities/account-file';
-import { MulterModule } from '@nestjs/platform-express';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { multerOptionsFactory } from 'src/common/utils/multer.options';
 
 const CommandHandlers = [CreateUserHandler, UpdateUserHandler, DeleteUserHandler];
 const QueryHandlers = [GetUserInfoQueryHandler, GetAllUserQueryHandler];
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User, Account, AccountFile]),
-    CqrsModule,
-    MulterModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: multerOptionsFactory,
-      inject: [ConfigService],
-    }),
-  ],
+  imports: [TypeOrmModule.forFeature([User, Account, AccountFile]), CqrsModule],
   controllers: [UserController],
   providers: [...CommandHandlers, ...QueryHandlers],
 })

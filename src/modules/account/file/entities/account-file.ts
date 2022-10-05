@@ -6,6 +6,7 @@ import {
   JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { IsNumber, IsString } from 'class-validator';
 import { Account } from '../../entities/account.entity';
@@ -82,7 +83,7 @@ export class AccountFile {
   regDate: Date;
 
   //변경일시
-  @CreateDateColumn({
+  @UpdateDateColumn({
     name: 'update_date',
     type: 'datetime',
     nullable: true,

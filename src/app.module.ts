@@ -12,7 +12,7 @@ import * as winston from 'winston';
 import { LoggingModule } from './logging/logging.module';
 import { NoticeModule } from './modules/board/notice/notice.module';
 import { FileModule } from './modules/board/file.module';
-
+import { AccountFileModule } from './modules/account/file/account-file.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -69,6 +69,7 @@ import { FileModule } from './modules/board/file.module';
     LoggingModule,
     NoticeModule,
     FileModule,
+    AccountFileModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
