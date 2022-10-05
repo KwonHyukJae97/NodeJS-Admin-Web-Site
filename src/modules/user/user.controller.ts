@@ -17,7 +17,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { GetUserInfoQuery } from './query/get-user-info.query';
 import { GetAllUserQuery } from './query/get-all-user.query';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 /**
  * 앱사용자 API controller
@@ -62,11 +62,11 @@ export class UserController {
    * @Param : account_id
    */
   @Patch(':id')
-  @UseInterceptors(FilesInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file'))
   updateUser(
     @Param('id') accountId: number,
     @Body() dto: UpdateUserDto,
-    @UploadedFile() file: Express.MulterS3.File[],
+    @UploadedFile() file: Express.MulterS3.File,
   ) {
     const { password, email, phone, nickname, grade } = dto;
     const command = new UpdateUserCommand(password, email, phone, nickname, grade, accountId, file);
