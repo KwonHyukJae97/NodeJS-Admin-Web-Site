@@ -36,7 +36,7 @@ export class GetCommentInfoHandler implements IQueryHandler<GetCommentInfoQuery>
 
     let isComment;
 
-    const qnaAdminList = await Promise.all(
+    const qnaCommentList = await Promise.all(
       qna.map(async (x) => {
         // 각 문의 내역마다 반복문 돌려가면서 해당 답변 리스트 조회
         const commentList = await this.commentRepository.findBy({ qnaId: x.qnaId });
@@ -60,6 +60,6 @@ export class GetCommentInfoHandler implements IQueryHandler<GetCommentInfoQuery>
         return qnaCommentListDto;
       }),
     );
-    return qnaAdminList;
+    return qnaCommentList;
   }
 }

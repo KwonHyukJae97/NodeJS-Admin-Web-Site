@@ -10,7 +10,6 @@ import { GetCommentDetailDto } from './dto/get-comment-detail.dto';
 import { GetCommentDetailCommand } from './command/get-comment-detail.command';
 import { GetCommentSearchQuery } from './query/get-comment-search.query';
 import { GetCommentInfoDto } from './dto/get-comment-info.dto';
-import { GetCommentListDto } from './dto/get-comment-list.dto';
 
 /**
  * 답변 관련 API 처리하는 컨트롤러
@@ -77,8 +76,8 @@ export class CommentController {
     @Param('id') commentId: number,
     @Body() updateCommentDto: UpdateCommentDto,
   ): Promise<Comment> {
-    const { title, content, accountId } = updateCommentDto;
-    const command = new UpdateCommentCommand(title, content, commentId, accountId);
+    const { comment, adminId } = updateCommentDto;
+    const command = new UpdateCommentCommand(commentId, comment, adminId);
     return this.commandBus.execute(command);
   }
 }

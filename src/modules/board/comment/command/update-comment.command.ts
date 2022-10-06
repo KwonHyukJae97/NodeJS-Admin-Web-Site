@@ -5,10 +5,5 @@ import { ICommand } from '@nestjs/cqrs';
  */
 
 export class UpdateCommentCommand implements ICommand {
-  constructor(
-    readonly title: string,
-    readonly content: string,
-    readonly commentId: number,
-    readonly accountId: number,
-  ) {}
+  constructor(readonly commentId: number, readonly comment: string, readonly adminId: number) {}
 }

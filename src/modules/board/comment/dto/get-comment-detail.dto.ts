@@ -1,6 +1,5 @@
 import { IsNotEmpty } from 'class-validator';
-import { Board } from '../../entities/board';
-import { BoardFile } from '../../file/entities/board_file';
+import { Qna } from '../../qna/entities/qna';
 
 /**
  * 답변 상세 조회 시, 필요한 필드로 구성한 응답 dto
@@ -8,10 +7,7 @@ import { BoardFile } from '../../file/entities/board_file';
 
 export class GetCommentDetailDto {
   @IsNotEmpty()
-  commentId: number;
+  qna: Qna;
 
-  @IsNotEmpty()
-  boardId: Board;
-
-  fileList: BoardFile[];
+  commentList: Comment[];
 }

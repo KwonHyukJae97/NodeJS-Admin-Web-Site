@@ -6,12 +6,8 @@ import { IsNotEmpty } from 'class-validator';
 
 export class UpdateCommentDto {
   @IsNotEmpty()
-  title: string;
+  comment: string;
 
   @IsNotEmpty()
-  content: string;
-
-  // 수정 권한 확인을 위한 임시 속성
-  @IsNotEmpty()
-  accountId: number;
+  adminId: number;
 }

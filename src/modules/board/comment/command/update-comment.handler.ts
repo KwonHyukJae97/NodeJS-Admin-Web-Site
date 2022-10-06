@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateCommentCommand } from './update-comment.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -24,21 +24,27 @@ export class UpdateCommentHandler implements ICommandHandler<UpdateCommentComman
   ) {}
 
   async execute(command: UpdateCommentCommand) {
-    const { title, content, commentId, accountId } = command;
+    const { commentId, comment, adminId } = command;
 
-    const comment = await this.commentRepository.findOneBy({ commentId: commentId });
+    const commentDetail = await this.commentRepository.findOneBy({ commentId: commentId });
 
-    if (!comment) {
-      throw new NotFoundException('존재하지 않는 문의 내역입니다.');
+    if (!commentDetail) {
+      throw new NotFoundException('존재하지 않는 답변 내역입니다.');
     }
 
+    if (adminId !== commentDetail.adminId) {
+      throw new BadRequestException('작성자만 수정이 가능합니다.');
+    }
+
+    commentDetail.comment = comment;
+
     try {
-      await this.commentRepository.save(comment);
+      await this.commentRepository.save(commentDetail);
     } catch (err) {
       console.log(err);
     }
 
-    // 변경된 문의 내역 반환
-    return comment;
+    // 변경된 답변 반환
+    return commentDetail;
   }
 }
