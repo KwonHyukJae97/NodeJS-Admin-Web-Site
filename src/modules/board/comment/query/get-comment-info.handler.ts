@@ -10,6 +10,12 @@ import { Qna } from '../../qna/entities/qna';
  * 답변 전체 조회 시, 쿼리를 구현하는 쿼리 핸들러
  */
 
+// 한국 시간으로 변경하는 메서드
+const getDateTime = (utcTime) => {
+  utcTime.setHours(utcTime.getHours() + 9);
+  return utcTime.toISOString().replace('T', ' ').substring(0, 16);
+};
+
 @QueryHandler(GetCommentInfoQuery)
 export class GetCommentInfoHandler implements IQueryHandler<GetCommentInfoQuery> {
   constructor(
@@ -30,7 +36,7 @@ export class GetCommentInfoHandler implements IQueryHandler<GetCommentInfoQuery>
       order: { qnaId: 'DESC' },
     });
 
-    if (!qna || qna.length === 0) {
+    if (qna.length === 0) {
       throw new NotFoundException('작성된 문의 내역이 없습니다.');
     }
 
@@ -53,7 +59,7 @@ export class GetCommentInfoHandler implements IQueryHandler<GetCommentInfoQuery>
           accountId: x.boardId.accountId,
           title: x.boardId.title,
           viewCount: x.boardId.viewCount,
-          regDate: x.boardId.regDate,
+          regDate: getDateTime(x.boardId.regDate),
           isComment,
         };
 

@@ -47,7 +47,7 @@ import { CommentModule } from './modules/board/comment/comment.module';
       // synchronize: Boolean(process.env.DATABASE_DB_SYNCHRONIZE),
       autoLoadEntities: true,
       // entities: ["__DIR/**/*.entity{.ts,.js}"],
-      timezone: 'Asia/Seoul',
+      timezone: 'UTC',
     }),
     WinstonModule.forRoot({
       defaultMeta: {},
