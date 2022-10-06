@@ -1,24 +1,24 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
-import { DeleteNoticeCommand } from './delete-notice.command';
+import { DeleteFaqCommand } from './delete-faq.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Notice } from '../entities/notice';
+import { Faq } from '../entities/faq';
 import { Board } from '../../entities/board';
 import { TestEvent } from '../event/test.event';
 import { FileDeleteEvent } from '../event/file-delete-event';
 import { BoardFile } from '../../file/entities/board_file';
 
 /**
- * 공지사항 삭제 시, 커맨드를 처리하는 커맨드 핸들러
+ * FAQ 삭제 시, 커맨드를 처리하는 커맨드 핸들러
  */
 
 @Injectable()
-@CommandHandler(DeleteNoticeCommand)
-export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand> {
+@CommandHandler(DeleteFaqCommand)
+export class DeleteFaqHandler implements ICommandHandler<DeleteFaqCommand> {
   constructor(
-    @InjectRepository(Notice)
-    private noticeRepository: Repository<Notice>,
+    @InjectRepository(Faq)
+    private faqRepository: Repository<Faq>,
 
     @InjectRepository(Board)
     private boardRepository: Repository<Board>,
@@ -29,16 +29,16 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
     private eventBus: EventBus,
   ) {}
 
-  async execute(command: DeleteNoticeCommand) {
-    const { noticeId } = command;
+  async execute(command: DeleteFaqCommand) {
+    const { faqId } = command;
 
-    const notice = await this.noticeRepository.findOneBy({ noticeId: noticeId });
+    const faq = await this.faqRepository.findOneBy({ faqId: faqId });
 
-    if (!notice) {
-      throw new NotFoundException('존재하지 않는 공지사항입니다.');
+    if (!faq) {
+      throw new NotFoundException('존재하지 않는 FAQ입니다.');
     }
 
-    const board = await this.boardRepository.findOneBy({ boardId: notice.boardId.boardId });
+    const board = await this.boardRepository.findOneBy({ boardId: faq.boardId.boardId });
 
     const files = await this.fileRepository.findBy({ boardId: board.boardId });
 
@@ -51,9 +51,9 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
     this.eventBus.publish(new FileDeleteEvent(board.boardId));
     this.eventBus.publish(new TestEvent());
 
-    // notice db 삭제
+    // faq db 삭제
     try {
-      await this.noticeRepository.delete(notice);
+      await this.faqRepository.delete(faq);
     } catch (err) {
       console.log(err);
     }
@@ -65,6 +65,6 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
       console.log(err);
     }
 
-    return '공지사항 삭제 성공';
+    return 'FAQ 삭제 성공';
   }
 }

@@ -1,13 +1,6 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { IsNumber, IsString } from 'class-validator';
+import { Faq } from '../faq/entities/faq';
 import { Notice } from '../notice/entities/notice';
 import { BoardFile } from '../file/entities/board_file';
 import { Qna } from '../qna/entities/qna';
@@ -80,4 +73,7 @@ export class Board {
 
   @OneToOne((type) => Qna, (qna) => qna.boardId)
   qnaId: number;
+
+  @OneToOne((type) => Faq, (faq) => faq.boardId)
+  faqId: number;
 }

@@ -21,7 +21,7 @@ export class FileCreateEventsHandler implements IEventHandler<FileCreateEvent | 
         break;
       }
       case TestEvent.name: {
-        console.log('공지사항 등록 최종 완료!');
+        console.log('FAQ 등록 최종 완료!');
         break;
       }
       default:

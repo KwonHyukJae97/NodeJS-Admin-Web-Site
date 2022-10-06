@@ -21,7 +21,7 @@ export class FileDeleteEventsHandler implements IEventHandler<FileDeleteEvent | 
         break;
       }
       case TestEvent.name: {
-        console.log('공지사항 삭제 최종 완료!');
+        console.log('FAQ 삭제 최종 완료!');
         break;
       }
       default:

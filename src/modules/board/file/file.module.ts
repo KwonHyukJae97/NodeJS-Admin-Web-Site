@@ -13,6 +13,13 @@ import { GetAllFileDownloadHandler } from './query/get-files-download.handler';
 import { QnaFileCreateEventsHandler } from '../qna/event/file-create-events.handler';
 import { QnaFileUpdateEventsHandler } from '../qna/event/file-update-events.handler';
 import { QnaFileDeleteEventsHandler } from '../qna/event/file-delete-events.handler';
+import { FileCreateEventsHandler } from '../faq/event/file-create-events.handler';
+import { FileUpdateEventsHandler } from '../faq/event/file-update-events.handler';
+import { FileDeleteEventsHandler } from '../faq/event/file-delete-events.handler';
+import { GetFileDownloadHandler } from './query/get-file-download.handler';
+import { GetAllFileDownloadHandler } from './query/get-files-download.handler';
+import { CqrsModule } from '@nestjs/cqrs';
+import { FileController } from './file.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Board, BoardFile]), CqrsModule],

@@ -21,7 +21,7 @@ export class FileUpdateEventsHandler implements IEventHandler<FileUpdateEvent | 
         break;
       }
       case TestEvent.name: {
-        console.log('공지사항 수정 최종 완료!');
+        console.log('FAQ 수정 최종 완료!');
         break;
       }
       default:

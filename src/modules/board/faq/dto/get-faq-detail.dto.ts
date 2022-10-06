@@ -1,20 +1,18 @@
 import { IsNotEmpty } from 'class-validator';
 import { Board } from '../../entities/board';
 import { BoardFile } from '../../file/entities/board_file';
+import { FaqCategory } from '../entities/faq_category';
 
 /**
- * 공지사항 상세 조회 시, 필요한 필드로 구성한 응답 dto
+ * FAQ 상세 조회 시, 필요한 필드로 구성한 응답 dto
  */
 
-export class GetNoticeDetailDto {
+export class GetFaqDetailDto {
   @IsNotEmpty()
-  noticeId: number;
+  faqId: number;
 
   @IsNotEmpty()
-  noticeGrant: string;
-
-  @IsNotEmpty()
-  isTop: boolean;
+  categoryId: FaqCategory;
 
   @IsNotEmpty()
   boardId: Board;
