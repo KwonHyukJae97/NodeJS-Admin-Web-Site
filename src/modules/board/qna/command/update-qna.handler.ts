@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateQnaCommand } from './update-qna.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,12 +26,16 @@ export class UpdateQnaHandler implements ICommandHandler<UpdateQnaCommand> {
   ) {}
 
   async execute(command: UpdateQnaCommand) {
-    const { title, content, qnaId, boardType, files } = command;
+    const { title, content, qnaId, boardType, files, accountId } = command;
 
     const qna = await this.qnaRepository.findOneBy({ qnaId: qnaId });
 
     if (!qna) {
       throw new NotFoundException('존재하지 않는 문의 내역입니다.');
+    }
+
+    if (accountId !== qna.boardId.accountId) {
+      throw new BadRequestException('작성자만 수정이 가능합니다.');
     }
 
     const board = await this.boardRepository.findOneBy({ boardId: qna.boardId.boardId });

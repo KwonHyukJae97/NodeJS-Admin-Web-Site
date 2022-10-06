@@ -8,7 +8,7 @@ import { FileUpdateEvent } from './file-update-event';
  */
 
 @EventsHandler(FileUpdateEvent, TestEvent)
-export class FileUpdateEventsHandler implements IEventHandler<FileUpdateEvent | TestEvent> {
+export class QnaFileUpdateEventsHandler implements IEventHandler<FileUpdateEvent | TestEvent> {
   constructor(private fileService: FileService) {}
 
   async handle(event: FileUpdateEvent | TestEvent) {

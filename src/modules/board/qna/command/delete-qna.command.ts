@@ -5,5 +5,5 @@ import { ICommand } from '@nestjs/cqrs';
  */
 
 export class DeleteQnaCommand implements ICommand {
-  constructor(readonly qnaId: number) {}
+  constructor(readonly qnaId: number, readonly accountId: number) {}
 }

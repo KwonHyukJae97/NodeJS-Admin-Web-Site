@@ -11,6 +11,8 @@ import { GetFileDownloadHandler } from './query/get-file-download.handler';
 import { CqrsModule } from '@nestjs/cqrs';
 import { GetAllFileDownloadHandler } from './query/get-files-download.handler';
 import { QnaFileCreateEventsHandler } from '../qna/event/file-create-events.handler';
+import { QnaFileUpdateEventsHandler } from '../qna/event/file-update-events.handler';
+import { QnaFileDeleteEventsHandler } from '../qna/event/file-delete-events.handler';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Board, BoardFile]), CqrsModule],
@@ -20,7 +22,9 @@ import { QnaFileCreateEventsHandler } from '../qna/event/file-create-events.hand
     FileCreateEventsHandler,
     QnaFileCreateEventsHandler,
     FileUpdateEventsHandler,
+    QnaFileUpdateEventsHandler,
     FileDeleteEventsHandler,
+    QnaFileDeleteEventsHandler,
     GetFileDownloadHandler,
     GetAllFileDownloadHandler,
   ],

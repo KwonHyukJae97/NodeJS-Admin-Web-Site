@@ -8,7 +8,7 @@ import { FileDeleteEvent } from './file-delete-event';
  */
 
 @EventsHandler(FileDeleteEvent, TestEvent)
-export class FileDeleteEventsHandler implements IEventHandler<FileDeleteEvent | TestEvent> {
+export class QnaFileDeleteEventsHandler implements IEventHandler<FileDeleteEvent | TestEvent> {
   constructor(private fileService: FileService) {}
 
   async handle(event: FileDeleteEvent | TestEvent) {

@@ -93,18 +93,22 @@ export class QnaController {
     @UploadedFiles() files: Express.MulterS3.File[],
     // @Res() res: Response,
   ): Promise<Qna> {
-    const { title, content, boardType } = updateQnaDto;
-    const command = new UpdateQnaCommand(title, content, qnaId, boardType, files);
+    const { title, content, boardType, accountId } = updateQnaDto;
+    const command = new UpdateQnaCommand(title, content, qnaId, boardType, files, accountId);
     return this.commandBus.execute(command);
   }
 
   /**
    * 1:1 문의 삭제
    * @ param : qna_id
+   * @ param : account_id (삭제 권한 확인을 위해 임시로 사용)
    */
-  @Delete(':id')
-  async deleteQna(@Param('id') qnaId: number): Promise<string> {
-    const command = new DeleteQnaCommand(qnaId);
+  @Delete(':id/:accountId')
+  async deleteQna(
+    @Param('id') qnaId: number,
+    @Param('accountId') accountId: number,
+  ): Promise<string> {
+    const command = new DeleteQnaCommand(qnaId, accountId);
     return this.commandBus.execute(command);
   }
 }

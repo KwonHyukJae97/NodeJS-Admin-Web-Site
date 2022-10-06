@@ -14,4 +14,8 @@ export class UpdateQnaDto {
 
   @IsNotEmpty()
   boardType: BoardType.QNA;
+
+  // 수정 권한 확인을 위한 임시 속성
+  @IsNotEmpty()
+  accountId: number;
 }
