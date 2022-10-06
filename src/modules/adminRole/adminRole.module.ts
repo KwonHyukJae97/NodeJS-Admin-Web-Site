@@ -1,0 +1,20 @@
+import { Module } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AdminRoleController } from './adminRole.controller';
+import { AdminRole } from './entities/adminrole.entity';
+import { GetAdminRoleInfoQueryHandler } from './query/get-adminrole-info.handler';
+import { DeleteAdminRoleHandler } from './command/deleate-adminrole.handler';
+import { UpdateAdminRoleHandler } from './command/update-adminrole.handler';
+import { CreateAdminRoleHandler } from './command/create-adminrole.handler';
+import { Company } from '../company/entities/company.entity';
+import { GetAllAdminRoleQueryHandler } from './query/get-all-adminRole.handler';
+
+const CommandHandlers = [CreateAdminRoleHandler, UpdateAdminRoleHandler, DeleteAdminRoleHandler];
+const QueryHandlers = [GetAdminRoleInfoQueryHandler, GetAllAdminRoleQueryHandler];
+@Module({
+  imports: [TypeOrmModule.forFeature([AdminRole, Company]), CqrsModule],
+  controllers: [AdminRoleController],
+  providers: [...CommandHandlers, ...QueryHandlers],
+})
+export class AdminRoleModule {}
