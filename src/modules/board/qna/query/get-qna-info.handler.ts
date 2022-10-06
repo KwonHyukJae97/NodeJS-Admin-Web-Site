@@ -25,7 +25,7 @@ export class GetQnaInfoHandler implements IQueryHandler<GetQnaInfoQuery> {
         order: { qnaId: 'DESC' },
       });
 
-      if (!qna) {
+      if (!qna || qna.length === 0) {
         throw new NotFoundException('작성된 문의 내역이 없습니다.');
       }
       // 문의 내역 리스트 반환

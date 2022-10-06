@@ -13,6 +13,7 @@ import { LoggingModule } from './logging/logging.module';
 import { NoticeModule } from './modules/board/notice/notice.module';
 import { FileModule } from './modules/board/file/file.module';
 import { QnaModule } from './modules/board/qna/qna.module';
+import { CommentModule } from './modules/board/comment/comment.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { QnaModule } from './modules/board/qna/qna.module';
     NoticeModule,
     FileModule,
     QnaModule,
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],

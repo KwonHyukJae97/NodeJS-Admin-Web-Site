@@ -1,5 +1,6 @@
-import { Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Board } from '../../entities/board';
+import { Comment } from '../../comment/entities/comment';
 
 /**
  * 1:1 문의에 대한 엔티티 정의
@@ -19,4 +20,7 @@ export class Qna {
     name: 'board_id',
   })
   boardId: Board;
+
+  // @OneToMany((type) => Comment, (comment) => comment.qnaId)
+  // commentList: Comment[];
 }
