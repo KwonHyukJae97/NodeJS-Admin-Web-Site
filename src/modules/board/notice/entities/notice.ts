@@ -28,7 +28,7 @@ export class Notice {
   })
   isTop: boolean;
 
-  // 게시글 번
+  // 게시글 번호
   @OneToOne((type) => Board, (board) => board.noticeId, { eager: true })
   @JoinColumn({
     name: 'board_id',

@@ -1,14 +1,14 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { TestEvent } from './test-event';
 import { FileService } from '../../file/file.service';
 import { FileUpdateEvent } from './file-update-event';
+import { TestEvent } from './test-event';
 
 /**
  * 파일 업데이트 시, 필요 로직을 처리하는 이벤트 핸들러
  */
 
 @EventsHandler(FileUpdateEvent, TestEvent)
-export class FaqFileUpdateEventsHandler implements IEventHandler<FileUpdateEvent | TestEvent> {
+export class NoticeFileUpdateEventsHandler implements IEventHandler<FileUpdateEvent | TestEvent> {
   constructor(private fileService: FileService) {}
 
   async handle(event: FileUpdateEvent | TestEvent) {
@@ -21,7 +21,7 @@ export class FaqFileUpdateEventsHandler implements IEventHandler<FileUpdateEvent
         break;
       }
       case TestEvent.name: {
-        console.log('FAQ 수정 최종 완료!');
+        console.log('공지사항 수정 최종 완료!');
         break;
       }
       default:

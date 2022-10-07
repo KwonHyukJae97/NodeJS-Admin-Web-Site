@@ -6,7 +6,7 @@ import { Qna } from '../entities/qna';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { FileCreateEvent } from '../event/file-create-event';
-import { TestEvent } from '../event/test.event';
+import { TestEvent } from '../event/test-event';
 
 /**
  * 1:1 문의 등록 시, 커맨드를 처리하는 커맨드 핸들러

@@ -1,28 +1,23 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { GetQnaInfoQuery } from './get-qna-info.query';
+import { GetQnaListQuery } from './get-qna-list.query';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Qna } from '../entities/qna';
 import { Repository } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
+import { getDateTime } from '../../../../common/utils/time-common-method';
 
 /**
  * 1:1 문의 전체 조회 시, 쿼리를 구현하는 쿼리 핸들러
  */
 
-// 한국 시간으로 변경하는 메서드
-const getDateTime = (utcTime) => {
-  utcTime.setHours(utcTime.getHours() + 9);
-  return utcTime.toISOString().replace('T', ' ').substring(0, 16);
-};
-
-@QueryHandler(GetQnaInfoQuery)
-export class GetQnaInfoHandler implements IQueryHandler<GetQnaInfoQuery> {
+@QueryHandler(GetQnaListQuery)
+export class GetQnaListHandler implements IQueryHandler<GetQnaListQuery> {
   constructor(
     @InjectRepository(Qna)
     private qnaRepository: Repository<Qna>,
   ) {}
 
-  async execute(query: GetQnaInfoQuery) {
+  async execute(query: GetQnaListQuery) {
     const { role, accountId } = query;
 
     // role = 본사 관리자일 경우 전체 데이터 조회

@@ -1,15 +1,15 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateCommentCommand } from './command/create-comment.command';
-import { GetCommentInfoQuery } from './query/get-comment-info.query';
+import { GetCommentListQuery } from './query/get-comment-list.query';
 import { Comment } from './entities/comment';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { UpdateCommentCommand } from './command/update-comment.command';
 import { GetCommentDetailDto } from './dto/get-comment-detail.dto';
 import { GetCommentDetailCommand } from './command/get-comment-detail.command';
-import { GetCommentSearchQuery } from './query/get-comment-search.query';
 import { GetCommentInfoDto } from './dto/get-comment-info.dto';
+import { GetCommentListDto } from './dto/get-comment-list.dto';
 
 /**
  * 답변 관련 API 처리하는 컨트롤러
@@ -37,10 +37,10 @@ export class CommentController {
    * 답변 리스트 조회
    */
   @Get()
-  async getAllComment(@Body() getCommentInfoDto: GetCommentInfoDto) {
+  async getAllComment(@Body() getCommentInfoDto: GetCommentInfoDto): Promise<GetCommentListDto> {
     const { role } = getCommentInfoDto;
-    const getCommentInfoQuery = new GetCommentInfoQuery(role);
-    return this.queryBus.execute(getCommentInfoQuery);
+    const getCommentListQuery = new GetCommentListQuery(role);
+    return this.queryBus.execute(getCommentListQuery);
   }
 
   /**
@@ -55,16 +55,6 @@ export class CommentController {
     const { role } = getCommentInfoDto;
     const command = new GetCommentDetailCommand(qnaId, role);
     return this.commandBus.execute(command);
-  }
-
-  /**
-   * 답변 검색어 조회
-   * @ query : keyword
-   */
-  @Get()
-  async getCommentSearch(@Query('keyword') keyword: string) {
-    const getCommentSearchQuery = new GetCommentSearchQuery(keyword);
-    return this.queryBus.execute(getCommentSearchQuery);
   }
 
   /**

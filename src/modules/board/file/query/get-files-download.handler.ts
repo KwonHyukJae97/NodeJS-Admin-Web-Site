@@ -2,7 +2,6 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { GetFileDownloadQuery } from './get-file-download.query';
 import { BoardFile } from '../entities/board_file';
 import * as AWS from 'aws-sdk';
 import { GetAllFileDownloadQuery } from './get-files-download.query';
@@ -61,7 +60,6 @@ export class GetAllFileDownloadHandler implements IQueryHandler<GetAllFileDownlo
               message: 'S3에 파일이 존재하지 않습니다.',
               err: err.code,
             });
-            // throw new NotFoundException('S3에 파일이 존재하지 않습니다.');
           } else {
             // 브라우저에게 파일을 다운로드 하도록 알려주기 위해 Header에 Content-Disposition 설정하여 응답
             res.setHeader('Content-Disposition', `attachment; filename=${downloadName}`);

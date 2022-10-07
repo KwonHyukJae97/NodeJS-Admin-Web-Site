@@ -1,5 +1,4 @@
 import { ICommand } from '@nestjs/cqrs';
-import { Response } from 'express';
 
 /**
  * 공지사항 삭제 시, 사용되는 커맨드 정의

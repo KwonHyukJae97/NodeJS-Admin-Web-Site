@@ -6,16 +6,11 @@ import { Qna } from '../entities/qna';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { BoardFile } from '../../file/entities/board_file';
+import { getDateTime } from '../../../../common/utils/time-common-method';
 
 /**
  * 1:1 문의 상세조회 시, 커맨드를 처리하는 커맨드 핸들러 (서비스 로직 수행)
  */
-
-// 한국 시간으로 변경하는 메서드
-const getDateTime = (utcTime) => {
-  utcTime.setHours(utcTime.getHours() + 9);
-  return utcTime.toISOString().replace('T', ' ').substring(0, 16);
-};
 
 @Injectable()
 @CommandHandler(GetQnaDetailCommand)

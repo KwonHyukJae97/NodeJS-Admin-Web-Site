@@ -1,23 +1,22 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { GetCategoryInfoQuery } from './get-category-info.query';
+import { GetCategoryListQuery } from './get-category-list.query';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FaqCategory } from '../entities/faq_category';
 import { Repository } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
-import { Faq } from '../entities/faq';
 
 /**
  * FAQ 카테고리 리스트 조회 시, 쿼리를 구현하는 쿼리 핸들러
  */
 
-@QueryHandler(GetCategoryInfoQuery)
-export class GetCategoryInfoHandler implements IQueryHandler<GetCategoryInfoQuery> {
+@QueryHandler(GetCategoryListQuery)
+export class GetCategoryListHandler implements IQueryHandler<GetCategoryListQuery> {
   constructor(
     @InjectRepository(FaqCategory)
     private categoryRepository: Repository<FaqCategory>,
   ) {}
 
-  async execute(query: GetCategoryInfoQuery) {
+  async execute(query: GetCategoryListQuery) {
     const { role } = query;
 
     // role = 본사 관리자일 경우 전체 데이터 조회

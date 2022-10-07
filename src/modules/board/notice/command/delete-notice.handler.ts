@@ -1,24 +1,24 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
-import { DeleteQnaCommand } from './delete-qna.command';
+import { DeleteNoticeCommand } from './delete-notice.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Qna } from '../entities/qna';
+import { Notice } from '../entities/notice';
 import { Board } from '../../entities/board';
 import { TestEvent } from '../event/test-event';
 import { FileDeleteEvent } from '../event/file-delete-event';
 import { BoardFile } from '../../file/entities/board_file';
 
 /**
- * 1:1 문의 삭제 시, 커맨드를 처리하는 커맨드 핸들러
+ * 공지사항 삭제 시, 커맨드를 처리하는 커맨드 핸들러
  */
 
 @Injectable()
-@CommandHandler(DeleteQnaCommand)
-export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
+@CommandHandler(DeleteNoticeCommand)
+export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand> {
   constructor(
-    @InjectRepository(Qna)
-    private qnaRepository: Repository<Qna>,
+    @InjectRepository(Notice)
+    private noticeRepository: Repository<Notice>,
 
     @InjectRepository(Board)
     private boardRepository: Repository<Board>,
@@ -29,20 +29,16 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
     private eventBus: EventBus,
   ) {}
 
-  async execute(command: DeleteQnaCommand) {
-    const { qnaId, accountId } = command;
+  async execute(command: DeleteNoticeCommand) {
+    const { noticeId } = command;
 
-    const qna = await this.qnaRepository.findOneBy({ qnaId: qnaId });
+    const notice = await this.noticeRepository.findOneBy({ noticeId: noticeId });
 
-    if (!qna) {
-      throw new NotFoundException('존재하지 않는 문의 내역입니다.');
+    if (!notice) {
+      throw new NotFoundException('존재하지 않는 공지사항입니다.');
     }
 
-    if (accountId != qna.boardId.accountId) {
-      throw new BadRequestException('작성자만 삭제가 가능합니다.');
-    }
-
-    const board = await this.boardRepository.findOneBy({ boardId: qna.boardId.boardId });
+    const board = await this.boardRepository.findOneBy({ boardId: notice.boardId.boardId });
 
     const files = await this.fileRepository.findBy({ boardId: board.boardId });
 
@@ -55,9 +51,9 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
     this.eventBus.publish(new FileDeleteEvent(board.boardId));
     this.eventBus.publish(new TestEvent());
 
-    // qna db 삭제
+    // notice db 삭제
     try {
-      await this.qnaRepository.delete(qna);
+      await this.noticeRepository.delete(notice);
     } catch (err) {
       console.log(err);
     }
@@ -69,6 +65,6 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
       console.log(err);
     }
 
-    return '1:1 문의 삭제 성공';
+    return '공지사항 삭제 성공';
   }
 }

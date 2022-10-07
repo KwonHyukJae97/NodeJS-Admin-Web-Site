@@ -10,7 +10,7 @@ export class UpdateFaqCommand implements ICommand {
     readonly title: string,
     readonly content: string,
     readonly categoryName: string,
-    readonly boardType: BoardType.FAQ,
+    readonly boardType: BoardType,
     readonly faqId: number,
     readonly files: Express.MulterS3.File[],
   ) {}

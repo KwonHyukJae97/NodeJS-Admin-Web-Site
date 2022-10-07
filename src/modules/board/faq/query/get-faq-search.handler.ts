@@ -4,6 +4,7 @@ import { Faq } from '../entities/faq';
 import { Repository } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { GetFaqSearchQuery } from './get-faq-search.query';
+import { getDateTime } from '../../../../common/utils/time-common-method';
 
 /**
  * FAQ 카테고리별 검색어 조회 시, 쿼리를 구현하는 쿼리 핸들러
@@ -35,6 +36,11 @@ export class GetFaqSearchHandler implements IQueryHandler<GetFaqSearchQuery> {
           throw new NotFoundException('검색 결과가 없습니다.');
         }
 
+        // 시간 변경
+        faq.map((faq) => {
+          faq.boardId.regDate = getDateTime(faq.boardId.regDate);
+        });
+
         return faq;
 
         // 카테고리가 있을 경우, 카테고리 내에서 검색
@@ -51,6 +57,11 @@ export class GetFaqSearchHandler implements IQueryHandler<GetFaqSearchQuery> {
         if (!faq || faq.length === 0) {
           throw new NotFoundException('검색 결과가 없습니다.');
         }
+
+        // 시간 변경
+        faq.map((faq) => {
+          faq.boardId.regDate = getDateTime(faq.boardId.regDate);
+        });
 
         return faq;
       }
@@ -72,6 +83,11 @@ export class GetFaqSearchHandler implements IQueryHandler<GetFaqSearchQuery> {
           throw new NotFoundException('검색 결과가 없습니다.');
         }
 
+        // 시간 변경
+        faq.map((faq) => {
+          faq.boardId.regDate = getDateTime(faq.boardId.regDate);
+        });
+
         return faq;
 
         // 카테고리가 있을 경우, 카테고리 내에서 검색
@@ -89,6 +105,12 @@ export class GetFaqSearchHandler implements IQueryHandler<GetFaqSearchQuery> {
         if (!faq || faq.length === 0) {
           throw new NotFoundException('검색 결과가 없습니다.');
         }
+
+        // 시간 변경
+        faq.map((faq) => {
+          faq.boardId.regDate = getDateTime(faq.boardId.regDate);
+        });
+
         // FAQ 리스트 반환
         return faq;
       }

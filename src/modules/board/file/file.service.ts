@@ -6,6 +6,7 @@ import { Board } from '../entities/board';
 import { Repository } from 'typeorm';
 import * as AWS from 'aws-sdk';
 import { randomUUID } from 'crypto';
+import { getTime, getToday } from '../../../common/utils/time-common-method';
 
 /**
  * 파일 업로드 시, 필요 로직을 실질적으로 수행
@@ -16,27 +17,6 @@ const s3 = new AWS.S3({
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   region: process.env.AWS_REGION,
 });
-
-// 오늘 날짜 구하는 메서드
-export function getToday() {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = ('0' + (1 + date.getMonth())).slice(-2);
-  const day = ('0' + date.getDate()).slice(-2);
-
-  return year + '-' + month + '-' + day;
-}
-
-// 현재 시각 구하는 메서드
-export function getTime() {
-  const date = new Date();
-  const hours = ('0' + date.getHours()).slice(-2);
-  const min = ('0' + date.getMinutes()).slice(-2);
-  const sec = ('0' + date.getSeconds()).slice(-2);
-  const ms = ('0' + date.getMilliseconds()).slice(-2);
-
-  return hours + min + sec + ms;
-}
 
 export const uuid = randomUUID();
 
@@ -207,12 +187,16 @@ export class FileService {
   async deleteFiles(boardId: number) {
     const files = await this.fileRepository.findBy({ boardId: boardId });
 
+    console.log(files.length);
+
     // S3에 저장되어 있는 기존 파일 삭제
     const deleteList = [];
 
     for (const file of files) {
       deleteList.push(file.fileName); // S3 key값으로 사용될 속성 추출 후, 새 배열에 추가
     }
+
+    console.log(deleteList);
 
     deleteList.map((file) => {
       deleteObjectS3(file);

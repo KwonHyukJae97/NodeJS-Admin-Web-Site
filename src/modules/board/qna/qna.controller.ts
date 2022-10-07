@@ -6,14 +6,13 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { CreateQnaDto } from './dto/create-qna.dto';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateQnaCommand } from './command/create-qna.command';
-import { GetQnaInfoQuery } from './query/get-qna-info.query';
+import { GetQnaListQuery } from './query/get-qna-list.query';
 import { Qna } from './entities/qna';
 import { UpdateQnaDto } from './dto/update-qna.dto';
 import { UpdateQnaCommand } from './command/update-qna.command';
@@ -21,7 +20,6 @@ import { DeleteQnaCommand } from './command/delete-qna.command';
 import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/files.interceptor';
 import { GetQnaDetailDto } from './dto/get-qna-detail.dto';
 import { GetQnaDetailCommand } from './command/get-qna-detail.command';
-import { GetQnaSearchQuery } from './query/get-qna-search.query';
 import { GetQnaInfoDto } from './dto/get-qna-info.dto';
 
 /**
@@ -50,10 +48,10 @@ export class QnaController {
   /**
    * 1:1 문의 리스트 조회
    */
-  @Get('/list')
+  @Get()
   async getAllQna(@Body() getQnaInfoDto: GetQnaInfoDto) {
     const { role, accountId } = getQnaInfoDto;
-    const getQnaInfoQuery = new GetQnaInfoQuery(role, accountId);
+    const getQnaInfoQuery = new GetQnaListQuery(role, accountId);
     return this.queryBus.execute(getQnaInfoQuery);
   }
 
@@ -69,16 +67,6 @@ export class QnaController {
     const { role, accountId } = getQnaInfoDto;
     const command = new GetQnaDetailCommand(qnaId, role, accountId);
     return this.commandBus.execute(command);
-  }
-
-  /**
-   * 1:1 문의 검색어 조회
-   * @ query : keyword
-   */
-  @Get()
-  async getQnaSearch(@Query('keyword') keyword: string) {
-    const getQnaSearchQuery = new GetQnaSearchQuery(keyword);
-    return this.queryBus.execute(getQnaSearchQuery);
   }
 
   /**

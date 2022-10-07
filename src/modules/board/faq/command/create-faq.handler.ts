@@ -6,7 +6,7 @@ import { Faq } from '../entities/faq';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { FileCreateEvent } from '../event/file-create-event';
-import { TestEvent } from '../event/test.event';
+import { TestEvent } from '../event/test-event';
 import { FaqCategory } from '../entities/faq_category';
 
 /**

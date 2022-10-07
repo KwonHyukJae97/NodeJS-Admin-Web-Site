@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Faq } from '../entities/faq';
 import { Board } from '../../entities/board';
-import { TestEvent } from '../event/test.event';
+import { TestEvent } from '../event/test-event';
 import { FileDeleteEvent } from '../event/file-delete-event';
 import { BoardFile } from '../../file/entities/board_file';
 

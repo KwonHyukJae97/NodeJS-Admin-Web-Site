@@ -1,6 +1,6 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { FileCreateEvent } from './file-create-event';
-import { TestEvent } from './test.event';
+import { TestEvent } from './test-event';
 import { FileService } from '../../file/file.service';
 
 /**

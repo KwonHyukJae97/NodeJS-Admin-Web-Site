@@ -5,8 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Notice } from '../entities/notice';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
-import { TestEvent } from '../event/test.event';
 import { FileUpdateEvent } from '../event/file-update-event';
+import { TestEvent } from '../event/test-event';
 
 /**
  * 공지사항 수정 시, 커맨드를 처리하는 커맨드 핸들러

@@ -1,23 +1,18 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { GetCommentInfoQuery } from './get-comment-info.query';
+import { GetCommentListQuery } from './get-comment-list.query';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from '../entities/comment';
 import { Repository } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Qna } from '../../qna/entities/qna';
+import { getDateTime } from '../../../../common/utils/time-common-method';
 
 /**
  * 답변 전체 조회 시, 쿼리를 구현하는 쿼리 핸들러
  */
 
-// 한국 시간으로 변경하는 메서드
-const getDateTime = (utcTime) => {
-  utcTime.setHours(utcTime.getHours() + 9);
-  return utcTime.toISOString().replace('T', ' ').substring(0, 16);
-};
-
-@QueryHandler(GetCommentInfoQuery)
-export class GetCommentInfoHandler implements IQueryHandler<GetCommentInfoQuery> {
+@QueryHandler(GetCommentListQuery)
+export class GetCommentListHandler implements IQueryHandler<GetCommentListQuery> {
   constructor(
     @InjectRepository(Comment)
     private commentRepository: Repository<Comment>,
@@ -25,7 +20,7 @@ export class GetCommentInfoHandler implements IQueryHandler<GetCommentInfoQuery>
     private qnaRepository: Repository<Qna>,
   ) {}
 
-  async execute(query: GetCommentInfoQuery) {
+  async execute(query: GetCommentListQuery) {
     const { role } = query;
 
     if (role !== '본사 관리자') {

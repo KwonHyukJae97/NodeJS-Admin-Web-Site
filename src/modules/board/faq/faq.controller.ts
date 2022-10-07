@@ -13,7 +13,7 @@ import {
 import { CreateFaqDto } from './dto/create-faq.dto';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateFaqCommand } from './command/create-faq.command';
-import { GetFaqInfoQuery } from './query/get-faq-info.query';
+import { GetFaqListQuery } from './query/get-faq-list.query';
 import { Faq } from './entities/faq';
 import { UpdateFaqDto } from './dto/update-faq.dto';
 import { UpdateFaqCommand } from './command/update-faq.command';
@@ -22,7 +22,7 @@ import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/f
 import { GetFaqDetailDto } from './dto/get-faq-detail.dto';
 import { GetFaqDetailCommand } from './command/get-faq-detail.command';
 import { GetFaqInfoDto } from './dto/get-faq-info.dto';
-import { GetCategoryInfoQuery } from './query/get-category-info.query';
+import { GetCategoryListQuery } from './query/get-category-list.query';
 import { GetFaqSearchQuery } from './query/get-faq-search.query';
 
 /**
@@ -53,18 +53,18 @@ export class FaqController {
   @Get('list')
   async getAllFaq(@Body() getFaqInfoDto: GetFaqInfoDto) {
     const { role } = getFaqInfoDto;
-    const getFaqInfoQuery = new GetFaqInfoQuery(role);
-    return this.queryBus.execute(getFaqInfoQuery);
+    const getFaqListQuery = new GetFaqListQuery(role);
+    return this.queryBus.execute(getFaqListQuery);
   }
 
   /**
    * FAQ 카테고리 리스트 조회
    */
   @Get('category')
-  async getCategory(@Body() getFaqInfoDto: GetFaqInfoDto) {
+  async getAllCategory(@Body() getFaqInfoDto: GetFaqInfoDto) {
     const { role } = getFaqInfoDto;
-    const getCategoryInfoQuery = new GetCategoryInfoQuery(role);
-    return this.queryBus.execute(getCategoryInfoQuery);
+    const getCategoryListQuery = new GetCategoryListQuery(role);
+    return this.queryBus.execute(getCategoryListQuery);
   }
 
   /**

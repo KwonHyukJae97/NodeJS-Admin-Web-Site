@@ -13,7 +13,6 @@ import {
 import { CreateNoticeDto } from './dto/create-notice.dto';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateNoticeCommand } from './command/create-notice.command';
-import { GetNoticeInfoQuery } from './query/get-notice-info.query';
 import { Notice } from './entities/notice';
 import { UpdateNoticeDto } from './dto/update-notice.dto';
 import { UpdateNoticeCommand } from './command/update-notice.command';
@@ -22,6 +21,7 @@ import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/f
 import { GetNoticeDetailDto } from './dto/get-notice-detail.dto';
 import { GetNoticeDetailCommand } from './command/get-notice-detail.command';
 import { GetNoticeSearchQuery } from './query/get-notice-search.query';
+import { GetNoticeListQuery } from './query/get-notice-list.query';
 
 /**
  * 공지사항 관련 API 처리하는 컨트롤러
@@ -51,8 +51,8 @@ export class NoticeController {
    */
   @Get('/list')
   async getAllNotice() {
-    const getNoticeInfoQuery = new GetNoticeInfoQuery();
-    return this.queryBus.execute(getNoticeInfoQuery);
+    const getNoticeListQuery = new GetNoticeListQuery();
+    return this.queryBus.execute(getNoticeListQuery);
   }
 
   /**

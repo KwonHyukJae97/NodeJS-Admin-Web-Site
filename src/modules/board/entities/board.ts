@@ -2,7 +2,6 @@ import { Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn } fr
 import { IsNumber, IsString } from 'class-validator';
 import { Faq } from '../faq/entities/faq';
 import { Notice } from '../notice/entities/notice';
-import { BoardFile } from '../file/entities/board_file';
 import { Qna } from '../qna/entities/qna';
 
 /**
@@ -71,9 +70,9 @@ export class Board {
   @OneToOne((type) => Notice, (notice) => notice.boardId)
   noticeId: number;
 
-  @OneToOne((type) => Qna, (qna) => qna.boardId)
-  qnaId: number;
-
   @OneToOne((type) => Faq, (faq) => faq.boardId)
   faqId: number;
+
+  @OneToOne((type) => Qna, (qna) => qna.boardId)
+  qnaId: number;
 }

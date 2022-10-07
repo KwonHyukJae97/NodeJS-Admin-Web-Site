@@ -4,14 +4,14 @@ import { Board } from '../entities/board';
 import { Faq } from './entities/faq';
 import { FaqController } from './Faq.controller';
 import { CqrsModule } from '@nestjs/cqrs';
-import { GetFaqInfoHandler } from './query/get-faq-info.handler';
+import { GetFaqListHandler } from './query/get-faq-list.handler';
 import { UpdateFaqHandler } from './command/update-faq.handler';
 import { DeleteFaqHandler } from './command/delete-faq.handler';
 import { BoardFile } from '../file/entities/board_file';
 import { GetFaqDetailHandler } from './command/get-faq-detail.handler';
 import { FaqCategory } from './entities/faq_category';
 import { CreateFaqHandler } from './command/create-faq.handler';
-import { GetCategoryInfoHandler } from './query/get-category-info.handler';
+import { GetCategoryListHandler } from './query/get-category-list.handler';
 import { GetFaqSearchHandler } from './query/get-faq-search.handler';
 
 @Module({
@@ -19,11 +19,11 @@ import { GetFaqSearchHandler } from './query/get-faq-search.handler';
   controllers: [FaqController],
   providers: [
     CreateFaqHandler,
-    GetFaqInfoHandler,
+    GetFaqListHandler,
     GetFaqDetailHandler,
     UpdateFaqHandler,
     DeleteFaqHandler,
-    GetCategoryInfoHandler,
+    GetCategoryListHandler,
     GetFaqSearchHandler,
   ],
 })
