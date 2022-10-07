@@ -12,8 +12,9 @@ import * as winston from 'winston';
 import { LoggingModule } from './logging/logging.module';
 import { NoticeModule } from './modules/board/notice/notice.module';
 import { FileModule } from './modules/board/file.module';
-import { CompanyModule } from './modules/company/company.module';
-
+import { AccountFileModule } from './modules/account/file/account-file.module';
+import { PermissionModule } from './modules/permission/permission.module';
+import { AdminRoleModule } from './modules/adminRole/adminRole.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -70,7 +71,9 @@ import { CompanyModule } from './modules/company/company.module';
     LoggingModule,
     NoticeModule,
     FileModule,
-    CompanyModule,
+    AccountFileModule,
+    PermissionModule,
+    AdminRoleModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
