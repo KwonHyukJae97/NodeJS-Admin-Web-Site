@@ -19,8 +19,8 @@ export class AdminRoleController {
    */
   @Post()
   async createAdminRole(@Body() dto: CreateAdminRoleDto): Promise<void> {
-    const { roleName, companyId } = dto;
-    const command = new CreateAdminRoleCommand(roleName, companyId);
+    const { roleName, companyId, permissionId } = dto;
+    const command = new CreateAdminRoleCommand(roleName, companyId, permissionId);
     return this.commandBus.execute(command);
   }
 

@@ -9,11 +9,13 @@ import { UpdateAdminRoleHandler } from './command/update-adminrole.handler';
 import { CreateAdminRoleHandler } from './command/create-adminrole.handler';
 import { Company } from '../company/entities/company.entity';
 import { GetAllAdminRoleQueryHandler } from './query/get-all-adminRole.handler';
+import { RolePermission } from './entities/rolePermission.entity';
+import { Permission } from '../permission/entities/permission.entity';
 
 const CommandHandlers = [CreateAdminRoleHandler, UpdateAdminRoleHandler, DeleteAdminRoleHandler];
 const QueryHandlers = [GetAdminRoleInfoQueryHandler, GetAllAdminRoleQueryHandler];
 @Module({
-  imports: [TypeOrmModule.forFeature([AdminRole, Company]), CqrsModule],
+  imports: [TypeOrmModule.forFeature([AdminRole, Company, RolePermission, Permission]), CqrsModule],
   controllers: [AdminRoleController],
   providers: [...CommandHandlers, ...QueryHandlers],
 })

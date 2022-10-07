@@ -1,12 +1,9 @@
-import { Company } from '../../company/entities/company.entity';
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  JoinColumn,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -57,11 +54,4 @@ export class AdminRole extends BaseEntity {
     nullable: true,
   })
   deleteDate: Date;
-
-  // //회원사 번호
-  // @OneToOne(() => Company, (company) => company.companyId)
-  // @JoinColumn({
-  //   name: 'company_id',
-  // })
-  // companyId: Company;
 }
