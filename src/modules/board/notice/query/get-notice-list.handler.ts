@@ -2,7 +2,7 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Notice } from '../entities/notice';
 import { Repository } from 'typeorm';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { GetNoticeListQuery } from './get-notice-list.query';
 import { getDateTime } from '../../../../common/utils/time-common-method';
 
@@ -18,11 +18,28 @@ export class GetNoticeListHandler implements IQueryHandler<GetNoticeListQuery> {
   ) {}
 
   async execute(query: GetNoticeListQuery) {
-    const notice = await this.noticeRepository.find({
-      order: { noticeId: 'DESC' },
-    });
+    const { role, noticeGrant } = query;
 
-    if (!notice) {
+    // 본사 관리자만 조회 권한이 있을 경우
+    if (noticeGrant === '0') {
+      if (role !== '본사 관리자') {
+        throw new BadRequestException('본사 관리자만 접근 가능합니다.');
+      }
+      // 본사 및 회원사 관리자만 조회 권한이 있을 경우
+    } else if (noticeGrant === '0|1') {
+      if (role !== '본사 관리자' && role !== '회원사 관리자') {
+        throw new BadRequestException('본사 또는 회원사 관리자만 접근 가능합니다.');
+      }
+    }
+
+    const notice = await this.noticeRepository
+      .createQueryBuilder('notice')
+      .leftJoinAndSelect('notice.boardId', 'board')
+      .where('notice.noticeGrant = :noticeGrant', { noticeGrant: noticeGrant })
+      .orderBy({ 'notice.noticeId': 'DESC' })
+      .getMany();
+
+    if (notice.length === 0) {
       throw new NotFoundException('작성된 공지사항이 없습니다.');
     }
 

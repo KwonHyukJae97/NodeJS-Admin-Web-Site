@@ -22,6 +22,7 @@ import { GetNoticeDetailDto } from './dto/get-notice-detail.dto';
 import { GetNoticeDetailCommand } from './command/get-notice-detail.command';
 import { GetNoticeSearchQuery } from './query/get-notice-search.query';
 import { GetNoticeListQuery } from './query/get-notice-list.query';
+import { GetNoticeInfoDto } from './dto/get-notice-info.dto';
 
 /**
  * 공지사항 관련 API 처리하는 컨트롤러
@@ -50,8 +51,9 @@ export class NoticeController {
    * 공지사항 리스트 조회
    */
   @Get('/list')
-  async getAllNotice() {
-    const getNoticeListQuery = new GetNoticeListQuery();
+  async getAllNotice(@Body() getNoticeInfoDto: GetNoticeInfoDto) {
+    const { role, noticeGrant } = getNoticeInfoDto;
+    const getNoticeListQuery = new GetNoticeListQuery(role, noticeGrant);
     return this.queryBus.execute(getNoticeListQuery);
   }
 
