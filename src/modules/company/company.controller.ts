@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Req } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { UpdateCompanyCommand } from './command/update-company.command';
 import { DeleteCompanyCommand } from './command/delete-company.command';
@@ -39,8 +39,11 @@ export class CompanyController {
    * @param : company_id
    */
   @Delete(':id')
-  deleteCompany(@Param('id') companyId: number) {
-    const command = new DeleteCompanyCommand(companyId);
+  deleteCompany(@Param('id') companyId: number, @Req() req) {
+    //권한정보 확인용 테스트 (admin이 소유한 role_id)
+    const roleId = req.rawHeaders[1];
+    const command = new DeleteCompanyCommand(companyId, roleId);
+
     return this.commandBus.execute(command);
   }
 }

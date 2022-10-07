@@ -15,6 +15,7 @@ import { FileModule } from './modules/board/file.module';
 import { AccountFileModule } from './modules/account/file/account-file.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { AdminRoleModule } from './modules/adminRole/adminRole.module';
+import { CompanyModule } from './modules/company/company.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -74,6 +75,7 @@ import { AdminRoleModule } from './modules/adminRole/adminRole.module';
     AccountFileModule,
     PermissionModule,
     AdminRoleModule,
+    CompanyModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
