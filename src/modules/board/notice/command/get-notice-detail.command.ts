@@ -5,5 +5,5 @@ import { ICommand } from '@nestjs/cqrs';
  */
 
 export class GetNoticeDetailCommand implements ICommand {
-  constructor(readonly noticeId: number) {}
+  constructor(readonly noticeId: number, readonly role: string) {}
 }

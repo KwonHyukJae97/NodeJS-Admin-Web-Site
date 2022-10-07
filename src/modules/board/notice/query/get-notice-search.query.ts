@@ -5,5 +5,5 @@ import { IQuery } from '@nestjs/cqrs';
  */
 
 export class GetNoticeSearchQuery implements IQuery {
-  constructor(readonly keyword: string) {}
+  constructor(readonly keyword: string, readonly role: string, readonly noticeGrant: string) {}
 }

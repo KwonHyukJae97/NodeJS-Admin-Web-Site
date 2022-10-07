@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { DeleteNoticeCommand } from './delete-notice.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -30,12 +30,20 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
   ) {}
 
   async execute(command: DeleteNoticeCommand) {
-    const { noticeId } = command;
+    const { noticeId, role, accountId } = command;
+
+    if (role !== '본사 관리자' && role !== '회원사 관리자') {
+      throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
+    }
 
     const notice = await this.noticeRepository.findOneBy({ noticeId: noticeId });
 
     if (!notice) {
       throw new NotFoundException('존재하지 않는 공지사항입니다.');
+    }
+
+    if (accountId != notice.boardId.accountId) {
+      throw new BadRequestException('작성자만 삭제가 가능합니다.');
     }
 
     const board = await this.boardRepository.findOneBy({ boardId: notice.boardId.boardId });

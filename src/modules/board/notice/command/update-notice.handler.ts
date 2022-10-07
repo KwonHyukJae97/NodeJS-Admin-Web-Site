@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateNoticeCommand } from './update-notice.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,12 +26,21 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
   ) {}
 
   async execute(command: UpdateNoticeCommand) {
-    const { title, content, isTop, noticeGrant, noticeId, boardType, files } = command;
+    const { title, content, isTop, noticeGrant, noticeId, boardType, role, accountId, files } =
+      command;
+
+    if (role !== '본사 관리자' && role !== '회원사 관리자') {
+      throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
+    }
 
     const notice = await this.noticeRepository.findOneBy({ noticeId: noticeId });
 
     if (!notice) {
       throw new NotFoundException('존재하지 않는 공지사항입니다.');
+    }
+
+    if (accountId !== notice.boardId.accountId) {
+      throw new BadRequestException('작성자만 수정이 가능합니다.');
     }
 
     const board = await this.boardRepository.findOneBy({ boardId: notice.boardId.boardId });

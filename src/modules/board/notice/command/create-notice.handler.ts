@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { CreateNoticeCommand } from './create-notice.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,7 +26,11 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
   ) {}
 
   async execute(command: CreateNoticeCommand) {
-    const { title, content, isTop, noticeGrant, boardType, files } = command;
+    const { title, content, isTop, noticeGrant, boardType, role, files } = command;
+
+    if (role !== '본사 관리자' && role !== '회원사 관리자') {
+      throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
+    }
 
     const board = this.boardRepository.create({
       // 임시 accountId 부여

@@ -20,4 +20,12 @@ export class UpdateNoticeDto {
 
   @IsNotEmpty()
   boardType: BoardType.NOTICE;
+
+  // 수정 권한 확인을 위해 임시 사용
+  @IsNotEmpty()
+  accountId: number;
+
+  // 작성자 본인 확인을 위해 임시 사용
+  @IsNotEmpty()
+  role: string;
 }

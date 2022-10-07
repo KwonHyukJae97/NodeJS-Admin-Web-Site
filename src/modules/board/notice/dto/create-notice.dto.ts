@@ -20,4 +20,8 @@ export class CreateNoticeDto {
 
   @IsNotEmpty()
   boardType: BoardType.NOTICE;
+
+  // 등록 권한 확인을 위해 임시 사용
+  @IsNotEmpty()
+  role: string;
 }

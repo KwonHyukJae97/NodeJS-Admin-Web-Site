@@ -23,6 +23,8 @@ import { GetNoticeDetailCommand } from './command/get-notice-detail.command';
 import { GetNoticeSearchQuery } from './query/get-notice-search.query';
 import { GetNoticeListQuery } from './query/get-notice-list.query';
 import { GetNoticeInfoDto } from './dto/get-notice-info.dto';
+import { DeleteNoticeInfoDto } from './dto/delete-notice-info.dto';
+import { GetNoticeRoleDto } from './dto/get-notice-role.dto';
 
 /**
  * 공지사항 관련 API 처리하는 컨트롤러
@@ -42,8 +44,16 @@ export class NoticeController {
     @UploadedFiles() files: Express.MulterS3.File[],
     // @Res() res: Response,
   ): Promise<string> {
-    const { title, content, isTop, noticeGrant, boardType } = createNoticeDto;
-    const command = new CreateNoticeCommand(title, content, isTop, noticeGrant, boardType, files);
+    const { title, content, isTop, noticeGrant, boardType, role } = createNoticeDto;
+    const command = new CreateNoticeCommand(
+      title,
+      content,
+      isTop,
+      noticeGrant,
+      boardType,
+      role,
+      files,
+    );
     return this.commandBus.execute(command);
   }
 
@@ -62,8 +72,12 @@ export class NoticeController {
    * @ param : notice_id
    */
   @Get(':id')
-  async getNoticeDetail(@Param('id') noticeId: number): Promise<GetNoticeDetailDto> {
-    const command = new GetNoticeDetailCommand(noticeId);
+  async getNoticeDetail(
+    @Param('id') noticeId: number,
+    @Body() getNoticeRoleDto: GetNoticeRoleDto,
+  ): Promise<GetNoticeDetailDto> {
+    const { role } = getNoticeRoleDto;
+    const command = new GetNoticeDetailCommand(noticeId, role);
     return this.commandBus.execute(command);
   }
 
@@ -72,8 +86,12 @@ export class NoticeController {
    * @ query : keyword
    */
   @Get()
-  async getNoticeSearch(@Query('keyword') keyword: string) {
-    const getNoticeSearchQuery = new GetNoticeSearchQuery(keyword);
+  async getNoticeSearch(
+    @Query('keyword') keyword: string,
+    @Body() getNoticeInfoDto: GetNoticeInfoDto,
+  ) {
+    const { role, noticeGrant } = getNoticeInfoDto;
+    const getNoticeSearchQuery = new GetNoticeSearchQuery(keyword, role, noticeGrant);
     return this.queryBus.execute(getNoticeSearchQuery);
   }
 
@@ -89,7 +107,7 @@ export class NoticeController {
     @UploadedFiles() files: Express.MulterS3.File[],
     // @Res() res: Response,
   ): Promise<Notice> {
-    const { title, content, isTop, noticeGrant, boardType } = updateNoticeDto;
+    const { title, content, isTop, noticeGrant, boardType, role, accountId } = updateNoticeDto;
     const command = new UpdateNoticeCommand(
       title,
       content,
@@ -97,6 +115,8 @@ export class NoticeController {
       noticeGrant,
       noticeId,
       boardType,
+      role,
+      accountId,
       files,
     );
     return this.commandBus.execute(command);
@@ -107,8 +127,12 @@ export class NoticeController {
    * @ param : notice_id
    */
   @Delete(':id')
-  async deleteNotice(@Param('id') noticeId: number): Promise<string> {
-    const command = new DeleteNoticeCommand(noticeId);
+  async deleteNotice(
+    @Param('id') noticeId: number,
+    @Body() deleteNoticeInfoDto: DeleteNoticeInfoDto,
+  ): Promise<string> {
+    const { role, accountId } = deleteNoticeInfoDto;
+    const command = new DeleteNoticeCommand(noticeId, role, accountId);
     return this.commandBus.execute(command);
   }
 }
