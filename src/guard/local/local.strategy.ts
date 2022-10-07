@@ -10,16 +10,12 @@ import { AuthService2 } from 'src/modules/account/auth/auth2.service';
 export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
   constructor(private authService: AuthService, private authService2: AuthService2) {
     super({
-      usernameField: 'email',
+      usernameField: 'id',
       passwordField: 'password',
     });
   }
 
-  async validate(email: string, password: string): Promise<Account> {
-    return this.authService.validateUser(email, password);
-  }
-
-  async validate2(id: string, password: string): Promise<Account2> {
+  async validate(id: string, password: string): Promise<Account2> {
     return this.authService2.validateUser(id, password);
   }
 }

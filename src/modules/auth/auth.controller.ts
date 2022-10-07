@@ -88,7 +88,7 @@ export class AuthController {
    */
   @UseGuards(JwtRefreshAuthGuard)
   @Post('logout/admin')
-  async logoutAdmin(@Req() request, @Res() response) {
+  async logoutAdmin2(@Req() request, @Res() response) {
     const { accessOption, refreshOption } = this.authService.getCookieForLogOut();
     await this.authService.removeRefreshToken(request.user.accountId);
 
@@ -110,7 +110,7 @@ export class AuthController {
   //     return response.sendStatus(200);
   // }
 
-  @UseGuards(JwtRefreshAuthGuard)
+  // @UseGuards(JwtRefreshAuthGuard)
   @Post('/refresh')
   async refresh(@Req() request, @Res() response) {
     const account: Account = request.user;

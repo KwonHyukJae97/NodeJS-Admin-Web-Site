@@ -15,7 +15,7 @@ import * as bcrypt from 'bcrypt';
 import { compare, hash } from 'bcrypt';
 import { Account2 } from '../account/entities/account';
 /**
- * Account.hp 확인, LogOut, refresh API, 사용자 로그인(RefreshToken) 기능 구현
+ * Account.hp 확인ㅁ, LogOutx, refresh APIx, 사용자 로그인(RefreshToken) 기능 구현o
  */
 @Injectable()
 export class AccountService {
@@ -138,11 +138,12 @@ export class AccountService {
     }
   }
 
+  //지금여기서 조회할때 조건이 없어서 첫번째 아이디값으로 가져옴 조건 추가하기
   //Account2 엔티티와 연동
-  async getByAccountId2(accountId: number, showCurrentHashedRefreshToken: boolean) {
-    const account = await this.accountRepository2.findOneBy({
-      accountId: accountId,
-    });
+  async getByAccountId2(id: string, showCurrentHashedRefreshToken: boolean) {
+    const account = await this.accountRepository2.findOne({ where: { id } });
+    console.log('accountService- Id--------', id);
+    console.log('accountService- account--------', account);
     if (account) {
       delete account.password;
       if (!showCurrentHashedRefreshToken) {
@@ -154,16 +155,18 @@ export class AccountService {
   }
 
   //Account2 엔티티와 연동
-  async removeRefreshToken2(accountId: number) {
-    return this.accountRepository2.update(accountId, {
-      currentHashedRefreshToken: null,
-    });
-  }
+  // async removeRefreshToken2(accountId: number) {
+  //   return this.accountRepository2.update(accountId, {
+  //     currentHashedRefreshToken: null,
+  //   });
+  // }
 
   async getByAccountId(accountId: number, showCurrentHashedRefreshToken: boolean) {
-    const account = await this.accountRepository.findOneBy({
+    const account = await this.accountRepository2.findOneBy({
       accountId: accountId,
     });
+    console.log('accountService- Id--------', accountId);
+    console.log('accountService- account--------', account);
     if (account) {
       delete account.password;
       if (!showCurrentHashedRefreshToken) {

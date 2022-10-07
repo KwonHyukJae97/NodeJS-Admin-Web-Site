@@ -10,13 +10,19 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { InjectRepository } from '@nestjs/typeorm';
 import { response } from 'express';
 import { request } from 'http';
+import { authenticate } from 'passport';
+import JwtAuthGuard2 from 'src/guard/jwt/jwt-auth.guard';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import JwtRefreshAuthGuard from 'src/guard/jwt/jwt-refresh-auth.guard';
 import { LocalAuthGuard } from 'src/guard/local/local-auth.guard';
 import { AccountService } from 'src/modules/account-bak/account.service';
+import { Repository } from 'typeorm';
+import { GetAccount, GetUser } from '../decorator/account.decorator';
 import { Account2 } from '../entities/account';
+import { User } from '../user/entities/user';
 import { AuthService2 } from './auth2.service';
 import { SignUpAdminCommand } from './command/signup-admin.command';
 import { SignUpUserCommand } from './command/signup-user.command';
@@ -35,6 +41,9 @@ export class SignController {
     private readonly queryBus: QueryBus,
     private readonly authService2: AuthService2,
     private readonly accountService: AccountService,
+    private readonly jwtManageService: JwtManageService,
+    @InjectRepository(Account2)
+    private accountRepository2: Repository<Account2>,
   ) {}
 
   /**
@@ -123,81 +132,139 @@ export class SignController {
 
     return this.authService2.signInAdmin(signinAdminDto);
   }
-  //이거주석해제
-  // @HttpCode(200)
-  // @Post('/login2/admin')
-  // async loginAdmin2(@Req() request, @Res() response) {
-  //   const { accessToken, accessOption, refreshToken, refreshOption } =
-  //     await this.authService2.getCookieForLogin2(request.account.accountId, request.account.id);
-
-  //   response.cookie('Authorization', accessToken, accessOption);
-  //   response.cookie('refresh', refreshToken, refreshOption);
-
-  //   return response.send({
-  //     adminData: request.admin,
-  //   });
-  // }
 
   //관리자 로그인
-  @Post('/login2/admin')
+  @HttpCode(200)
+  @UseGuards(LocalAuthGuard)
+  @Post('/login/admin')
   async loginAdmin2(
     @Res({ passthrough: true }) response,
     @Body(ValidationPipe) signInAdminDto: SignInAdminDto,
   ) {
-    const { accessToken, accessOption, refreshToken, refreshOption, admin } =
-      await this.authService2.login(signInAdminDto);
+    const { accessToken, accessOption, refreshToken, refreshOption, account } =
+      await this.authService2.loginAdmin(signInAdminDto);
+    console.log('로그인할때 값???!!!', signInAdminDto);
     response.cookie('authentication', accessToken, accessOption);
-    response.cookie('refresh', refreshToken, refreshOption);
-    return { admin };
+    response.cookie('Refresh', refreshToken, refreshOption);
+    console.log('AccessToken 테스트', accessToken);
+    console.log('RefreshToken 테스트', refreshToken);
+    console.log('AccessOption 테스트', accessOption);
+    console.log('RefreshOption 테스트', refreshOption);
+    return { account };
   }
 
-  // @HttpCode(200)
-  // // @UseGuards(LocalAuthGuard)
-  // @Post('/login2/admin')
-  // async loginAdmin2(@Req() request, @Res() response) {
-  //   const admin = request.admin;
-  //   const { accessToken, ...accessOption } = this.authService2.getCookieWithJwtAccessToken2(
-  //     admin.accountId,
-  //   );
-  //   const { refreshToken, ...refreshOption } = this.authService2.getCookieWithJwtRefreshToken2(
-  //     admin.accountId,
-  //   );
-  //   console.log('refreshToken Test!!!: ', admin);
-  //   await this.accountService.setCurrentRefreshToken2(admin.accountId, refreshToken);
+  //사용자 로그인
+  @HttpCode(200)
+  @UseGuards(LocalAuthGuard)
+  @Post('/login/user')
+  async loginUser2(
+    @Res({ passthrough: true }) response,
+    @Body(ValidationPipe) signInUserDto: SignInUserDto,
+  ) {
+    const { accessToken, accessOption, refreshToken, refreshOption, account } =
+      await this.authService2.loginUser(signInUserDto);
+    response.cookie('authentication', accessToken, accessOption);
+    response.cookie('Refresh', refreshToken, refreshOption);
+    console.log('AccessToken 테스트', accessToken);
+    console.log('RefreshToken 테스트', refreshToken);
+    console.log('AccessOption 테스트', accessOption);
+    console.log('RefreshOption 테스트', refreshOption);
+    return { account };
+  }
 
-  //   response.cookie('authorization', accessToken, accessOption);
-  //   response.cookie('refresh', refreshToken, refreshOption);
+  //토큰 정보 삭제
+  async removeRefreshToken2(accountId: number) {
+    console.log('리무브리부므', accountId);
+    return this.accountRepository2.update({ accountId }, { currentHashedRefreshToken: null });
+  }
 
-  //   return admin;
-  // }
+  //관리자 로그아웃
+  @UseGuards(JwtAuthGuard2)
+  @Post('/logout/admin')
+  async logoutAdmin(@Req() request, @Res() response) {
+    console.log('account!!!', request.user.accountId);
+    //logout동작시 accountid가 맨위에 있는 걸로 동작함s
+    const { accessOption, refreshOption } = this.authService2.getCookiesForLogOut2();
 
-  //로그아웃
-  @UseGuards(JwtRefreshAuthGuard)
-  @Get('/logout2/admin')
-  async logoutAdmin2(@Res() response, account: Account2) {
-    const { accessOption, refreshOption } = this.authService2.getCookieForLogOut2();
-
-    await this.accountService.removeRefreshToken2(account.accountId);
-
-    response.cookie('authorization', '', accessOption);
-    response.cookie('refresh', '', refreshOption);
+    // await this.accountRepository2.update(request.user.id, {
+    //   currentHashedRefreshToken: null,
+    // });
+    //method 방식
+    await this.removeRefreshToken2(request.user.accountId);
+    response.cookie('authentication', '', accessOption);
+    response.cookie('Refresh', '', refreshOption);
 
     return response.sendStatus(200);
   }
 
-  //RefreshToken 재발급
-  @UseGuards(JwtRefreshAuthGuard)
-  @Post('/refresh2')
-  async refresh2(@Res() response, account: Account2) {
-    if (account) {
-      const { accessToken, accessOption } = await this.authService2.getCookieWithJwtAccessToken2(
-        account.id,
-      );
-      response.cookie('authauthauth', accessToken, accessOption);
-      return { account };
-    }
+  //사용자 로그아웃
+  @UseGuards(JwtAuthGuard2)
+  @Post('/logout/user')
+  async logoutUser(@Req() request, @Res() response) {
+    console.log('userLogOut Test', request.user.accountId);
+    const { accessOption, refreshOption } = this.authService2.getCookiesForLogOut2();
+    await this.removeRefreshToken2(request.user.accountId);
+    response.cookie('authentication', '', accessOption);
+    response.cookie('Refresh', '', refreshOption);
+
+    return response.sendStatus(200);
   }
-  // const account: Account2 = request.admin;
+
+  // @UseGuards(JwtRefreshAuthGuard)
+  // @Post('/refresh')
+  // async refresh(@Req() request, @Res() response) {
+  //   const account: Account2 = request.user;
+
+  //   if (account) {
+  //     const payload: TokenPayload2 = {
+  //       accountId: account.accountId,
+  //       id: account.id,
+  //     };
+  //     const { accessToken, accessOption } =
+  //       this.jwtManageService.getCookieWithJwtAccessToken(payload);
+  //     response.cookie('authentication', accessToken, accessOption);
+
+  //     const refreshToken = request?.cookies?.refresh;
+  //     const newRefreshToken = await this.authService2.refreshTokenChange(
+  //       account.accountId,
+  //       payload,
+  //       refreshToken,
+  //     );
+  //     if (newRefreshToken) {
+  //       response.cookie('refresh', newRefreshToken.refreshToken, newRefreshToken.refreshOption);
+  //     }
+  //   }
+  //   return response.send({
+  //     userData: request.user,
+  //   });
+  // }
+
+  // @UseGuards(JwtRefreshAuthGuard)
+  // @Post('/refresh')
+  // refresh(@Req() request, @Res({ passthrough: true }) response) {
+  //   const user = request.user;
+  //   const { accessToken, ...accessOption } = this.authService2.getCookieWithJwtAccessToken2(
+  //     request.user.id,
+  //   );
+  //   response.cookie('authentication', accessToken, accessOption);
+  //   return user;
+  // }
+
+  // RefreshToken 유효한지 확인 후 AccessToken 발급
+  // @UseGuards(JwtRefreshAuthGuard)
+  // @Post('/refresh2')
+  // async refresh2(@Req() request, @Res() response) {
+  //   const account: Account2 = request.user;
+  //   if (account) {
+  //     const { accessToken, accessOption } = await this.authService2.getCookieWithJwtAccessToken2(
+  //       account.id,
+  //     );
+  //     response.cookie('authentication', accessToken, accessOption);
+  //     return { account };
+  //   }
+  // }
+
+  // const account: Account2 = request.user;
 
   // if (account) {
   //   const payload: TokenPayload2 = {

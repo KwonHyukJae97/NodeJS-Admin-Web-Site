@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account2 } from 'src/modules/account/entities/account';
 import { Repository } from 'typeorm';
+import { AuthService2 } from 'src/modules/account/auth/auth2.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -15,12 +16,14 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     private readonly accountRepository: Repository<Account2>,
     private readonly configService: ConfigService,
     private readonly accountService: AccountService,
+    private readonly authService: AuthService2,
   ) {
     super({
       // jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request) => {
-          return request?.cookies?.authorization;
+          console.log('----cookies----', request.cookies);
+          return request?.cookies?.authentication;
         },
       ]),
       secretOrKey: configService.get('JWT_ACCESS_TOKEN_SECRET'),
@@ -28,23 +31,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: TokenPayload) {
-    return await this.accountService.getByAccountId(payload.accountId, false);
-  }
-
   //Account 엔티티와 연동
-  async validate2(payload: TokenPayload2) {
-    return await this.accountService.getByAccountId2(payload.accountId, false);
-  }
-
-  async validate3({ req, id }) {
-    const refreshToken = req.cookies?.refresh;
-    console.log('리플래시', refreshToken);
-    await this.accountService.getAccountRefreshTokenMatches2(refreshToken, id);
-    const account: Account2 = await this.accountRepository.findOne({ where: { id } });
-    if (!account) {
-      throw new UnauthorizedException();
-    }
-    return account;
+  async validate(payload: TokenPayload2) {
+    console.log('----payload----', payload);
+    console.log('--------idididi-------------', payload.id);
+    return await this.accountService.getByAccountId2(payload.id, false);
   }
 }

@@ -99,7 +99,7 @@ export class AuthService2 {
       const { password, ...result } = account;
       return result;
     } catch (error) {
-      throw new HttpException('잘못된 인증 정보입니다.2', HttpStatus.BAD_REQUEST);
+      throw new HttpException('잘못된 인증 정보입니다.', HttpStatus.BAD_REQUEST);
     }
   }
   //비밀번호 체크
@@ -119,6 +119,7 @@ export class AuthService2 {
       expiresIn: `${this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}s`,
     });
 
+    // 토큰과 토큰옵션을 리턴
     return {
       accessToken: token,
       accessOption: {
@@ -137,6 +138,7 @@ export class AuthService2 {
       expiresIn: `${this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')}s`,
     });
 
+    //Refresh 토큰과 옵션을 리턴
     return {
       refreshToken: token,
       refreshOption: {
@@ -151,10 +153,10 @@ export class AuthService2 {
   /**
    * 관리자 로그인 RefreshToken 발급
    */
-  async login({ id, password }: SignInAdminDto) {
+  async loginAdmin({ id, password }: SignInAdminDto) {
     const account = await this.accountRepository.findOne({ where: { id } });
     if (!account) {
-      throw new UnauthorizedException('존재하지 않는 사용자입니다.');
+      throw new UnauthorizedException('존재하지 않는 관리자입니다.');
     }
     const match = await bcrypt.compare(password, account.password);
     if (!match) {
@@ -170,10 +172,15 @@ export class AuthService2 {
     const { refreshToken, refreshOption } = await this.getCookieWithJwtRefreshToken2(id);
     await this.accountService.setCurrentRefreshToken2(refreshToken, id);
 
+    const lastLoginDate = new Date(account.loginDate).getTime() / 1000;
+
+    console.log('최근 로그인 일시', lastLoginDate);
     const returnAdmin = await this.accountRepository
       .createQueryBuilder('account')
       .select([
+        'account.accountId',
         'account.id',
+        'account.password',
         'account.name',
         'account.email',
         'account.phone',
@@ -181,7 +188,14 @@ export class AuthService2 {
         'account.birth',
         'account.gender',
         'account.currentHashedRefreshToken',
+        'account.ci',
+        'account.snsId',
+        'account.snsType',
+        'account.snsToken',
         'account.regDate',
+        'account.updateDate',
+        'account.delDate',
+        'account.loginDate',
         'account.division',
       ])
       .where('account.id = :id', { id })
@@ -191,37 +205,67 @@ export class AuthService2 {
       accessOption,
       refreshToken,
       refreshOption,
-      admin: returnAdmin,
+      account: returnAdmin,
     };
   }
 
-  // async login(account: Account2) {
-  //   const payload = { id: account.id, accountId: account.accountId };
-  //   const token = this.jwtService.sign(payload);
-  //   return {
-  //     token: token,
-  //     domain: 'localhost',
-  //     path: '/',
-  //     httpOnly: true,
-  //     maxAge: Number(this.configService.get('JWT_EXPIRATION_TIME')) * 1000,
-  //   };
-  // }
+  /**
+   * 사용자 로그인 RefreshToken 발급
+   */
+  async loginUser({ id, password }: SignInUserDto) {
+    const account = await this.accountRepository.findOne({ where: { id } });
+    if (!account) {
+      throw new UnauthorizedException('존재하지 않는 사용자입니다.');
+    }
+    const match = await bcrypt.compare(password, account.password);
+    if (!match) {
+      throw new UnauthorizedException('비밀번호가 틀립니다. 다시 시도해주세요.');
+    }
 
-  public async getCookieForLogin2(accountId: number, id: string) {
-    const payload: TokenPayload2 = {
-      accountId: accountId,
-      id: id,
+    //division 값 확인 후 사용자만 로그인 가능
+    if (account.division === true) {
+      throw new UnauthorizedException('로그인 정보를 확인해주세요.');
+    }
+    const { accessToken, accessOption } = await this.getCookieWithJwtAccessToken2(id);
+
+    const { refreshToken, refreshOption } = await this.getCookieWithJwtRefreshToken2(id);
+    await this.accountService.setCurrentRefreshToken2(refreshToken, id);
+
+    const returnUser = await this.accountRepository
+      .createQueryBuilder('account')
+      .select([
+        'account.accountId',
+        'account.id',
+        'account.password',
+        'account.name',
+        'account.email',
+        'account.phone',
+        'account.nickname',
+        'account.birth',
+        'account.gender',
+        'account.currentHashedRefreshToken',
+        'account.ci',
+        'account.snsId',
+        'account.snsType',
+        'account.snsToken',
+        'account.regDate',
+        'account.updateDate',
+        'account.delDate',
+        'account.loginDate',
+        'account.division',
+      ])
+      .where('account.id = :id', { id })
+      .getOne();
+    return {
+      accessToken,
+      accessOption,
+      refreshToken,
+      refreshOption,
+      account: returnUser,
     };
-
-    const { accessToken, accessOption } = this.getCookieWithJwtAccessToken2(id);
-    const { refreshToken, refreshOption } = this.getCookieWithJwtRefreshToken2(id);
-
-    await this.accountService.setCurrentRefreshToken2(id, refreshToken);
-
-    return { accessToken, accessOption, refreshToken, refreshOption };
   }
 
-  public getCookieForLogOut2() {
+  public getCookiesForLogOut2() {
     return {
       accessOption: {
         domain: 'localhost',
@@ -238,12 +282,20 @@ export class AuthService2 {
     };
   }
 
-  public async refreshTokenChange2(id: string, refreshToken: string) {
+  public async refreshTokenChange(accountId: number, payload: TokenPayload, refreshToken: string) {
     if (this.jwtManageService.isNeedRefreshTokenChange(refreshToken)) {
-      const newRefreshToken = this.getCookieWithJwtRefreshToken2(id);
-      await this.accountService.setCurrentRefreshToken2(id, newRefreshToken.refreshToken);
+      const newRefreshToken = this.jwtManageService.getCookieWithJwtRefreshToken(payload);
+      await this.accountService.setCurrentRefreshToken(accountId, newRefreshToken.refreshToken);
 
       return newRefreshToken;
     }
   }
+  // public async refreshTokenChange2(id: string, refreshToken: string) {
+  //   if (this.jwtManageService.isNeedRefreshTokenChange(refreshToken)) {
+  //     const newRefreshToken = this.getCookieWithJwtRefreshToken2(id);
+  //     await this.accountService.setCurrentRefreshToken2(id, newRefreshToken.refreshToken);
+
+  //     return newRefreshToken;
+  //   }
+  // }
 }

@@ -23,18 +23,18 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh-
     });
   }
 
-  async validate(req, payload: TokenPayload) {
-    const refreshToken = req.cookies?.refresh;
+  // async validate(req, payload: TokenPayload2) {
+  //   const refreshToken = req.cookies?.refresh;
 
-    await this.accountService.getAccountRefreshTokenMatches(payload.accountId, refreshToken);
+  //   await this.accountService.getAccountRefreshTokenMatches(payload.accountId, refreshToken);
 
-    const account = await this.accountService.getByAccountId(payload.accountId, false);
+  //   const account = await this.accountService.getByAccountId(payload.accountId, false);
 
-    return account;
-  }
+  //   return account;
+  // }
 
-  //Account 엔티티와 연동
-  async validate2(req, id: string) {
+  // //Account 엔티티와 연동
+  async validate(req, id: string) {
     const refreshToken = req.cookies?.refresh;
     return this.accountService.getAccountRefreshTokenMatches2(refreshToken, id);
   }
