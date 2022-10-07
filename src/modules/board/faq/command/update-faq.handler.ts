@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateFaqCommand } from './update-faq.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -30,7 +30,11 @@ export class UpdateFaqHandler implements ICommandHandler<UpdateFaqCommand> {
   ) {}
 
   async execute(command: UpdateFaqCommand) {
-    const { title, content, categoryName, boardType, faqId, files } = command;
+    const { title, content, categoryName, boardType, role, faqId, files } = command;
+
+    if (role !== '본사 관리자') {
+      throw new BadRequestException('본사 관리자만 접근 가능합니다.');
+    }
 
     const faq = await this.faqRepository.findOneBy({ faqId: faqId });
 

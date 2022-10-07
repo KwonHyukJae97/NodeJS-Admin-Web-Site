@@ -17,4 +17,8 @@ export class UpdateFaqDto {
 
   @IsNotEmpty()
   boardType: BoardType.FAQ;
+
+  // 수정 권한 확인을 위해 임시 사용
+  @IsNotEmpty()
+  role: string;
 }

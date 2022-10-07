@@ -42,8 +42,8 @@ export class FaqController {
     @Body() createFaqDto: CreateFaqDto,
     @UploadedFiles() files: Express.MulterS3.File[],
   ): Promise<string> {
-    const { title, content, categoryName, boardType } = createFaqDto;
-    const command = new CreateFaqCommand(title, content, categoryName, boardType, files);
+    const { title, content, categoryName, boardType, role } = createFaqDto;
+    const command = new CreateFaqCommand(title, content, categoryName, boardType, role, files);
     return this.commandBus.execute(command);
   }
 
@@ -72,8 +72,12 @@ export class FaqController {
    * @ param : faq_id
    */
   @Get(':id')
-  async getFaqDetail(@Param('id') faqId: number): Promise<GetFaqDetailDto> {
-    const command = new GetFaqDetailCommand(faqId);
+  async getFaqDetail(
+    @Param('id') faqId: number,
+    @Body() getFaqInfoDto: GetFaqInfoDto,
+  ): Promise<GetFaqDetailDto> {
+    const { role } = getFaqInfoDto;
+    const command = new GetFaqDetailCommand(faqId, role);
     return this.commandBus.execute(command);
   }
 
@@ -104,8 +108,16 @@ export class FaqController {
     @Body() updateFaqDto: UpdateFaqDto,
     @UploadedFiles() files: Express.MulterS3.File[],
   ): Promise<Faq> {
-    const { title, content, categoryName, boardType } = updateFaqDto;
-    const command = new UpdateFaqCommand(title, content, categoryName, boardType, faqId, files);
+    const { title, content, categoryName, boardType, role } = updateFaqDto;
+    const command = new UpdateFaqCommand(
+      title,
+      content,
+      categoryName,
+      boardType,
+      role,
+      faqId,
+      files,
+    );
     return this.commandBus.execute(command);
   }
 
@@ -114,8 +126,12 @@ export class FaqController {
    * @ param : faq_id
    */
   @Delete(':id')
-  async deleteFaq(@Param('id') faqId: number): Promise<string> {
-    const command = new DeleteFaqCommand(faqId);
+  async deleteFaq(
+    @Param('id') faqId: number,
+    @Body() getFaqInfoDto: GetFaqInfoDto,
+  ): Promise<string> {
+    const { role } = getFaqInfoDto;
+    const command = new DeleteFaqCommand(faqId, role);
     return this.commandBus.execute(command);
   }
 }

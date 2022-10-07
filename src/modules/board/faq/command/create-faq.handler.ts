@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { CreateFaqCommand } from './create-faq.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -30,7 +30,11 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
   ) {}
 
   async execute(command: CreateFaqCommand) {
-    const { title, content, categoryName, boardType, files } = command;
+    const { title, content, categoryName, boardType, role, files } = command;
+
+    if (role !== '본사 관리자') {
+      throw new BadRequestException('본사 관리자만 접근 가능합니다.');
+    }
 
     const board = this.boardRepository.create({
       // 임시 accountId 부여

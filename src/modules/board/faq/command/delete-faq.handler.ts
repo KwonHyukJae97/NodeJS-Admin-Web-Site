@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { DeleteFaqCommand } from './delete-faq.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -30,7 +30,11 @@ export class DeleteFaqHandler implements ICommandHandler<DeleteFaqCommand> {
   ) {}
 
   async execute(command: DeleteFaqCommand) {
-    const { faqId } = command;
+    const { faqId, role } = command;
+
+    if (role !== '본사 관리자') {
+      throw new BadRequestException('본사 관리자만 접근 가능합니다.');
+    }
 
     const faq = await this.faqRepository.findOneBy({ faqId: faqId });
 

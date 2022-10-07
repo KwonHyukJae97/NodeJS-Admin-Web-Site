@@ -5,5 +5,5 @@ import { ICommand } from '@nestjs/cqrs';
  */
 
 export class DeleteFaqCommand implements ICommand {
-  constructor(readonly faqId: number) {}
+  constructor(readonly faqId: number, readonly role: string) {}
 }

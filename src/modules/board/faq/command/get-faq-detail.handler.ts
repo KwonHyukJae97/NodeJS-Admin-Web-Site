@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { GetFaqDetailCommand } from './get-faq-detail.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -31,9 +31,17 @@ export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand>
   ) {}
 
   async execute(command: GetFaqDetailCommand) {
-    const { faqId } = command;
+    const { faqId, role } = command;
 
     const faq = await this.faqRepository.findOneBy({ faqId: faqId });
+
+    const category = await this.categoryRepository.findOneBy({
+      categoryId: faq.categoryId['categoryId'],
+    });
+
+    if (!category.isUse && role !== '본사 관리자') {
+      throw new BadRequestException('본사 관리자만 접근 가능합니다.');
+    }
 
     if (!faq) {
       throw new NotFoundException('존재하지 않는 FAQ입니다.');

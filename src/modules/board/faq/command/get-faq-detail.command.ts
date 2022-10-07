@@ -5,5 +5,5 @@ import { ICommand } from '@nestjs/cqrs';
  */
 
 export class GetFaqDetailCommand implements ICommand {
-  constructor(readonly faqId: number) {}
+  constructor(readonly faqId: number, readonly role: string) {}
 }
