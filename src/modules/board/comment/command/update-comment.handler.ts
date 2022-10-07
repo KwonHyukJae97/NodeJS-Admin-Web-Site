@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateCommentCommand } from './update-comment.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from '../entities/comment';
@@ -19,8 +19,6 @@ export class UpdateCommentHandler implements ICommandHandler<UpdateCommentComman
 
     @InjectRepository(Board)
     private boardRepository: Repository<Board>,
-
-    private eventBus: EventBus,
   ) {}
 
   async execute(command: UpdateCommentCommand) {

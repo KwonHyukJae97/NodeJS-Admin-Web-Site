@@ -6,6 +6,7 @@ import { Comment } from '../entities/comment';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { Qna } from '../../qna/entities/qna';
+import { BoardFile } from '../../file/entities/board_file';
 
 /**
  * 답변 상세조회 시, 커맨드를 처리하는 커맨드 핸들러 (서비스 로직 수행)
@@ -29,6 +30,9 @@ export class GetCommentDetailHandler implements ICommandHandler<GetCommentDetail
 
     @InjectRepository(Board)
     private boardRepository: Repository<Board>,
+
+    @InjectRepository(BoardFile)
+    private fileRepository: Repository<BoardFile>,
   ) {}
 
   async execute(command: GetCommentDetailCommand) {
@@ -62,6 +66,8 @@ export class GetCommentDetailHandler implements ICommandHandler<GetCommentDetail
       console.log(err);
     }
 
+    const files = await this.fileRepository.findBy({ boardId: board.boardId });
+
     const commentList = await this.commentRepository.find({
       where: { qnaId: qnaId },
       order: { commentId: 'DESC' },
@@ -76,6 +82,7 @@ export class GetCommentDetailHandler implements ICommandHandler<GetCommentDetail
 
     const getCommentDetailDto = {
       qna,
+      fileList: files,
       commentList,
     };
 

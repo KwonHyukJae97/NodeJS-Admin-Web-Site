@@ -24,7 +24,7 @@ export class CreateCommentHandler implements ICommandHandler<CreateCommentComman
   async execute(command: CreateCommentCommand) {
     const { qnaId, comment, adminId } = command;
 
-    const qna = this.qnaRepository.findOneBy({ qnaId: qnaId });
+    const qna = await this.qnaRepository.findOneBy({ qnaId: qnaId });
 
     if (!qna) {
       throw new NotFoundException('존재하지 않는 문의 내역입니다.');

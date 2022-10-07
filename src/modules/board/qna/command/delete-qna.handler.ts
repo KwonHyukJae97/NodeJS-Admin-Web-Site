@@ -8,6 +8,7 @@ import { Board } from '../../entities/board';
 import { TestEvent } from '../event/test-event';
 import { FileDeleteEvent } from '../event/file-delete-event';
 import { BoardFile } from '../../file/entities/board_file';
+import { Comment } from '../../comment/entities/comment';
 
 /**
  * 1:1 문의 삭제 시, 커맨드를 처리하는 커맨드 핸들러
@@ -25,6 +26,9 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
 
     @InjectRepository(BoardFile)
     private fileRepository: Repository<BoardFile>,
+
+    @InjectRepository(Comment)
+    private commentRepository: Repository<Comment>,
 
     private eventBus: EventBus,
   ) {}
@@ -54,6 +58,12 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
     // 파일 삭제 이벤트 처리
     this.eventBus.publish(new FileDeleteEvent(board.boardId));
     this.eventBus.publish(new TestEvent());
+
+    const comments = await this.commentRepository.findBy({ qnaId: qnaId });
+
+    comments.map((comment) => {
+      this.commentRepository.delete({ qnaId: comment.qnaId });
+    });
 
     // qna db 삭제
     try {

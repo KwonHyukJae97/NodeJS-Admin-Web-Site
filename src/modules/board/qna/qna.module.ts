@@ -10,9 +10,10 @@ import { UpdateQnaHandler } from './command/update-qna.handler';
 import { DeleteQnaHandler } from './command/delete-qna.handler';
 import { BoardFile } from '../file/entities/board_file';
 import { GetQnaDetailHandler } from './command/get-qna-detail.handler';
+import { Comment } from '../comment/entities/comment';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Board, Qna, BoardFile]), CqrsModule],
+  imports: [TypeOrmModule.forFeature([Board, Qna, BoardFile, Comment]), CqrsModule],
   controllers: [QnaController],
   providers: [
     CreateQnaHandler,

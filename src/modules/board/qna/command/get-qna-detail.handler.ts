@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { BoardFile } from '../../file/entities/board_file';
 import { getDateTime } from '../../../../common/utils/time-common-method';
+import { Comment } from '../../comment/entities/comment';
 
 /**
  * 1:1 문의 상세조회 시, 커맨드를 처리하는 커맨드 핸들러 (서비스 로직 수행)
@@ -24,6 +25,9 @@ export class GetQnaDetailHandler implements ICommandHandler<GetQnaDetailCommand>
 
     @InjectRepository(BoardFile)
     private fileRepository: Repository<BoardFile>,
+
+    @InjectRepository(Comment)
+    private commentRepository: Repository<Comment>,
   ) {}
 
   async execute(command: GetQnaDetailCommand) {
@@ -58,6 +62,11 @@ export class GetQnaDetailHandler implements ICommandHandler<GetQnaDetailCommand>
 
       const files = await this.fileRepository.findBy({ boardId: board.boardId });
 
+      const comment = await this.commentRepository.find({
+        where: { qnaId: qnaId },
+        order: { commentId: 'DESC' },
+      });
+
       // 시간 변경
       qna.boardId.regDate = getDateTime(qna.boardId.regDate);
 
@@ -65,6 +74,7 @@ export class GetQnaDetailHandler implements ICommandHandler<GetQnaDetailCommand>
         qnaId: qnaId,
         boardId: board,
         fileList: files,
+        commentList: comment,
       };
 
       return getQnaDetailDto;
