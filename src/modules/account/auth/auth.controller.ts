@@ -26,6 +26,7 @@ import { User } from '../user/entities/user';
 import { AuthService2 } from './auth2.service';
 import { SignUpAdminCommand } from './command/signup-admin.command';
 import { SignUpUserCommand } from './command/signup-user.command';
+import { FindIdDto } from './dto/findid.dto';
 import { SignInAdminDto } from './dto/signin-admin.dto';
 import { SignInUserDto } from './dto/signin-user.dto';
 import { SignUpAdminDto } from './dto/signup-admin.dto';
@@ -50,7 +51,7 @@ export class SignController {
    * 관리자 회원가입 컨트롤러
    */
   @HttpCode(200)
-  @Post('/signup/admin')
+  @Post('/register/admin')
   async signUpAdmin(@Body(ValidationPipe) SignUpAdminDto: SignUpAdminDto): Promise<string> {
     const {
       id,
@@ -88,7 +89,7 @@ export class SignController {
    * 사용자 회원가입 컨트롤러
    */
   @HttpCode(200)
-  @Post('/signup/user')
+  @Post('/register/user')
   async signUpUser(@Body(ValidationPipe) SignUpUserDto: SignUpUserDto): Promise<string> {
     const { id, password, name, email, phone, nickname, birth, gender, grade } = SignUpUserDto;
 
@@ -105,32 +106,6 @@ export class SignController {
       grade,
     );
     return this.commandBus.execute(command);
-  }
-
-  /**
-   * 사용자 로그인 컨트롤러 (RefreshToken 발급안됨.)
-   */
-  @HttpCode(200)
-  @Post('/signin/user')
-  async signInUser(
-    @Body(ValidationPipe) signinUserDto: SignInUserDto,
-  ): Promise<{ accessToken: string }> {
-    console.log('사용자 로그인 컨트롤러 로그', signinUserDto);
-
-    return this.authService2.signInUser(signinUserDto);
-  }
-
-  /**
-   * 관리자 로그인 컨트롤러 (RefreshToken 발급안됨.)
-   */
-  @HttpCode(200)
-  @Post('/signin/admin')
-  async signInAdmin(
-    @Body(ValidationPipe) signinAdminDto: SignInAdminDto,
-  ): Promise<{ accessToken: string }> {
-    console.log('관리자 로그인 컨트롤러 로그', signinAdminDto);
-
-    return this.authService2.signInAdmin(signinAdminDto);
   }
 
   //관리자 로그인
@@ -208,6 +183,14 @@ export class SignController {
     response.cookie('Refresh', '', refreshOption);
 
     return response.sendStatus(200);
+  }
+
+  //아이디 찾기
+  @Post('/find_id')
+  async findId(@Body(ValidationPipe) findIdDto: FindIdDto) {
+    const findid = await this.authService2.findId(findIdDto);
+    console.log('아이디찾는 값 추출', findIdDto);
+    return findid;
   }
 
   // @UseGuards(JwtRefreshAuthGuard)

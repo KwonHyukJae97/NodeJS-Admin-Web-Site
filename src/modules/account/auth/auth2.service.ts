@@ -11,6 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { AccountService } from 'src/modules/account-bak/account.service';
 import { ModuleTokenFactory } from '@nestjs/core/injector/module-token-factory';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
+import { FindIdDto } from './dto/findid.dto';
 
 /**
  * 로그인 관련 서비스
@@ -28,64 +29,6 @@ export class AuthService2 {
     private readonly jwtManageService: JwtManageService,
   ) {}
 
-  /**
-   * 사용자 로그인 서비스 (RefreshToken 발급 안됨.)
-   */
-  async signInUser(signInUserDto: SignInUserDto): Promise<{ accessToken: string }> {
-    const { id, password } = signInUserDto;
-    const user = await this.accountRepository.findOne({ where: { id } });
-
-    console.log('사용자 로그인 서비스 테스트 로그', user);
-    /**
-     * division 값이 사용자(false: 0) 일 경우에만 로그인 시도 가능
-        if (user.division === true) {
-          throw new UnauthorizedException('로그인 정보를 확인해주세요.');
-        }
-     */
-
-    /**
-     * bcrypt.compare 함수로 암호화된 비밀번호 비교
-     */
-    if (user && (await bcrypt.compare(password, user.password))) {
-      const payload = { id };
-      const accessToken = await this.jwtService.sign(payload);
-
-      console.log('사용자 로그인 TOKEN 테스트', accessToken);
-
-      return { accessToken };
-    } else {
-      throw new UnauthorizedException('사용자 로그인 실패');
-    }
-  }
-
-  /**
-   * 관리자 로그인 서비스 (RefreshToken 발급 안됨.)
-   */
-  async signInAdmin(signinAdminDto: SignInAdminDto): Promise<{ accessToken: string }> {
-    const { id, password } = signinAdminDto;
-    const admin = await this.accountRepository.findOne({ where: { id } });
-
-    console.log('관리자 로그인 서비스 테스트 로그', admin);
-
-    //division 값이 관리자(true:1) 일 경우에만 로그인 시도 가능
-    if (admin.division === false) {
-      throw new UnauthorizedException('로그인 정보를 확인해주세요.');
-    }
-
-    /**
-     * bcrypt.compare 함수로 암호화된 비밀번호 비교
-     */
-    if (admin && (await bcrypt.compare(password, admin.password))) {
-      const payload = { id };
-      const accessToken = await this.jwtService.sign(payload);
-
-      console.log('관리자 로그인 TOKEN 테스트', accessToken);
-
-      return { accessToken };
-    } else {
-      throw new UnauthorizedException('관리자 로그인 실패');
-    }
-  }
   //아이디 존재 유무
   public async find(id: string): Promise<Account2 | undefined> {
     return this.accountRepository.findOne({ where: { id } });
@@ -172,9 +115,9 @@ export class AuthService2 {
     const { refreshToken, refreshOption } = await this.getCookieWithJwtRefreshToken2(id);
     await this.accountService.setCurrentRefreshToken2(refreshToken, id);
 
-    const lastLoginDate = new Date(account.loginDate).getTime() / 1000;
+    // const lastLoginDate = new Date(account.loginDate).getTime() / 1000;
 
-    console.log('최근 로그인 일시', lastLoginDate);
+    // console.log('최근 로그인 일시', lastLoginDate);
     const returnAdmin = await this.accountRepository
       .createQueryBuilder('account')
       .select([
@@ -289,6 +232,25 @@ export class AuthService2 {
 
       return newRefreshToken;
     }
+  }
+
+  // 이름과 연락처로 해당 아이디 조회
+  async findId({ name, phone }: FindIdDto) {
+    console.log('아이디 찾기 테스트', name);
+    console.log('아이디 찾기 테스트', phone);
+
+    const id = await this.accountRepository.findOne({ where: { name, phone } });
+    if (!id) {
+      throw new UnauthorizedException('입력한 정보에 대한 일치하는 아이디가 없습니다.');
+    }
+    const returnId = await this.accountRepository
+      .createQueryBuilder('account')
+      .select('account.id')
+      .where('account.name = :name', { name })
+      .where('account.phone = :phone', { phone })
+      .getOne();
+
+    return returnId;
   }
   // public async refreshTokenChange2(id: string, refreshToken: string) {
   //   if (this.jwtManageService.isNeedRefreshTokenChange(refreshToken)) {
