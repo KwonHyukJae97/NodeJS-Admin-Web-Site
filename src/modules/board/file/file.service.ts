@@ -184,19 +184,13 @@ export class FileService {
   /**
    * 다중 파일 삭제 기능
    */
-  async deleteFiles(boardId: number) {
-    const files = await this.fileRepository.findBy({ boardId: boardId });
-
-    console.log(files.length);
-
+  async deleteFiles(boardId: number, files: BoardFile[]) {
     // S3에 저장되어 있는 기존 파일 삭제
     const deleteList = [];
 
     for (const file of files) {
       deleteList.push(file.fileName); // S3 key값으로 사용될 속성 추출 후, 새 배열에 추가
     }
-
-    console.log(deleteList);
 
     deleteList.map((file) => {
       deleteObjectS3(file);

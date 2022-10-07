@@ -42,14 +42,14 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
 
     const files = await this.fileRepository.findBy({ boardId: board.boardId });
 
+    // 파일 삭제 이벤트 처리
+    this.eventBus.publish(new FileDeleteEvent(board.boardId, files));
+    this.eventBus.publish(new TestEvent());
+
     // board_file db 삭제
     files.map((file) => {
       this.fileRepository.delete({ boardFileId: file.boardFileId });
     });
-
-    // 파일 삭제 이벤트 처리
-    this.eventBus.publish(new FileDeleteEvent(board.boardId));
-    this.eventBus.publish(new TestEvent());
 
     // notice db 삭제
     try {
