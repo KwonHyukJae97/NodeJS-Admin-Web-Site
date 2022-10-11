@@ -21,4 +21,8 @@ export class UpdateFaqDto {
   // 수정 권한 확인을 위해 임시 사용
   @IsNotEmpty()
   role: string;
+
+  // 작성자 본인 확인을 위해 임시 사용
+  @IsNotEmpty()
+  accountId: number;
 }

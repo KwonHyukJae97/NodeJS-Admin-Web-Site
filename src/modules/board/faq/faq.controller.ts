@@ -24,6 +24,7 @@ import { GetFaqDetailCommand } from './command/get-faq-detail.command';
 import { GetFaqInfoDto } from './dto/get-faq-info.dto';
 import { GetCategoryListQuery } from './query/get-category-list.query';
 import { GetFaqSearchQuery } from './query/get-faq-search.query';
+import { DeleteFaqInfoDto } from './dto/delete-faq-info.dto';
 
 /**
  * FAQ 관련 API 처리하는 컨트롤러
@@ -108,13 +109,14 @@ export class FaqController {
     @Body() updateFaqDto: UpdateFaqDto,
     @UploadedFiles() files: Express.MulterS3.File[],
   ): Promise<Faq> {
-    const { title, content, categoryName, boardType, role } = updateFaqDto;
+    const { title, content, categoryName, boardType, role, accountId } = updateFaqDto;
     const command = new UpdateFaqCommand(
       title,
       content,
       categoryName,
       boardType,
       role,
+      accountId,
       faqId,
       files,
     );
@@ -128,10 +130,10 @@ export class FaqController {
   @Delete(':id')
   async deleteFaq(
     @Param('id') faqId: number,
-    @Body() getFaqInfoDto: GetFaqInfoDto,
+    @Body() deleteFaqInfoDto: DeleteFaqInfoDto,
   ): Promise<string> {
-    const { role } = getFaqInfoDto;
-    const command = new DeleteFaqCommand(faqId, role);
+    const { role, accountId } = deleteFaqInfoDto;
+    const command = new DeleteFaqCommand(faqId, role, accountId);
     return this.commandBus.execute(command);
   }
 }

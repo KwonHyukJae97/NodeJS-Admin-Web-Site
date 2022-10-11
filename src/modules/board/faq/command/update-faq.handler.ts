@@ -5,9 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Faq } from '../entities/faq';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
-import { TestEvent } from '../event/test-event';
-import { FileUpdateEvent } from '../event/file-update-event';
 import { FaqCategory } from '../entities/faq_category';
+import { FileUpdateEvent } from '../../file/event/file-update-event';
 
 /**
  * FAQ 수정 시, 커맨드를 처리하는 커맨드 핸들러
@@ -30,7 +29,7 @@ export class UpdateFaqHandler implements ICommandHandler<UpdateFaqCommand> {
   ) {}
 
   async execute(command: UpdateFaqCommand) {
-    const { title, content, categoryName, boardType, role, faqId, files } = command;
+    const { title, content, categoryName, boardType, role, accountId, faqId, files } = command;
 
     if (role !== '본사 관리자') {
       throw new BadRequestException('본사 관리자만 접근 가능합니다.');
@@ -40,6 +39,10 @@ export class UpdateFaqHandler implements ICommandHandler<UpdateFaqCommand> {
 
     if (!faq) {
       throw new NotFoundException('존재하지 않는 FAQ입니다.');
+    }
+
+    if (accountId != faq.boardId.accountId) {
+      throw new BadRequestException('작성자만 수정이 가능합니다.');
     }
 
     const board = await this.boardRepository.findOneBy({ boardId: faq.boardId.boardId });
@@ -66,7 +69,6 @@ export class UpdateFaqHandler implements ICommandHandler<UpdateFaqCommand> {
 
     // 파일 업데이트 이벤트 처리
     this.eventBus.publish(new FileUpdateEvent(board.boardId, boardType, files));
-    this.eventBus.publish(new TestEvent());
 
     // 변경된 FAQ 반환
     return faq;
