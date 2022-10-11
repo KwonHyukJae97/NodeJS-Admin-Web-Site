@@ -21,6 +21,7 @@ import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/f
 import { GetQnaDetailDto } from './dto/get-qna-detail.dto';
 import { GetQnaDetailCommand } from './command/get-qna-detail.command';
 import { GetQnaInfoDto } from './dto/get-qna-info.dto';
+import { GetQnaRoleDto } from './dto/get-qna-role.dto';
 
 /**
  * 1:1 문의 관련 API 처리하는 컨트롤러
@@ -38,7 +39,6 @@ export class QnaController {
   createQna(
     @Body() createQnaDto: CreateQnaDto,
     @UploadedFiles() files: Express.MulterS3.File[],
-    // @Res() res: Response,
   ): Promise<string> {
     const { title, content, boardType } = createQnaDto;
     const command = new CreateQnaCommand(title, content, boardType, files);
@@ -47,10 +47,11 @@ export class QnaController {
 
   /**
    * 1:1 문의 리스트 조회
+   * @ param : account_id
    */
-  @Get()
-  async getAllQna(@Body() getQnaInfoDto: GetQnaInfoDto) {
-    const { role, accountId } = getQnaInfoDto;
+  @Get(':id')
+  async getAllQna(@Param('id') accountId: number, @Body() getQnaRoleDto: GetQnaRoleDto) {
+    const { role } = getQnaRoleDto;
     const getQnaInfoQuery = new GetQnaListQuery(role, accountId);
     return this.queryBus.execute(getQnaInfoQuery);
   }
@@ -79,7 +80,6 @@ export class QnaController {
     @Param('id') qnaId: number,
     @Body() updateQnaDto: UpdateQnaDto,
     @UploadedFiles() files: Express.MulterS3.File[],
-    // @Res() res: Response,
   ): Promise<Qna> {
     const { title, content, boardType, accountId } = updateQnaDto;
     const command = new UpdateQnaCommand(title, content, qnaId, boardType, files, accountId);
