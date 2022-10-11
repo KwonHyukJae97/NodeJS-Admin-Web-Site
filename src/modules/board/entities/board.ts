@@ -1,4 +1,12 @@
-import { Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { IsNumber, IsString } from 'class-validator';
 import { Faq } from '../faq/entities/faq';
 import { Notice } from '../notice/entities/notice';
@@ -54,14 +62,14 @@ export class Board {
   regDate: Date;
 
   // 수정일시
-  @CreateDateColumn({
+  @UpdateDateColumn({
     name: 'update_date',
     nullable: true,
   })
   updateDate: Date;
 
   // 삭제일시
-  @CreateDateColumn({
+  @DeleteDateColumn({
     name: 'del_date',
     nullable: true,
   })

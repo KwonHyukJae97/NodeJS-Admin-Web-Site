@@ -42,7 +42,6 @@ export class NoticeController {
   createNotice(
     @Body() createNoticeDto: CreateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
-    // @Res() res: Response,
   ): Promise<string> {
     const { title, content, isTop, noticeGrant, boardType, role } = createNoticeDto;
     const command = new CreateNoticeCommand(
@@ -105,7 +104,6 @@ export class NoticeController {
     @Param('id') noticeId: number,
     @Body() updateNoticeDto: UpdateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
-    // @Res() res: Response,
   ): Promise<Notice> {
     const { title, content, isTop, noticeGrant, boardType, role, accountId } = updateNoticeDto;
     const command = new UpdateNoticeCommand(

@@ -54,13 +54,13 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
 
     // board_file db 삭제
     files.map((file) => {
-      this.fileRepository.delete({ boardFileId: file.boardFileId });
+      this.fileRepository.softDelete({ boardFileId: file.boardFileId });
     });
 
     const comments = await this.commentRepository.findBy({ qnaId: qnaId });
 
     comments.map((comment) => {
-      this.commentRepository.delete({ qnaId: comment.qnaId });
+      this.commentRepository.softDelete({ commentId: comment.commentId });
     });
 
     // qna db 삭제
@@ -72,7 +72,7 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
 
     // board db 삭제 (fk)
     try {
-      await this.boardRepository.delete({ boardId: board.boardId });
+      await this.boardRepository.softDelete({ boardId: board.boardId });
     } catch (err) {
       console.log(err);
     }

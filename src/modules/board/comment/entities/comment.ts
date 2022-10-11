@@ -1,4 +1,12 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { IsNumber, IsString } from 'class-validator';
 import { Qna } from '../../qna/entities/qna';
 
@@ -42,14 +50,14 @@ export class Comment {
   regDate: Date;
 
   // 수정일시
-  @CreateDateColumn({
+  @UpdateDateColumn({
     name: 'update_date',
     nullable: true,
   })
   updateDate: Date;
 
   // 삭제일시
-  @CreateDateColumn({
+  @DeleteDateColumn({
     name: 'del_date',
     nullable: true,
   })

@@ -54,7 +54,7 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
 
     // board_file db 삭제
     files.map((file) => {
-      this.fileRepository.delete({ boardFileId: file.boardFileId });
+      this.fileRepository.softDelete({ boardFileId: file.boardFileId });
     });
 
     // notice db 삭제
@@ -66,7 +66,7 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
 
     // board db 삭제 (fk)
     try {
-      await this.boardRepository.delete({ boardId: board.boardId });
+      await this.boardRepository.softDelete({ boardId: board.boardId });
     } catch (err) {
       console.log(err);
     }

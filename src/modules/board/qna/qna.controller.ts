@@ -46,21 +46,10 @@ export class QnaController {
   }
 
   /**
-   * 1:1 문의 리스트 조회
-   * @ param : account_id
-   */
-  @Get(':id')
-  async getAllQna(@Param('id') accountId: number, @Body() getQnaRoleDto: GetQnaRoleDto) {
-    const { role } = getQnaRoleDto;
-    const getQnaInfoQuery = new GetQnaListQuery(role, accountId);
-    return this.queryBus.execute(getQnaInfoQuery);
-  }
-
-  /**
    * 1:1 문의 상세 조회
    * @ param : qna_id
    */
-  @Get(':id')
+  @Get('detail/:id')
   async getQnaDetail(
     @Param('id') qnaId: number,
     @Body() getQnaInfoDto: GetQnaInfoDto,
@@ -68,6 +57,17 @@ export class QnaController {
     const { role, accountId } = getQnaInfoDto;
     const command = new GetQnaDetailCommand(qnaId, role, accountId);
     return this.commandBus.execute(command);
+  }
+
+  /**
+   * 1:1 문의 리스트 조회
+   * @ param : account_id
+   */
+  @Get(':accountId')
+  async getAllQna(@Param('accountId') accountId: number, @Body() getQnaRoleDto: GetQnaRoleDto) {
+    const { role } = getQnaRoleDto;
+    const getQnaInfoQuery = new GetQnaListQuery(role, accountId);
+    return this.queryBus.execute(getQnaInfoQuery);
   }
 
   /**
