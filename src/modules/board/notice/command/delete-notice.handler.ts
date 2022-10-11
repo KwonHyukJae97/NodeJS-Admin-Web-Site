@@ -5,9 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Notice } from '../entities/notice';
 import { Board } from '../../entities/board';
-import { TestEvent } from '../event/test-event';
-import { FileDeleteEvent } from '../event/file-delete-event';
 import { BoardFile } from '../../file/entities/board_file';
+import { FileDeleteEvent } from '../../file/event/file-delete-event';
 
 /**
  * 공지사항 삭제 시, 커맨드를 처리하는 커맨드 핸들러
@@ -52,7 +51,6 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
 
     // 파일 삭제 이벤트 처리
     this.eventBus.publish(new FileDeleteEvent(board.boardId, files));
-    this.eventBus.publish(new TestEvent());
 
     // board_file db 삭제
     files.map((file) => {

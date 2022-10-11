@@ -5,8 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Notice } from '../entities/notice';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
-import { FileCreateEvent } from '../event/file-create-event';
-import { TestEvent } from '../event/test-event';
+import { FileCreateEvent } from '../../file/event/file-create-event';
 
 /**
  * 공지사항 등록 시, 커맨드를 처리하는 커맨드 핸들러
@@ -34,7 +33,7 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
 
     const board = this.boardRepository.create({
       // 임시 accountId 부여
-      accountId: 1,
+      accountId: 2,
       boardTypeCode: '0',
       title,
       content,
@@ -61,7 +60,6 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
 
     // 파일 업로드 이벤트 처리
     this.eventBus.publish(new FileCreateEvent(board.boardId, boardType, files));
-    this.eventBus.publish(new TestEvent());
 
     return '공지사항 등록 성공';
   }

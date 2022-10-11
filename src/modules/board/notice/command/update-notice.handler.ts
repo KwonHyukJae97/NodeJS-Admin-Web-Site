@@ -5,8 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Notice } from '../entities/notice';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
-import { FileUpdateEvent } from '../event/file-update-event';
-import { TestEvent } from '../event/test-event';
+import { FileUpdateEvent } from '../../file/event/file-update-event';
 
 /**
  * 공지사항 수정 시, 커맨드를 처리하는 커맨드 핸들러
@@ -66,7 +65,6 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
 
     // 파일 업데이트 이벤트 처리
     this.eventBus.publish(new FileUpdateEvent(board.boardId, boardType, files));
-    this.eventBus.publish(new TestEvent());
 
     // 변경된 공지사항 반환
     return notice;

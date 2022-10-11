@@ -5,9 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Faq } from '../entities/faq';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
-import { FileCreateEvent } from '../event/file-create-event';
-import { TestEvent } from '../event/test-event';
 import { FaqCategory } from '../entities/faq_category';
+import { FileCreateEvent } from '../../file/event/file-create-event';
 
 /**
  * FAQ 등록 시, 커맨드를 처리하는 커맨드 핸들러
@@ -70,7 +69,6 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
 
     // 파일 업로드 이벤트 처리
     this.eventBus.publish(new FileCreateEvent(board.boardId, boardType, files));
-    this.eventBus.publish(new TestEvent());
 
     return 'FAQ 등록 성공';
   }

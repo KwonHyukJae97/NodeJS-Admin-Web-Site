@@ -42,26 +42,27 @@ export class GetFileDownloadHandler implements IQueryHandler<GetFileDownloadQuer
 
     // headObject()를 통해 S3에 해당 파일이 있는지 확인
     try {
-      s3.headObject(getParam, function (err, data) {
-        if (err) {
-          // 비동기 함수는 일반 throw로 예외 처리 불가 > throw 사용 시, process 중단됨
-          res.status(200).json({
-            statusCode: err.statusCode,
-            message: 'S3에 파일이 존재하지 않습니다.',
-            err: err.code,
-          });
-        } else {
-          // 브라우저에게 파일을 다운로드 하도록 알려주기 위해 Header에 Content-Disposition 설정하여 응답
-          res.setHeader('Content-Disposition', `attachment; filename=${downloadName}`);
+      await s3.headObject(getParam).promise();
 
-          // createReadStream()을 통해 파일 스트림을 읽어오고, pipe()를 통해 스트림을 파이핑하여 응답
-          s3.getObject(getParam).createReadStream().pipe(res);
-          console.log(data, '정상적으로 처리되었습니다.');
-        }
-      });
+      // 브라우저에게 파일을 다운로드 하도록 알려주기 위해 Header에 Content-Disposition 설정하여 응답
+      res.setHeader('Content-Disposition', `attachment; filename=${downloadName}`);
+
+      try {
+        await s3
+          .getObject(getParam)
+          .createReadStream()
+          .pipe(res)
+          .on('error', (err) => {
+            console.log(err);
+            return new BadRequestException('파일 읽기에 실패하였습니다.');
+          });
+      } catch (err) {
+        console.log('파일 읽어오기 실패', err);
+        return new BadRequestException('해당 파일을 읽어올 수 없습니다.');
+      }
     } catch (err) {
-      console.log(err);
-      throw new BadRequestException('다운로드에 실패하였습니다.');
+      console.log('S3 파일 다운로드 실패', err);
+      throw new NotFoundException('S3에 파일이 존재하지 않습니다.');
     }
 
     // 파일 정보 반환 (임시)

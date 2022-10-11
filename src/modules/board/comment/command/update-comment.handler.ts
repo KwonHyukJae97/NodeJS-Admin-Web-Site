@@ -24,6 +24,13 @@ export class UpdateCommentHandler implements ICommandHandler<UpdateCommentComman
   async execute(command: UpdateCommentCommand) {
     const { commentId, comment, adminId } = command;
 
+    // 본사 관리자만 접근 가능
+    // const admin = await this.adminRepository.findOneBy({ adminId: adminId });
+    //
+    // if ( !admin.isSuper ) {
+    //   throw new BadRequestException('본사 관리자만 접근 가능합니다.');
+    // }
+
     const commentDetail = await this.commentRepository.findOneBy({ commentId: commentId });
 
     if (!commentDetail) {

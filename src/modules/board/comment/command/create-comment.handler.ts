@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreateCommentCommand } from './create-comment.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -23,6 +23,13 @@ export class CreateCommentHandler implements ICommandHandler<CreateCommentComman
 
   async execute(command: CreateCommentCommand) {
     const { qnaId, comment, adminId } = command;
+
+    // 본사 관리자만 접근 가능
+    // const admin = await this.adminRepository.findOneBy({ adminId: adminId });
+    //
+    // if ( !admin.isSuper ) {
+    //   throw new BadRequestException('본사 관리자만 접근 가능합니다.');
+    // }
 
     const qna = await this.qnaRepository.findOneBy({ qnaId: qnaId });
 

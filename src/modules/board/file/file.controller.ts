@@ -34,11 +34,11 @@ export class FileController {
   }
 
   /**
-   * 다중 파일 다운로드
+   * 다중 파일 다운로드 (압축)
    * @ param : board_id
    */
   @Get('all/:id')
-  downloadFileAll(@Param('id') boardId: number, @Res() res: Response) {
+  downloadZipFile(@Param('id') boardId: number, @Res() res: Response) {
     const getAllFileDownloadQuery = new GetAllFileDownloadQuery(boardId, res);
     return this.queryBus.execute(getAllFileDownloadQuery);
   }
