@@ -21,7 +21,12 @@ const s3 = new AWS.S3({
 export const uuid = randomUUID();
 
 // S3 파일 업로드 메서드
-function putObjectS3(file: Express.MulterS3.File, boardType: string, today: string, time: string) {
+async function putObjectS3(
+  file: Express.MulterS3.File,
+  boardType: string,
+  today: string,
+  time: string,
+) {
   const uploadParams = {
     Bucket: process.env.AWS_BUCKET_NAME,
     Body: file.buffer,
@@ -29,16 +34,11 @@ function putObjectS3(file: Express.MulterS3.File, boardType: string, today: stri
   };
 
   try {
-    s3.putObject(uploadParams, function (err, data) {
-      if (err) {
-        console.log('err: ', err, err.stack);
-      } else {
-        console.log(data, '정상 업로드 되었습니다.');
-      }
-    });
+    await s3.putObject(uploadParams).promise();
+    console.log('정상적으로 업로드 되었습니다.');
   } catch (err) {
-    console.log(err);
-    throw new BadRequestException('업로드에 실패하였습니다.');
+    console.log('S3 파일 업로드 실패', err);
+    throw new BadRequestException('파일 업로드에 실패하였습니다.');
   }
 }
 
@@ -49,34 +49,30 @@ async function getObjectUrlS3(boardType: string, today: string, time: string) {
     Key: `${boardType}/${today}/${time}_${uuid}`,
   };
 
-  const url: string = await new Promise((r) =>
-    s3.getSignedUrl('getObject', getParams, async (err, url) => {
+  const url: string = await new Promise((resolve, reject) =>
+    s3.getSignedUrl('getObject', getParams, (err, url) => {
       if (err) {
-        throw new BadRequestException('file path 가져오기 실패');
+        reject(new BadRequestException('해당 파일이 존재하지 않습니다.'));
+      } else {
+        resolve(url.split('?')[0]);
       }
-      r(url.split('?')[0]);
     }),
   );
   return url;
 }
 
 // S3 파일 삭제 메서드
-function deleteObjectS3(file) {
+async function deleteObjectS3(file) {
   const deleteParams = {
     Bucket: process.env.AWS_BUCKET_NAME,
     Key: file,
   };
 
   try {
-    s3.deleteObject(deleteParams, function (err, data) {
-      if (err) {
-        console.log('err: ', err);
-      } else {
-        console.log(data, '정상 삭제 되었습니다.');
-      }
-    });
+    await s3.deleteObject(deleteParams).promise();
+    console.log('정상적으로 삭제되었습니다.');
   } catch (err) {
-    console.log(err);
+    console.log('S3 파일 삭제 실패', err);
     throw new BadRequestException('파일 삭제에 실패하였습니다.');
   }
 }
@@ -104,7 +100,7 @@ export class FileService {
       const time = getTime();
 
       // S3 업로드
-      putObjectS3(file, boardType, today, time);
+      await putObjectS3(file, boardType, today, time);
 
       // 업로드 된 파일 url 가져오기
       const url = await getObjectUrlS3(boardType, today, time);
@@ -123,7 +119,8 @@ export class FileService {
       try {
         await this.fileRepository.save(boardFile);
       } catch (err) {
-        console.log(err);
+        console.log('DB 파일 저장 실패');
+        throw new BadRequestException('파일 저장에 실패하였습니다.');
       }
     });
   }
@@ -137,7 +134,7 @@ export class FileService {
       const time = getTime();
 
       // S3 업로드
-      putObjectS3(file, boardType, today, time);
+      await putObjectS3(file, boardType, today, time);
 
       // 업로드 된 파일 url 가져오기
       const url = await getObjectUrlS3(boardType, today, time);
@@ -157,7 +154,8 @@ export class FileService {
         // 신규 파일 DB 저장
         await this.fileRepository.save(boardFile);
       } catch (err) {
-        console.log(err);
+        console.log('DB 파일 저장 실패');
+        throw new BadRequestException('파일 저장에 실패하였습니다.');
       }
     });
 
@@ -171,14 +169,19 @@ export class FileService {
       deleteList.push(file.fileName); // S3 key값으로 사용될 속성 추출 후, 새 배열에 추가
     }
 
-    deleteList.map((file) => {
-      deleteObjectS3(file);
+    deleteList.map(async (file) => {
+      await deleteObjectS3(file);
     });
 
     // DB에 저장되어 있는 기존 파일 삭제
-    oldFiles.map((file) => {
-      this.fileRepository.delete({ boardFileId: file.boardFileId });
-    });
+    try {
+      oldFiles.map(async (file) => {
+        await this.fileRepository.delete({ boardFileId: file.boardFileId });
+      });
+    } catch (err) {
+      console.log('DB 파일 삭제 실패', err);
+      throw new BadRequestException('파일 삭제에 실패하였습니다.');
+    }
   }
 
   /**
@@ -192,8 +195,8 @@ export class FileService {
       deleteList.push(file.fileName); // S3 key값으로 사용될 속성 추출 후, 새 배열에 추가
     }
 
-    deleteList.map((file) => {
-      deleteObjectS3(file);
+    deleteList.map(async (file) => {
+      await deleteObjectS3(file);
     });
   }
 }
