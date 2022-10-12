@@ -21,14 +21,14 @@ export class DeleteCompanyHandler implements ICommandHandler<DeleteCompanyComman
 
   async execute(command: DeleteCompanyCommand) {
     const { companyId, roleId } = command;
-
-    await this.rolePermissionRepository.findOneBy({ roleId: roleId });
+    //const rolePermission = await this.rolePermissionRepository.findOneBy({ roleId: roleId });
     const admin = await this.adminRepository
       .createQueryBuilder('admin')
-      .leftJoinAndSelect('admin.rolePermission', 'rolePermission')
-      .where('rolePermission.role_id = :roleId', { roleId: roleId })
+      .leftJoinAndSelect('admin.rolePermission', 'role')
+      .where('role.role_id = :roleId', { roleId: roleId })
       .getOne();
-    const adminPermissionId = admin.rolePermission[0].permissionId;
+
+    const adminPermissionId = admin.rolePermission.permissionId;
     const adminCompanyId = admin.companyId;
 
     // (예시) permissionId = 2 : 회원사 관리자 and 삭제 권한자

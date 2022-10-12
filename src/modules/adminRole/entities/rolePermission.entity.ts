@@ -5,8 +5,6 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  JoinColumn,
-  ManyToOne,
   PrimaryColumn,
 } from 'typeorm';
 
@@ -41,9 +39,4 @@ export class RolePermission extends BaseEntity {
     type: 'datetime',
   })
   regDate: Date;
-
-  //관리자 역할_권한 정보 가져오기
-  @ManyToOne(() => Admin, (admin) => admin.rolePermission)
-  @JoinColumn({ name: 'role_id' })
-  admin: Admin;
 }

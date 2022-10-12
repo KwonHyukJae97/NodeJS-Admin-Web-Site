@@ -1,5 +1,5 @@
 import { RolePermission } from 'src/modules/adminRole/entities/rolePermission.entity';
-import { BaseEntity, Column, Entity, JoinColumn, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('admin')
 export class Admin extends BaseEntity {
@@ -39,7 +39,7 @@ export class Admin extends BaseEntity {
   isSuper: boolean;
 
   //역할_권한 정보 가져오기
-  @OneToMany(() => RolePermission, (rolePermission) => rolePermission.admin)
+  @OneToOne(() => RolePermission)
   @JoinColumn({ name: 'role_id' })
-  rolePermission: RolePermission[];
+  rolePermission: RolePermission;
 }
