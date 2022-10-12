@@ -1,10 +1,25 @@
-import { IntersectionType, PartialType } from '@nestjs/mapped-types';
-import { CreateUserDto } from './create-user.dto';
-import { User } from '../entities/user';
-import { Account } from '../entities/account';
+import { Type } from 'class-transformer';
+import { IsEmail, IsNumber, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 
-export class UpdateUserDto extends IntersectionType(CreateUserDto, PartialType(Account)) {
-  public toUpdateUserEntity() {
-    return Account.from(this.email, this.nickname, this.password, this.phone, this.grade);
-  }
+export class UpdateUserDto {
+  @IsString()
+  @MinLength(2)
+  @MaxLength(30)
+  readonly nickname: string;
+
+  @IsString()
+  @IsEmail()
+  @MaxLength(60)
+  readonly email: string;
+
+  @IsString()
+  @Matches(/^[A-Za-z\d!@#$%^&*()]{4,16}$/)
+  readonly password: string;
+
+  @IsString()
+  readonly phone: string;
+
+  @IsNumber()
+  @Type(() => Number)
+  readonly grade: number;
 }

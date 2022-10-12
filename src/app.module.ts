@@ -6,18 +6,20 @@ import { UserModule } from './modules/user/user.module';
 import { AccountModule } from './modules/account-bak/account.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
-import { AuthModule } from './auth/auth.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { utilities, WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { LoggingModule } from './logging/logging.module';
 import { NoticeModule } from './modules/board/notice/notice.module';
-import { FileModule } from "./modules/board/file.module";
-
+import { FileModule } from './modules/board/file.module';
+import { AccountFileModule } from './modules/account/file/account-file.module';
+import { PermissionModule } from './modules/permission/permission.module';
+import { AdminRoleModule } from './modules/adminRole/adminRole.module';
+import { CompanyModule } from './modules/company/company.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      // envFilePath: `.${process.env.NODE_ENV}.env`,
-      envFilePath: '.local.env',
+      envFilePath: `.${process.env.NODE_ENV}.env`,
       validationSchema: Joi.object({
         JWT_ACCESS_TOKEN_SECRET: Joi.string().required(),
         JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
@@ -70,6 +72,10 @@ import { FileModule } from "./modules/board/file.module";
     LoggingModule,
     NoticeModule,
     FileModule,
+    AccountFileModule,
+    PermissionModule,
+    AdminRoleModule,
+    CompanyModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
