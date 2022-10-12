@@ -12,7 +12,6 @@ export class Admin extends BaseEntity {
   adminId: number;
 
   //회원사 번호
-  @IsNumber()
   @Column({
     name: 'company_id',
     type: 'int',
@@ -20,7 +19,6 @@ export class Admin extends BaseEntity {
 
   //역할 번호
   companyId: number;
-  @IsNumber()
   @Column({
     name: 'role_id',
     type: 'int',
@@ -28,7 +26,6 @@ export class Admin extends BaseEntity {
   roleId: number;
 
   //관리자 타입
-  @IsBoolean()
   @Column({
     name: 'is_super',
     type: 'boolean',

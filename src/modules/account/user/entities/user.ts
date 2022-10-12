@@ -12,7 +12,6 @@ export class User extends BaseEntity {
   userId: number;
 
   //학년 정보
-  @IsNumber()
   @Column({
     name: 'grade',
     type: 'tinyint',

@@ -35,6 +35,9 @@ import { SignUpUserDto } from './dto/signup-user.dto';
 import { ApiOperation, ApiTags, ApiOkResponse } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { UserKakaoDto } from './dto/user.kakao.dto';
+import { SignInAdminCommand } from './command/signin-admin.command';
+import { SignInUserCommand } from './command/signin-user.command';
+import { SignInUserHandler } from './command/signin-user.handler';
 
 /**
  * 회원가입, 로그인 등 계정 관련 auth 컨트롤러
@@ -47,6 +50,7 @@ export class SignController {
     private readonly authService2: AuthService2,
     private readonly accountService: AccountService,
     private readonly jwtManageService: JwtManageService,
+    private readonly signInUserHandler: SignInUserHandler,
     @InjectRepository(Account2)
     private accountRepository2: Repository<Account2>,
   ) {}
@@ -113,9 +117,67 @@ export class SignController {
   }
 
   //관리자 로그인
-  @HttpCode(200)
   @UseGuards(LocalAuthGuard)
   @Post('/login/admin')
+  async loginAdmin(
+    @Body(ValidationPipe) signInAdminDto: SignInAdminDto,
+    @Res({ passthrough: true }) response,
+  ) {
+    const { id, password } = signInAdminDto;
+
+    console.log('cqrs 방식 관리자 로그인 테스트', signInAdminDto);
+
+    const command = new SignInAdminCommand(id, password);
+    const { accessToken, accessOption } = await this.authService2.getCookieWithJwtAccessToken2(id);
+    const { refreshToken, refreshOption } = await this.authService2.getCookieWithJwtRefreshToken2(
+      id,
+    );
+
+    await this.accountService.setCurrentRefreshToken2(refreshToken, id);
+
+    response.cookie('authentication', accessToken, accessOption);
+    response.cookie('Refresh', refreshToken, refreshOption);
+    console.log('쿠키 값 조회 테스트1', command);
+    console.log('쿠키 값 조회 테스트2', accessToken);
+    console.log('쿠키 값 조회 테스트3', refreshToken);
+    console.log('쿠키 값 조회 테스트4', accessToken);
+
+    return this.commandBus.execute(command);
+  }
+
+  // 사용자 로그인
+  @UseGuards(LocalAuthGuard)
+  @Post('/login/user')
+  async loginUser(
+    @Body(ValidationPipe) signInUserDto: SignInUserDto,
+    @Res({ passthrough: true }) response,
+  ) {
+    const { id, password } = signInUserDto;
+
+    console.log('cqrs 방법으로 사용자 로그인 테스트', signInUserDto);
+
+    const command = new SignInUserCommand(id, password);
+
+    const { accessToken, accessOption } = await this.authService2.getCookieWithJwtAccessToken2(id);
+    const { refreshToken, refreshOption } = await this.authService2.getCookieWithJwtRefreshToken2(
+      id,
+    );
+
+    await this.accountService.setCurrentRefreshToken2(refreshToken, id);
+
+    response.cookie('authentication', accessToken, accessOption);
+    response.cookie('Refresh', refreshToken, refreshOption);
+    console.log('쿠키 값 조회 테스트1', command);
+    console.log('쿠키 값 조회 테스트2', accessToken);
+    console.log('쿠키 값 조회 테스트3', refreshToken);
+    console.log('쿠키 값 조회 테스트4', accessToken);
+    return this.commandBus.execute(command);
+  }
+
+  //관리자 로그인 테스트
+  @HttpCode(200)
+  @UseGuards(LocalAuthGuard)
+  @Post('/login/admin/test')
   async loginAdmin2(
     @Res({ passthrough: true }) response,
     @Body(ValidationPipe) signInAdminDto: SignInAdminDto,
@@ -132,10 +194,10 @@ export class SignController {
     return { account };
   }
 
-  //사용자 로그인
+  //사용자 로그인 테스트
   @HttpCode(200)
   @UseGuards(LocalAuthGuard)
-  @Post('/login/user')
+  @Post('/login/user/test')
   async loginUser2(
     @Res({ passthrough: true }) response,
     @Body(ValidationPipe) signInUserDto: SignInUserDto,

@@ -15,6 +15,8 @@ import { AccountService } from 'src/modules/account-bak/account.service';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { Account } from 'src/modules/account-bak/entities/account.entity';
 import { KakaoStrategy } from 'src/guard/jwt/kakao.strategy';
+import { SignInAdminHandler } from './command/signin-admin.handler';
+import { SignInUserHandler } from './command/signin-user.handler';
 
 @Module({
   imports: [
@@ -37,6 +39,8 @@ import { KakaoStrategy } from 'src/guard/jwt/kakao.strategy';
   providers: [
     SignUpUserHandler,
     SignUpAdminHandler,
+    SignInAdminHandler,
+    SignInUserHandler,
     AuthService2,
     AccountService,
     JwtManageService,

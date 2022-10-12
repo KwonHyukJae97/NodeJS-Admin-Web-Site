@@ -50,7 +50,7 @@ export class AuthService2 {
       const { password, ...result } = account;
       return result;
     } catch (error) {
-      throw new HttpException('잘못된 인증 정보입니다.', HttpStatus.BAD_REQUEST);
+      throw new HttpException('잘못된 인2121증 정보입니다.', HttpStatus.BAD_REQUEST);
     }
   }
   //비밀번호 체크
@@ -58,7 +58,7 @@ export class AuthService2 {
     const isPasswordMatching = await bcrypt.compare(plainTextPassword, hashedPassword);
 
     if (!isPasswordMatching) {
-      throw new HttpException('잘못된 인증 정보입니다.', HttpStatus.BAD_REQUEST);
+      throw new HttpException('잘못된 인증 정보12입니다.', HttpStatus.BAD_REQUEST);
     }
   }
 
