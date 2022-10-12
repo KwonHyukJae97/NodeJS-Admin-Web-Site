@@ -10,7 +10,7 @@ import { GetAllAdminRoleQuery } from './query/get-all-adminRole.query';
 /**
  * 역할 API controller
  */
-@Controller('adminrole')
+@Controller('role')
 export class AdminRoleController {
   constructor(private commandBus: CommandBus, private queryBus: QueryBus) {}
 
