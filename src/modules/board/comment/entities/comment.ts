@@ -19,39 +19,42 @@ export class Comment {
   // 문의 번호
   @PrimaryGeneratedColumn({
     name: 'comment_id',
+    type: 'bigint',
   })
   commentId: number;
 
   // 관리자 번호
-  @IsNumber()
   @Column({
     name: 'admin_id',
+    type: 'int',
   })
   adminId: number;
 
   // 문의 번호
-  @IsNumber()
   @Column({
     name: 'qna_id',
+    type: 'bigint',
   })
   qnaId: number;
 
   // 답변내용
-  @IsString()
   @Column({
     name: 'comment',
+    type: 'text',
   })
   comment: string;
 
   // 등록일시
   @CreateDateColumn({
     name: 'reg_date',
+    type: 'datetime',
   })
   regDate: Date;
 
   // 수정일시
   @UpdateDateColumn({
     name: 'update_date',
+    type: 'datetime',
     nullable: true,
   })
   updateDate: Date;
@@ -59,6 +62,7 @@ export class Comment {
   // 삭제일시
   @DeleteDateColumn({
     name: 'del_date',
+    type: 'datetime',
     nullable: true,
   })
   delDate: Date;

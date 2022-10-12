@@ -40,8 +40,9 @@ export class QnaController {
     @Body() createQnaDto: CreateQnaDto,
     @UploadedFiles() files: Express.MulterS3.File[],
   ): Promise<string> {
-    const { title, content, boardType } = createQnaDto;
-    const command = new CreateQnaCommand(title, content, boardType, files);
+    const { title, content, fileType } = createQnaDto;
+    const command = new CreateQnaCommand(title, content, fileType, files);
+    // '1:1 문의 등록 성공' 메세지 반환
     return this.commandBus.execute(command);
   }
 
@@ -81,8 +82,9 @@ export class QnaController {
     @Body() updateQnaDto: UpdateQnaDto,
     @UploadedFiles() files: Express.MulterS3.File[],
   ): Promise<Qna> {
-    const { title, content, boardType, accountId } = updateQnaDto;
-    const command = new UpdateQnaCommand(title, content, qnaId, boardType, files, accountId);
+    const { title, content, fileType, accountId } = updateQnaDto;
+    const command = new UpdateQnaCommand(title, content, qnaId, fileType, files, accountId);
+    // qna 객체 반환
     return this.commandBus.execute(command);
   }
 
@@ -97,6 +99,7 @@ export class QnaController {
     @Param('accountId') accountId: number,
   ): Promise<string> {
     const command = new DeleteQnaCommand(qnaId, accountId);
+    // '1:1 문의 삭제 성공' 메세지 반환
     return this.commandBus.execute(command);
   }
 }

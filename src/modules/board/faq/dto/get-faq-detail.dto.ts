@@ -1,6 +1,6 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 import { Board } from '../../entities/board';
-import { BoardFile } from '../../file/entities/board_file';
+import { BoardFile } from '../../../file/entities/board_file';
 import { FaqCategory } from '../entities/faq_category';
 
 /**
@@ -9,6 +9,7 @@ import { FaqCategory } from '../entities/faq_category';
 
 export class GetFaqDetailDto {
   @IsNotEmpty()
+  @IsNumber()
   faqId: number;
 
   @IsNotEmpty()

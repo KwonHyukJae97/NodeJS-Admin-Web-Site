@@ -2,11 +2,11 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import * as path from 'path';
 import { BoardFile } from './entities/board_file';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Board } from '../entities/board';
+import { Board } from '../board/entities/board';
 import { Repository } from 'typeorm';
 import * as AWS from 'aws-sdk';
 import { randomUUID } from 'crypto';
-import { getTime, getToday } from '../../../common/utils/time-common-method';
+import { getTime, getToday } from '../../common/utils/time-common-method';
 
 /**
  * 파일 업로드 시, 필요 로직을 실질적으로 수행
@@ -23,14 +23,14 @@ export const uuid = randomUUID();
 // S3 파일 업로드 메서드
 async function putObjectS3(
   file: Express.MulterS3.File,
-  boardType: string,
+  fileType: string,
   today: string,
   time: string,
 ) {
   const uploadParams = {
     Bucket: process.env.AWS_BUCKET_NAME,
     Body: file.buffer,
-    Key: `${boardType}/${today}/${time}_${uuid}`,
+    Key: `${fileType}/${today}/${time}_${uuid}`,
   };
 
   try {
@@ -43,10 +43,10 @@ async function putObjectS3(
 }
 
 // S3에 업로드 된 파일의 Url 가져오는 메서드
-async function getObjectUrlS3(boardType: string, today: string, time: string) {
+async function getObjectUrlS3(fileType: string, today: string, time: string) {
   const getParams = {
     Bucket: process.env.AWS_BUCKET_NAME,
-    Key: `${boardType}/${today}/${time}_${uuid}`,
+    Key: `${fileType}/${today}/${time}_${uuid}`,
   };
 
   const url: string = await new Promise((resolve, reject) =>
@@ -90,7 +90,7 @@ export class FileService {
   /**
    * 다중 파일 업로드 기능
    */
-  async uploadFiles(boardId: number, boardType: string, files: Express.MulterS3.File[]) {
+  async uploadFiles(boardId: number, fileType: string, files: Express.MulterS3.File[]) {
     if (!files) {
       throw new BadRequestException('파일이 존재하지 않습니다.');
     }
@@ -100,10 +100,10 @@ export class FileService {
       const time = getTime();
 
       // S3 업로드
-      await putObjectS3(file, boardType, today, time);
+      await putObjectS3(file, fileType, today, time);
 
       // 업로드 된 파일 url 가져오기
-      const url = await getObjectUrlS3(boardType, today, time);
+      const url = await getObjectUrlS3(fileType, today, time);
 
       const ext = path.extname(file.originalname);
 
@@ -128,16 +128,16 @@ export class FileService {
   /**
    * 다중 파일 업데이트 기능
    */
-  async updateFiles(boardId: number, boardType: string, files: Express.MulterS3.File[]) {
+  async updateFiles(boardId: number, fileType: string, files: Express.MulterS3.File[]) {
     files.map(async (file) => {
       const today = getToday();
       const time = getTime();
 
       // S3 업로드
-      await putObjectS3(file, boardType, today, time);
+      await putObjectS3(file, fileType, today, time);
 
       // 업로드 된 파일 url 가져오기
-      const url = await getObjectUrlS3(boardType, today, time);
+      const url = await getObjectUrlS3(fileType, today, time);
 
       const ext = path.extname(file.originalname);
 

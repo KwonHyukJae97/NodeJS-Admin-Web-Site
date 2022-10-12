@@ -5,8 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Notice } from '../entities/notice';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
-import { BoardFile } from '../../file/entities/board_file';
-import { getDateTime } from '../../../../common/utils/time-common-method';
+import { BoardFile } from '../../../file/entities/board_file';
 
 /**
  * 공지사항 상세조회 시, 커맨드를 처리하는 커맨드 핸들러 (서비스 로직 수행)
@@ -65,9 +64,6 @@ export class GetNoticeDetailHandler implements ICommandHandler<GetNoticeDetailCo
     }
 
     const files = await this.fileRepository.findBy({ boardId: board.boardId });
-
-    // 시간 변경
-    notice.boardId.regDate = getDateTime(notice.boardId.regDate);
 
     const getNoticeDetailDto = {
       noticeId: noticeId,

@@ -24,7 +24,7 @@ export function getTime() {
 }
 
 // 한국 시간으로 변경하는 메서드
-export const getDateTime = (utcTime) => {
-  utcTime.setHours(utcTime.getHours() + 9);
-  return utcTime.toISOString().replace('T', ' ').substring(0, 16);
-};
+// export const getDateTime = (utcTime) => {
+//   utcTime.setHours(utcTime.getHours() + 9);
+//   return utcTime.toISOString().replace('T', ' ').substring(0, 16);
+// };

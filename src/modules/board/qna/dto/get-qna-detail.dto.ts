@@ -1,6 +1,6 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 import { Board } from '../../entities/board';
-import { BoardFile } from '../../file/entities/board_file';
+import { BoardFile } from '../../../file/entities/board_file';
 import { Comment } from '../../comment/entities/comment';
 
 /**
@@ -9,6 +9,7 @@ import { Comment } from '../../comment/entities/comment';
 
 export class GetQnaDetailDto {
   @IsNotEmpty()
+  @IsNumber()
   qnaId: number;
 
   @IsNotEmpty()

@@ -10,20 +10,22 @@ export class FaqCategory {
   // 분류 번호
   @PrimaryGeneratedColumn({
     name: 'category_id',
+    type: 'tinyint',
   })
   categoryId: number;
 
   // 분류명
-  @IsString()
   @Column({
     name: 'category_name',
+    type: 'varchar',
+    length: '20',
   })
   categoryName: string;
 
-  // 사용여부
-  @IsBoolean()
+  // 사용여부 (0:false(미사용), 1:true(사용))
   @Column({
     name: 'is_use',
+    type: 'boolean',
   })
   isUse: boolean;
 

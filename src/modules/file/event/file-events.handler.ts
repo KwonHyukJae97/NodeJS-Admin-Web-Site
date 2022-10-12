@@ -2,7 +2,7 @@ import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { FileCreateEvent } from './file-create-event';
 import { FileUpdateEvent } from './file-update-event';
 import { FileDeleteEvent } from './file-delete-event';
-import { FileService } from '../../file/file.service';
+import { FileService } from '../file.service';
 
 /**
  * 게시글의 파일 관련 필요 로직을 처리하는 이벤트 핸들러
@@ -20,15 +20,15 @@ export class FileEventsHandler
       // 게시글 등록 시, 파일 업로드 이벤트
       case FileCreateEvent.name: {
         console.log('파일 업로드 이벤트 발생!');
-        const { boardId, boardType, files } = event as FileCreateEvent;
-        await this.fileService.uploadFiles(boardId, boardType, files);
+        const { boardId, fileType, files } = event as FileCreateEvent;
+        await this.fileService.uploadFiles(boardId, fileType, files);
         break;
       }
       // 게시글 수정 시, 파일 업로드 및 삭제 이벤트
       case FileUpdateEvent.name: {
         console.log('파일 업데이트 이벤트 발생!');
-        const { boardId, boardType, files } = event as FileUpdateEvent;
-        await this.fileService.updateFiles(boardId, boardType, files);
+        const { boardId, fileType, files } = event as FileUpdateEvent;
+        await this.fileService.updateFiles(boardId, fileType, files);
         break;
       }
       // 게시글 삭제 시, 파일 삭제 이벤트

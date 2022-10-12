@@ -5,10 +5,10 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { BoardFile } from '../entities/board_file';
 import * as AWS from 'aws-sdk';
 import { GetAllFileDownloadQuery } from './get-files-download.query';
-import { Board } from '../../entities/board';
+import { Board } from '../../board/entities/board';
 import { PassThrough } from 'stream';
 import * as archiver from 'archiver';
-import { getTime } from '../../../../common/utils/time-common-method';
+import { getTime } from '../../../common/utils/time-common-method';
 
 /**
  * 다중 파일 다운로드 시, 쿼리를 구현하는 쿼리 핸들러

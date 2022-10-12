@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Qna } from '../entities/qna';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
-import { FileUpdateEvent } from '../../file/event/file-update-event';
+import { FileUpdateEvent } from '../../../file/event/file-update-event';
 
 /**
  * 1:1 문의 수정 시, 커맨드를 처리하는 커맨드 핸들러
@@ -25,7 +25,7 @@ export class UpdateQnaHandler implements ICommandHandler<UpdateQnaCommand> {
   ) {}
 
   async execute(command: UpdateQnaCommand) {
-    const { title, content, qnaId, boardType, files, accountId } = command;
+    const { title, content, qnaId, fileType, files, accountId } = command;
 
     const qna = await this.qnaRepository.findOneBy({ qnaId: qnaId });
 
@@ -57,7 +57,7 @@ export class UpdateQnaHandler implements ICommandHandler<UpdateQnaCommand> {
     }
 
     // 파일 업데이트 이벤트 처리
-    this.eventBus.publish(new FileUpdateEvent(board.boardId, boardType, files));
+    this.eventBus.publish(new FileUpdateEvent(board.boardId, fileType, files));
 
     // 변경된 문의 내역 반환
     return qna;

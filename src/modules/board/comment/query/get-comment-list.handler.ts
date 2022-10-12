@@ -5,7 +5,6 @@ import { Comment } from '../entities/comment';
 import { Repository } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Qna } from '../../qna/entities/qna';
-import { getDateTime } from '../../../../common/utils/time-common-method';
 
 /**
  * 답변 전체 조회 시, 쿼리를 구현하는 쿼리 핸들러
@@ -23,8 +22,8 @@ export class GetCommentListHandler implements IQueryHandler<GetCommentListQuery>
   async execute(query: GetCommentListQuery) {
     const { role } = query;
 
-    if (role !== '본사 관리자') {
-      throw new BadRequestException('본사 관리자만 접근 가능합니다.');
+    if (role !== '본사 관리자' && role !== '회원사 관리자') {
+      throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
     }
 
     const qna = await this.qnaRepository.find({
@@ -54,7 +53,7 @@ export class GetCommentListHandler implements IQueryHandler<GetCommentListQuery>
           accountId: x.boardId.accountId,
           title: x.boardId.title,
           viewCount: x.boardId.viewCount,
-          regDate: getDateTime(x.boardId.regDate),
+          regDate: x.boardId.regDate,
           isComment,
         };
 

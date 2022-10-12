@@ -8,7 +8,7 @@ import { CreateQnaHandler } from './command/create-qna.handler';
 import { GetQnaListHandler } from './query/get-qna-list.handler';
 import { UpdateQnaHandler } from './command/update-qna.handler';
 import { DeleteQnaHandler } from './command/delete-qna.handler';
-import { BoardFile } from '../file/entities/board_file';
+import { BoardFile } from '../../file/entities/board_file';
 import { GetQnaDetailHandler } from './command/get-qna-detail.handler';
 import { Comment } from '../comment/entities/comment';
 

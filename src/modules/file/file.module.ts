@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { FileController } from './file.controller';
 import { FileService } from './file.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Board } from '../entities/board';
+import { Board } from '../board/entities/board';
 import { BoardFile } from './entities/board_file';
 import { CqrsModule } from '@nestjs/cqrs';
 import { FileEventsHandler } from './event/file-events.handler';

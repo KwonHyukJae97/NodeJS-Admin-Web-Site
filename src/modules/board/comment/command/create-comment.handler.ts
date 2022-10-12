@@ -27,8 +27,8 @@ export class CreateCommentHandler implements ICommandHandler<CreateCommentComman
     // 본사 관리자만 접근 가능
     // const admin = await this.adminRepository.findOneBy({ adminId: adminId });
     //
-    // if ( !admin.isSuper ) {
-    //   throw new BadRequestException('본사 관리자만 접근 가능합니다.');
+    // if ( !admin ) {
+    //   throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
     // }
 
     const qna = await this.qnaRepository.findOneBy({ qnaId: qnaId });

@@ -6,17 +6,11 @@ import { Comment } from '../entities/comment';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { Qna } from '../../qna/entities/qna';
-import { BoardFile } from '../../file/entities/board_file';
+import { BoardFile } from '../../../file/entities/board_file';
 
 /**
  * 답변 상세조회 시, 커맨드를 처리하는 커맨드 핸들러 (서비스 로직 수행)
  */
-
-// 한국 시간으로 변경하는 메서드
-const getDateTime = (utcTime) => {
-  utcTime.setHours(utcTime.getHours() + 9);
-  return utcTime.toISOString().replace('T', ' ').substring(0, 16);
-};
 
 @Injectable()
 @CommandHandler(GetCommentDetailCommand)
@@ -38,8 +32,8 @@ export class GetCommentDetailHandler implements ICommandHandler<GetCommentDetail
   async execute(command: GetCommentDetailCommand) {
     const { qnaId, role } = command;
 
-    if (role !== '본사 관리자') {
-      throw new BadRequestException('본사 관리자만 접근 가능합니다.');
+    if (role !== '본사 관리자' && role !== '회원사 관리자') {
+      throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
     }
 
     const qna = await this.qnaRepository.findOneBy({ qnaId: qnaId });
@@ -71,13 +65,6 @@ export class GetCommentDetailHandler implements ICommandHandler<GetCommentDetail
     const commentList = await this.commentRepository.find({
       where: { qnaId: qnaId },
       order: { commentId: 'DESC' },
-    });
-
-    // 시간 변경
-    qna.boardId.regDate = getDateTime(qna.boardId.regDate);
-
-    commentList.map((date) => {
-      date.regDate = getDateTime(date.regDate);
     });
 
     const getCommentDetailDto = {

@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Notice } from '../entities/notice';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
-import { FileCreateEvent } from '../../file/event/file-create-event';
+import { FileCreateEvent } from '../../../file/event/file-create-event';
 
 /**
  * 공지사항 등록 시, 커맨드를 처리하는 커맨드 핸들러
@@ -25,7 +25,7 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
   ) {}
 
   async execute(command: CreateNoticeCommand) {
-    const { title, content, isTop, noticeGrant, boardType, role, files } = command;
+    const { title, content, isTop, noticeGrant, fileType, role, files } = command;
 
     if (role !== '본사 관리자' && role !== '회원사 관리자') {
       throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
@@ -34,7 +34,7 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
     const board = this.boardRepository.create({
       // 임시 accountId 부여
       accountId: 2,
-      boardTypeCode: '0',
+      fileTypeCode: '0',
       title,
       content,
       viewCount: 0,
@@ -59,7 +59,7 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
     }
 
     // 파일 업로드 이벤트 처리
-    this.eventBus.publish(new FileCreateEvent(board.boardId, boardType, files));
+    this.eventBus.publish(new FileCreateEvent(board.boardId, fileType, files));
 
     return '공지사항 등록 성공';
   }

@@ -6,7 +6,7 @@ import { Faq } from '../entities/faq';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { FaqCategory } from '../entities/faq_category';
-import { FileCreateEvent } from '../../file/event/file-create-event';
+import { FileCreateEvent } from '../../../file/event/file-create-event';
 
 /**
  * FAQ 등록 시, 커맨드를 처리하는 커맨드 핸들러
@@ -29,7 +29,7 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
   ) {}
 
   async execute(command: CreateFaqCommand) {
-    const { title, content, categoryName, boardType, role, files } = command;
+    const { title, content, categoryName, fileType, role, files } = command;
 
     if (role !== '본사 관리자') {
       throw new BadRequestException('본사 관리자만 접근 가능합니다.');
@@ -38,7 +38,7 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
     const board = this.boardRepository.create({
       // 임시 accountId 부여
       accountId: 1,
-      boardTypeCode: '1',
+      fileTypeCode: '1',
       title,
       content,
       viewCount: 0,
@@ -68,7 +68,7 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
     }
 
     // 파일 업로드 이벤트 처리
-    this.eventBus.publish(new FileCreateEvent(board.boardId, boardType, files));
+    this.eventBus.publish(new FileCreateEvent(board.boardId, fileType, files));
 
     return 'FAQ 등록 성공';
   }

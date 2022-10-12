@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Notice } from '../entities/notice';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
-import { FileUpdateEvent } from '../../file/event/file-update-event';
+import { FileUpdateEvent } from '../../../file/event/file-update-event';
 
 /**
  * 공지사항 수정 시, 커맨드를 처리하는 커맨드 핸들러
@@ -25,7 +25,7 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
   ) {}
 
   async execute(command: UpdateNoticeCommand) {
-    const { title, content, isTop, noticeGrant, noticeId, boardType, role, accountId, files } =
+    const { title, content, isTop, noticeGrant, noticeId, fileType, role, accountId, files } =
       command;
 
     if (role !== '본사 관리자' && role !== '회원사 관리자') {
@@ -64,7 +64,7 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
     }
 
     // 파일 업데이트 이벤트 처리
-    this.eventBus.publish(new FileUpdateEvent(board.boardId, boardType, files));
+    this.eventBus.publish(new FileUpdateEvent(board.boardId, fileType, files));
 
     // 변경된 공지사항 반환
     return notice;

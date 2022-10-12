@@ -30,6 +30,7 @@ export class CommentController {
   ): Promise<string> {
     const { comment, adminId } = createCommentDto;
     const command = new CreateCommentCommand(qnaId, comment, adminId);
+    // '답변 등록 성공' 메세지 반환
     return this.commandBus.execute(command);
   }
 
@@ -68,6 +69,7 @@ export class CommentController {
   ): Promise<Comment> {
     const { comment, adminId } = updateCommentDto;
     const command = new UpdateCommentCommand(commentId, comment, adminId);
+    // comment 객체 반환
     return this.commandBus.execute(command);
   }
 }

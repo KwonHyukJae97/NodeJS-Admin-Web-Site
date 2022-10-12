@@ -13,7 +13,6 @@ import {
 import { CreateFaqDto } from './dto/create-faq.dto';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateFaqCommand } from './command/create-faq.command';
-import { GetFaqListQuery } from './query/get-faq-list.query';
 import { Faq } from './entities/faq';
 import { UpdateFaqDto } from './dto/update-faq.dto';
 import { UpdateFaqCommand } from './command/update-faq.command';
@@ -23,8 +22,8 @@ import { GetFaqDetailDto } from './dto/get-faq-detail.dto';
 import { GetFaqDetailCommand } from './command/get-faq-detail.command';
 import { GetFaqInfoDto } from './dto/get-faq-info.dto';
 import { GetCategoryListQuery } from './query/get-category-list.query';
-import { GetFaqSearchQuery } from './query/get-faq-search.query';
 import { DeleteFaqInfoDto } from './dto/delete-faq-info.dto';
+import { GetFaqLisQuery } from './query/get-faq-lis.query';
 
 /**
  * FAQ 관련 API 처리하는 컨트롤러
@@ -43,19 +42,26 @@ export class FaqController {
     @Body() createFaqDto: CreateFaqDto,
     @UploadedFiles() files: Express.MulterS3.File[],
   ): Promise<string> {
-    const { title, content, categoryName, boardType, role } = createFaqDto;
-    const command = new CreateFaqCommand(title, content, categoryName, boardType, role, files);
+    const { title, content, categoryName, fileType, role } = createFaqDto;
+    const command = new CreateFaqCommand(title, content, categoryName, fileType, role, files);
+    // 'FAQ 등록 성공' 메세지 반환
     return this.commandBus.execute(command);
   }
 
   /**
-   * FAQ 리스트 조회
+   * FAQ 리스트/검색 조회
+   * @ query : category_name
+   * @ query : keyword
    */
-  @Get('list')
-  async getAllFaq(@Body() getFaqInfoDto: GetFaqInfoDto) {
+  @Get()
+  async getFaqSearch(
+    @Query('categoryName') categoryName: string,
+    @Query('keyword') keyword: string,
+    @Body() getFaqInfoDto: GetFaqInfoDto,
+  ) {
     const { role } = getFaqInfoDto;
-    const getFaqListQuery = new GetFaqListQuery(role);
-    return this.queryBus.execute(getFaqListQuery);
+    const getFaqListSearchQuery = new GetFaqLisQuery(categoryName, keyword, role);
+    return this.queryBus.execute(getFaqListSearchQuery);
   }
 
   /**
@@ -83,22 +89,6 @@ export class FaqController {
   }
 
   /**
-   * FAQ 검색어 조회
-   * @ query : category_name
-   * @ query : keyword
-   */
-  @Get()
-  async getFaqSearch(
-    @Query('categoryName') categoryName: string,
-    @Query('keyword') keyword: string,
-    @Body() getFaqInfoDto: GetFaqInfoDto,
-  ) {
-    const { role } = getFaqInfoDto;
-    const getFaqSearchQuery = new GetFaqSearchQuery(categoryName, keyword, role);
-    return this.queryBus.execute(getFaqSearchQuery);
-  }
-
-  /**
    * FAQ 수정
    * @ param : faq_id
    */
@@ -109,17 +99,18 @@ export class FaqController {
     @Body() updateFaqDto: UpdateFaqDto,
     @UploadedFiles() files: Express.MulterS3.File[],
   ): Promise<Faq> {
-    const { title, content, categoryName, boardType, role, accountId } = updateFaqDto;
+    const { title, content, categoryName, fileType, role, accountId } = updateFaqDto;
     const command = new UpdateFaqCommand(
       title,
       content,
       categoryName,
-      boardType,
+      fileType,
       role,
       accountId,
       faqId,
       files,
     );
+    // faq 객체 반환
     return this.commandBus.execute(command);
   }
 
@@ -134,6 +125,7 @@ export class FaqController {
   ): Promise<string> {
     const { role, accountId } = deleteFaqInfoDto;
     const command = new DeleteFaqCommand(faqId, role, accountId);
+    // 'FAQ 삭제 성공' 메세지 반환
     return this.commandBus.execute(command);
   }
 }

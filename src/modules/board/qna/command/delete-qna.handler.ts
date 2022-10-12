@@ -5,9 +5,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Qna } from '../entities/qna';
 import { Board } from '../../entities/board';
-import { BoardFile } from '../../file/entities/board_file';
+import { BoardFile } from '../../../file/entities/board_file';
 import { Comment } from '../../comment/entities/comment';
-import { FileDeleteEvent } from '../../file/event/file-delete-event';
+import { FileDeleteEvent } from '../../../file/event/file-delete-event';
 
 /**
  * 1:1 문의 삭제 시, 커맨드를 처리하는 커맨드 핸들러

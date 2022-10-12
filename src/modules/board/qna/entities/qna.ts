@@ -11,6 +11,7 @@ export class Qna {
   // 문의 번호
   @PrimaryGeneratedColumn({
     name: 'qna_id',
+    type: 'bigint',
   })
   qnaId: number;
 

@@ -7,9 +7,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { CreateNoticeHandler } from './command/create-notice.handler';
 import { UpdateNoticeHandler } from './command/update-notice.handler';
 import { DeleteNoticeHandler } from './command/delete-notice.handler';
-import { BoardFile } from '../file/entities/board_file';
-import { GetNoticeDetailHandler } from './command/get-notice-detail.handler';
-import { GetNoticeSearchHandler } from './query/get-notice-search.handler';
+import { BoardFile } from '../../file/entities/board_file';
 import { GetNoticeListHandler } from './query/get-notice-list.handler';
 
 @Module({
@@ -18,10 +16,9 @@ import { GetNoticeListHandler } from './query/get-notice-list.handler';
   providers: [
     CreateNoticeHandler,
     GetNoticeListHandler,
-    GetNoticeDetailHandler,
     UpdateNoticeHandler,
     DeleteNoticeHandler,
-    GetNoticeSearchHandler,
+    GetNoticeListHandler,
   ],
 })
 export class NoticeModule {}

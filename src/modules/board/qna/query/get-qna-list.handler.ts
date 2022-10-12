@@ -4,7 +4,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Qna } from '../entities/qna';
 import { Repository } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
-import { getDateTime } from '../../../../common/utils/time-common-method';
 
 /**
  * 1:1 문의 전체 조회 시, 쿼리를 구현하는 쿼리 핸들러
@@ -30,11 +29,6 @@ export class GetQnaListHandler implements IQueryHandler<GetQnaListQuery> {
         throw new NotFoundException('작성된 문의 내역이 없습니다.');
       }
 
-      // 시간 변경
-      qna.map((qna) => {
-        qna.boardId.regDate = getDateTime(qna.boardId.regDate);
-      });
-
       // 문의 내역 리스트 반환
       return qna;
 
@@ -50,11 +44,6 @@ export class GetQnaListHandler implements IQueryHandler<GetQnaListQuery> {
       if (qna.length === 0) {
         throw new NotFoundException('작성된 문의 내역이 없습니다.');
       }
-
-      // 시간 변경
-      qna.map((qna) => {
-        qna.boardId.regDate = getDateTime(qna.boardId.regDate);
-      });
 
       // 문의 내역 리스트 반환
       return qna;

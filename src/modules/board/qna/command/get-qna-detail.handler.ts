@@ -5,8 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Qna } from '../entities/qna';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
-import { BoardFile } from '../../file/entities/board_file';
-import { getDateTime } from '../../../../common/utils/time-common-method';
+import { BoardFile } from '../../../file/entities/board_file';
 import { Comment } from '../../comment/entities/comment';
 
 /**
@@ -66,9 +65,6 @@ export class GetQnaDetailHandler implements ICommandHandler<GetQnaDetailCommand>
         where: { qnaId: qnaId },
         order: { commentId: 'DESC' },
       });
-
-      // 시간 변경
-      qna.boardId.regDate = getDateTime(qna.boardId.regDate);
 
       const getQnaDetailDto = {
         qnaId: qnaId,

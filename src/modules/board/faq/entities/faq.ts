@@ -6,11 +6,12 @@ import { FaqCategory } from './faq_category';
  * FAQ에 대한 엔티티 정의
  */
 
-@Entity()
+@Entity('faq')
 export class Faq {
   // FAQ 번호
   @PrimaryGeneratedColumn({
     name: 'faq_id',
+    type: 'smallint',
   })
   faqId: number;
 

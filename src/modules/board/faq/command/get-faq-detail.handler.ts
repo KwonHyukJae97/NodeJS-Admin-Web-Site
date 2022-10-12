@@ -5,9 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Faq } from '../entities/faq';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
-import { BoardFile } from '../../file/entities/board_file';
+import { BoardFile } from '../../../file/entities/board_file';
 import { FaqCategory } from '../entities/faq_category';
-import { getDateTime } from '../../../../common/utils/time-common-method';
 
 /**
  * FAQ 상세조회 시, 커맨드를 처리하는 커맨드 핸들러 (서비스 로직 수행)
@@ -67,9 +66,6 @@ export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand>
     }
 
     const files = await this.fileRepository.findBy({ boardId: board.boardId });
-
-    // 시간 변경
-    faq.boardId.regDate = getDateTime(faq.boardId.regDate);
 
     const getFaqDetailDto = {
       faqId: faqId,

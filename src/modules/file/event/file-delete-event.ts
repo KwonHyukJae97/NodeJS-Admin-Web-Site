@@ -1,6 +1,6 @@
 import { IEvent } from '@nestjs/cqrs';
 import { CqrsEvent } from './cqrs-event';
-import { BoardFile } from '../../file/entities/board_file';
+import { BoardFile } from '../entities/board_file';
 
 /**
  * 파일 삭제 처리 시, 사용되는 이벤트 정의

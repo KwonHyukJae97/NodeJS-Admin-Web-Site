@@ -1,5 +1,5 @@
 import { ICommand } from '@nestjs/cqrs';
-import { BoardType } from '../../entities/board-type.enum';
+import { FileType } from '../../../file/entities/file-type.enum';
 
 /**
  * FAQ 수정 시, 사용되는 커맨드 정의
@@ -10,7 +10,7 @@ export class UpdateFaqCommand implements ICommand {
     readonly title: string,
     readonly content: string,
     readonly categoryName: string,
-    readonly boardType: BoardType,
+    readonly fileType: FileType,
     readonly role: string,
     readonly accountId: number,
     readonly faqId: number,

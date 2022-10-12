@@ -11,7 +11,7 @@ import { utilities, WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { LoggingModule } from './logging/logging.module';
 import { NoticeModule } from './modules/board/notice/notice.module';
-import { FileModule } from './modules/board/file/file.module';
+import { FileModule } from './modules/file/file.module';
 import { QnaModule } from './modules/board/qna/qna.module';
 import { CommentModule } from './modules/board/comment/comment.module';
 import { FaqModule } from './modules/board/faq/faq.module';
