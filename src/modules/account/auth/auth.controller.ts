@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  HttpStatus,
   Post,
   Req,
   Res,
@@ -31,6 +32,9 @@ import { SignInAdminDto } from './dto/signin-admin.dto';
 import { SignInUserDto } from './dto/signin-user.dto';
 import { SignUpAdminDto } from './dto/signup-admin.dto';
 import { SignUpUserDto } from './dto/signup-user.dto';
+import { ApiOperation, ApiTags, ApiOkResponse } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
+import { UserKakaoDto } from './dto/user.kakao.dto';
 
 /**
  * 회원가입, 로그인 등 계정 관련 auth 컨트롤러
@@ -191,6 +195,28 @@ export class SignController {
     const findid = await this.authService2.findId(findIdDto);
     console.log('아이디찾는 값 추출', findIdDto);
     return findid;
+  }
+
+  //kakao 로그인
+  @Get('/kakao')
+  @HttpCode(200)
+  @UseGuards(AuthGuard('kakao'))
+  async kakaoLogin() {
+    return HttpStatus.OK;
+  }
+
+  @Get('/kakao/redirect')
+  @HttpCode(200)
+  @UseGuards(AuthGuard('kakao'))
+  async kakaoLoginCallback(@Req() request): Promise<{ accessToken: string }> {
+    return this.authService2.kakaoLogin(request.user as UserKakaoDto);
+  }
+
+  //휴면계정 처리
+  @Get('/sleeper')
+  @HttpCode(200)
+  async sleeperCheck() {
+    return HttpStatus.OK;
   }
 
   // @UseGuards(JwtRefreshAuthGuard)

@@ -18,6 +18,7 @@ import { User } from '../account/user/entities/user';
 import { Admin } from '../account/admin/entities/admin';
 import { Account2 } from '../account/entities/account';
 import { AuthService2 } from '../account/auth/auth2.service';
+import { KakaoStrategy } from 'src/guard/jwt/kakao.strategy';
 
 @Module({
   imports: [

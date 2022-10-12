@@ -1,5 +1,6 @@
 import { Exclude } from 'class-transformer';
 import { IsOptional, IsString } from 'class-validator';
+import { Sleeper } from 'src/modules/sleeper/entities/sleeper';
 import {
   BaseEntity,
   Column,
@@ -182,4 +183,7 @@ export class Account2 extends BaseEntity {
 
   @OneToOne((type) => Admin, (admin) => admin.accountId)
   adminId: number;
+
+  @OneToOne((type) => Sleeper, (sleeper) => sleeper.sleeperAccountId)
+  sleeperAccountId: number;
 }

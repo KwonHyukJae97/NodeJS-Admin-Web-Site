@@ -1,4 +1,11 @@
-import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,6 +19,7 @@ import { AccountService } from 'src/modules/account-bak/account.service';
 import { ModuleTokenFactory } from '@nestjs/core/injector/module-token-factory';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { FindIdDto } from './dto/findid.dto';
+import { UserKakaoDto } from './dto/user.kakao.dto';
 
 /**
  * 로그인 관련 서비스
@@ -252,6 +260,41 @@ export class AuthService2 {
 
     return returnId;
   }
+
+  //kakako 로그인 서비스
+  async kakaoLogin(userKakaoDto: UserKakaoDto): Promise<{ accessToken: string }> {
+    const { snsId, name, email } = userKakaoDto;
+    let user = await this.accountRepository.findOne({ where: { snsId } });
+    if (!user) {
+      user = this.accountRepository.create({
+        snsId,
+        name,
+        email,
+      });
+      try {
+        await this.accountRepository.save(user);
+      } catch (error) {
+        if (error.code === '23505') {
+          throw new ConflictException('Existing User');
+        } else {
+          throw new InternalServerErrorException();
+        }
+      }
+    }
+    const payload = { id: user.id, accessToken: userKakaoDto.snsToken };
+    const accessToken = await this.jwtService.sign(payload);
+    return { accessToken };
+  }
+
+  /**
+   * 휴면 계정처리를 위한 최근 로그인 일시(loginDate)를 체크하는 함수
+   * 24시간에 한번씩 체크하여 최근 로그인 시간이 365일을 넘어가는 사용자의 계정을
+   * 휴면계정 테이블 (Sleeper)로 넘긴다.
+   * 넘길 때 Account 테이블의 true였던 is_active 컬럼을 false로 업데이트 후 넘긴다.
+   * Account 테이블에 남겨야 하는 데이터 항목은(?, ?, ? ...)
+   *
+   */
+
   // public async refreshTokenChange2(id: string, refreshToken: string) {
   //   if (this.jwtManageService.isNeedRefreshTokenChange(refreshToken)) {
   //     const newRefreshToken = this.getCookieWithJwtRefreshToken2(id);

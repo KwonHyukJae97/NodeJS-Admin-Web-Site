@@ -14,6 +14,7 @@ import { PassportModule } from '@nestjs/passport';
 import { AccountService } from 'src/modules/account-bak/account.service';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { Account } from 'src/modules/account-bak/entities/account.entity';
+import { KakaoStrategy } from 'src/guard/jwt/kakao.strategy';
 
 @Module({
   imports: [
