@@ -1,4 +1,3 @@
-import { IsNumber } from 'class-validator';
 import { Account } from '../../entities/account';
 import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
@@ -24,4 +23,9 @@ export class User extends BaseEntity {
     name: 'account_id',
   })
   accountId: Account;
+
+  //account 정보 가져오기
+  @OneToOne(() => Account)
+  @JoinColumn({ name: 'account_id' })
+  account: Account;
 }
