@@ -17,7 +17,7 @@ import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { LocalAuthGuard } from 'src/guard/local/local-auth.guard';
 import { AccountService } from 'src/modules/account-bak/account.service';
 import { Repository } from 'typeorm';
-import { Account2 } from '../entities/account';
+import { Account } from '../entities/account';
 import { AuthService } from './auth.service';
 import { SignUpAdminCommand } from './command/signup-admin.command';
 import { SignUpUserCommand } from './command/signup-user.command';
@@ -44,8 +44,8 @@ export class SignController {
     private readonly accountService: AccountService,
     private readonly jwtManageService: JwtManageService,
     private readonly signInUserHandler: SignInUserHandler,
-    @InjectRepository(Account2)
-    private accountRepository2: Repository<Account2>,
+    @InjectRepository(Account)
+    private accountRepository2: Repository<Account>,
   ) {}
 
   /**
@@ -284,7 +284,7 @@ export class SignController {
   // @UseGuards(JwtRefreshAuthGuard)
   // @Post('/refresh')
   // async refresh(@Req() request, @Res() response) {
-  //   const account: Account2 = request.user;
+  //   const account: Account = request.user;
 
   //   if (account) {
   //     const payload: TokenPayload2 = {
@@ -325,7 +325,7 @@ export class SignController {
   // @UseGuards(JwtRefreshAuthGuard)
   // @Post('/refresh2')
   // async refresh2(@Req() request, @Res() response) {
-  //   const account: Account2 = request.user;
+  //   const account: Account = request.user;
   //   if (account) {
   //     const { accessToken, accessOption } = await this.authService.getCookieWithJwtAccessToken2(
   //       account.id,
@@ -335,7 +335,7 @@ export class SignController {
   //   }
   // }
 
-  // const account: Account2 = request.user;
+  // const account: Account = request.user;
 
   // if (account) {
   //   const payload: TokenPayload2 = {

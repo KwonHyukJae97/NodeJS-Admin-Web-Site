@@ -1,5 +1,5 @@
 // import { IsString } from 'class-validator';
-// import { Account2 } from 'src/modules/account/entities/account';
+// import { Account } from 'src/modules/account/entities/account';
 // import {
 //   BaseEntity,
 //   Column,
@@ -14,11 +14,11 @@
 // export class Sleeper extends BaseEntity {
 //   //휴면계정 Primary Key
 //   @PrimaryGeneratedColumn()
-//   @OneToOne((type) => Account2, (account) => account.accountId, { eager: true })
+//   @OneToOne((type) => Account, (account) => account.accountId, { eager: true })
 //   @JoinColumn({
 //     name: 'account_id',
 //   })
-//   sleeperAccountId: Account2;
+//   sleeperAccountId: Account;
 
 //   // 비밀번호
 //   @IsString()

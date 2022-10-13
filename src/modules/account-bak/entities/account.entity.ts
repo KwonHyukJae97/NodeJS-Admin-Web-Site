@@ -2,7 +2,7 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeor
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 @Entity()
-export class Account {
+export class Account3 {
   @PrimaryGeneratedColumn({
     name: 'account_id',
   })
@@ -76,7 +76,7 @@ export class Account {
   ability;
 
   static from(email: string, password: string, nickname: string, name: string, hp: string) {
-    const account = new Account();
+    const account = new Account3();
     account.email = email;
     account.password = password;
     account.nickname = nickname;

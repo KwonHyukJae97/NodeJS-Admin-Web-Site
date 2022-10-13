@@ -5,15 +5,15 @@ import { AccountService } from '../../modules/account-bak/account.service';
 import { ConfigService } from '@nestjs/config';
 
 import { InjectRepository } from '@nestjs/typeorm';
-import { Account2 } from 'src/modules/account/entities/account';
+import { Account } from 'src/modules/account/entities/account';
 import { Repository } from 'typeorm';
 import { AuthService } from 'src/modules/account/auth/auth.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
-    @InjectRepository(Account2)
-    private readonly accountRepository: Repository<Account2>,
+    @InjectRepository(Account)
+    private readonly accountRepository: Repository<Account>,
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
   ) {

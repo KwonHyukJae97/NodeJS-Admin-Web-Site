@@ -7,13 +7,13 @@ import { SignUpUserHandler } from './command/signup-user.handler';
 import { SignUpAdminHandler } from './command/signup-admin.handler';
 import { User } from '../user/entities/user';
 import { Admin } from '../admin/entities/admin';
-import { Account2 } from '../entities/account';
+import { Account } from '../entities/account';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { PassportModule } from '@nestjs/passport';
 import { AccountService } from 'src/modules/account-bak/account.service';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
-import { Account } from 'src/modules/account-bak/entities/account.entity';
+import { Account3 } from 'src/modules/account-bak/entities/account.entity';
 import { KakaoStrategy } from 'src/guard/jwt/kakao.strategy';
 import { SignInAdminHandler } from './command/signin-admin.handler';
 import { SignInUserHandler } from './command/signin-user.handler';
@@ -21,7 +21,7 @@ import { SignInUserHandler } from './command/signin-user.handler';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forFeature([User, Admin, Account, Account2]),
+    TypeOrmModule.forFeature([User, Admin, Account3, Account]),
     CqrsModule,
     PassportModule.register({
       defaultStrategy: 'jwt',

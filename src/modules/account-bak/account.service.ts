@@ -9,21 +9,21 @@ import {
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Account } from './entities/account.entity';
+import { Account3 } from './entities/account.entity';
 import { Connection, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { compare, hash } from 'bcrypt';
-import { Account2 } from '../account/entities/account';
+import { Account } from '../account/entities/account';
 /**
  * Account.hp 확인ㅁ, LogOutx, refresh APIx, 사용자 로그인(RefreshToken) 기능 구현o
  */
 @Injectable()
 export class AccountService {
   constructor(
+    @InjectRepository(Account3)
+    private accountRepository: Repository<Account3>,
     @InjectRepository(Account)
-    private accountRepository: Repository<Account>,
-    @InjectRepository(Account2)
-    private accountRepository2: Repository<Account2>,
+    private accountRepository2: Repository<Account>,
     private connection: Connection,
   ) {}
 

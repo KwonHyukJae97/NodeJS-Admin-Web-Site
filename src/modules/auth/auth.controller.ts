@@ -16,7 +16,7 @@ import JwtAuthGuard2 from '../../guard/jwt/jwt-auth.guard';
 import { response } from 'express';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import JwtRefreshAuthGuard from 'src/guard/jwt/jwt-refresh-auth.guard';
-import { Account } from '../account-bak/entities/account.entity';
+import { Account3 } from '../account-bak/entities/account.entity';
 import { JwtManageService } from '../../guard/jwt/jwt-manage.service';
 
 @Controller('auth1')

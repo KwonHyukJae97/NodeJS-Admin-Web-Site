@@ -17,7 +17,7 @@ import { User } from '../user/entities/user';
 
 @Entity('account')
 @Unique(['id'])
-export class Account2 extends BaseEntity {
+export class Account extends BaseEntity {
   //계정번호
   @PrimaryGeneratedColumn({
     name: 'account_id',

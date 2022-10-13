@@ -11,7 +11,7 @@ import { compare, hash } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user/entities/user';
-import { Account2 } from 'src/modules/account/entities/account';
+import { Account } from 'src/modules/account/entities/account';
 import { Repository } from 'typeorm';
 import { SignInUserDto } from './dto/signin-user.dto';
 import { SignInAdminDto } from './dto/signin-admin.dto';
@@ -30,8 +30,8 @@ export class AuthService {
   constructor(
     private jwtService: JwtService,
 
-    @InjectRepository(Account2)
-    private accountRepository: Repository<Account2>,
+    @InjectRepository(Account)
+    private accountRepository: Repository<Account>,
 
     private readonly configService: ConfigService,
     private readonly accountService: AccountService,
@@ -39,7 +39,7 @@ export class AuthService {
   ) {}
 
   //아이디 존재 유무
-  public async find(id: string): Promise<Account2 | undefined> {
+  public async find(id: string): Promise<Account | undefined> {
     return this.accountRepository.findOne({ where: { id } });
   }
 

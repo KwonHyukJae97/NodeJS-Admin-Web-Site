@@ -3,7 +3,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Admin } from '../../admin/entities/admin';
-import { Account2 } from '../../entities/account';
+import { Account } from '../../entities/account';
 import { SignInAdminCommand } from './signin-admin.command';
 import * as bcrypt from 'bcrypt';
 import { AccountService } from 'src/modules/account-bak/account.service';
@@ -16,8 +16,8 @@ export class SignInAdminHandler implements ICommandHandler<SignInAdminCommand> {
     @InjectRepository(Admin)
     private adminRepository: Repository<Admin>,
 
-    @InjectRepository(Account2)
-    private accountRepository: Repository<Account2>,
+    @InjectRepository(Account)
+    private accountRepository: Repository<Account>,
     private readonly accountService: AccountService,
     private readonly authSerive: AuthService,
   ) {}
