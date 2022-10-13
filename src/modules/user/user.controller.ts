@@ -1,41 +1,77 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { UserService } from './user.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { CreateUserCommand } from './command/create-user.command';
+import { UpdateUserCommand } from './command/update-user.command';
+import { DeleteUserCommand } from './command/delete-user.command';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { GetUserInfoQuery } from './query/get-user-info.query';
+import { GetAllUserQuery } from './query/get-all-user.query';
+import { FileInterceptor } from '@nestjs/platform-express';
 
+/**
+ * 앱사용자 API controller
+ */
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private commandBus: CommandBus, private queryBus: QueryBus) {}
 
+  /**
+   * 앱사용자 등록
+   */
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  async createUser(@Body() dto: CreateUserDto): Promise<void> {
+    const { userId, accountId, grade } = dto;
+
+    const command = new CreateUserCommand(userId, accountId, grade);
+
+    return this.commandBus.execute(command);
   }
 
   /**
-   * 앱 사용자 리스트 조회
+   * 앱사용자 전체 리스트 조회
    */
   @Get()
-  findAll() {
-    return this.userService.findAll();
+  getAllUser() {
+    const getAllUserQuery = new GetAllUserQuery();
+    return this.queryBus.execute(getAllUserQuery);
   }
 
   /**
-   * 앱 사용자 상세 정보 조회
-   * @ param : user_id
+   * 앱사용자 상세 정보 조회
+   * @Param : account_id
    */
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.userService.findOne(+id);
+  getUserInfo(@Param('id') accountId: number) {
+    const getUserInfoQuery = new GetUserInfoQuery(accountId);
+    return this.queryBus.execute(getUserInfoQuery);
   }
 
   /**
-   * 앱 사용자 정보 수정
-   * @ param : user_id
+   * 앱사용자 상세 정보 수정
+   * @Param : account_id
    */
   @Patch(':id')
-  update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  @UseInterceptors(FileInterceptor('file'))
+  updateUser(
+    @Param('id') accountId: number,
+    @Body() dto: UpdateUserDto,
+    @UploadedFile() file: Express.MulterS3.File,
+  ) {
+    const { password, email, phone, nickname, grade } = dto;
+    const command = new UpdateUserCommand(password, email, phone, nickname, grade, accountId, file);
+
+    return this.commandBus.execute(command);
   }
 
   /**
@@ -43,7 +79,8 @@ export class UserController {
    * @ param : user_id
    */
   @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.userService.remove(+id);
+  deleteUser(@Param('id') accountId: number, delDate: Date) {
+    const command = new DeleteUserCommand(accountId, delDate);
+    return this.commandBus.execute(command);
   }
 }

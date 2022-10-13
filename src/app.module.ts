@@ -6,11 +6,15 @@ import { UserModule } from './modules/user/user.module';
 import { AccountModule } from './modules/account-bak/account.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
-import { AuthModule } from './auth/auth.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { utilities, WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { LoggingModule } from './logging/logging.module';
 import { NoticeModule } from './modules/board/notice/notice.module';
+import { AccountFileModule } from './modules/account/file/account-file.module';
+import { PermissionModule } from './modules/permission/permission.module';
+import { AdminRoleModule } from './modules/adminRole/adminRole.module';
+import { CompanyModule } from './modules/company/company.module';
 import { FileModule } from './modules/file/file.module';
 import { QnaModule } from './modules/board/qna/qna.module';
 import { CommentModule } from './modules/board/comment/comment.module';
@@ -19,8 +23,7 @@ import { FaqModule } from './modules/board/faq/faq.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      // envFilePath: `.${process.env.NODE_ENV}.env`,
-      envFilePath: '.local.env',
+      envFilePath: `.${process.env.NODE_ENV}.env`,
       validationSchema: Joi.object({
         JWT_ACCESS_TOKEN_SECRET: Joi.string().required(),
         JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
@@ -72,6 +75,10 @@ import { FaqModule } from './modules/board/faq/faq.module';
     AuthModule,
     LoggingModule,
     FileModule,
+    AccountFileModule,
+    PermissionModule,
+    AdminRoleModule,
+    CompanyModule,
     NoticeModule,
     FaqModule,
     QnaModule,
