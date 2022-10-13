@@ -7,6 +7,7 @@ import { Account2 } from '../../entities/account';
 import { SignInAdminCommand } from './signin-admin.command';
 import * as bcrypt from 'bcrypt';
 import { AccountService } from 'src/modules/account-bak/account.service';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 @CommandHandler(SignInAdminCommand)
@@ -18,6 +19,7 @@ export class SignInAdminHandler implements ICommandHandler<SignInAdminCommand> {
     @InjectRepository(Account2)
     private accountRepository: Repository<Account2>,
     private readonly accountService: AccountService,
+    private readonly authSerive: AuthService,
   ) {}
 
   async execute(command: SignInAdminCommand) {
@@ -70,7 +72,7 @@ export class SignInAdminHandler implements ICommandHandler<SignInAdminCommand> {
   //회원가입 유무
   public async validateUser(id: string, plainTextPassword: string): Promise<any> {
     try {
-      const account = await this.accountService.getById(id);
+      const account = await this.authSerive.getById(id);
       await this.verifyPassword(plainTextPassword, account.password);
       const { password, ...result } = account;
       return result;

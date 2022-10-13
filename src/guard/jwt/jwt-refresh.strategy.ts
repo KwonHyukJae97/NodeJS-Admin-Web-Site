@@ -3,12 +3,14 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { AccountService } from '../../modules/account-bak/account.service';
+import { AuthService } from 'src/modules/account/auth/auth.service';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh-token') {
   constructor(
     private readonly configService: ConfigService,
     private readonly accountService: AccountService,
+    private readonly authService: AuthService,
   ) {
     super({
       // jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -36,6 +38,6 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh-
   // //Account 엔티티와 연동
   async validate(req, id: string) {
     const refreshToken = req.cookies?.refresh;
-    return this.accountService.getAccountRefreshTokenMatches2(refreshToken, id);
+    return this.authService.getAccountRefreshTokenMatches(refreshToken, id);
   }
 }

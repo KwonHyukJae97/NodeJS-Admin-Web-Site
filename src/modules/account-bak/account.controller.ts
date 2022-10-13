@@ -10,32 +10,32 @@ import { RolesGuard } from '../../guard/role/roles.guard';
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
-  @Post()
-  create(@Body() createAccountDto: CreateAccountDto) {
-    return this.accountService.create(createAccountDto);
-  }
+  // @Post()
+  // create(@Body() createAccountDto: CreateAccountDto) {
+  //   return this.accountService.create(createAccountDto);
+  // }
 
-  @Get()
-  @Role(ROLES_ENUM.ROLE_ADMIN)
-  @UseGuards(RolesGuard)
-  @UseGuards(JwtAuthGuard2)
-  findAll(@Req() req) {
-    return this.accountService.findAll();
-  }
+  // @Get()
+  // @Role(ROLES_ENUM.ROLE_ADMIN)
+  // @UseGuards(RolesGuard)
+  // @UseGuards(JwtAuthGuard2)
+  // findAll(@Req() req) {
+  //   return this.accountService.findAll();
+  // }
 
-  @Get(':id')
-  @UseGuards(JwtAuthGuard2)
-  findOne(@Param('id') id: number) {
-    return this.accountService.findOne(id);
-  }
+  // @Get(':id')
+  // @UseGuards(JwtAuthGuard2)
+  // findOne(@Param('id') id: number) {
+  //   return this.accountService.findOne(id);
+  // }
 
-  @Patch(':id')
-  update(@Param('id') id: number, @Body() updateAccountDto: UpdateAccountDto) {
-    return this.accountService.update(id, updateAccountDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: number, @Body() updateAccountDto: UpdateAccountDto) {
+  //   return this.accountService.update(id, updateAccountDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.accountService.remove(id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: number) {
+  //   return this.accountService.remove(id);
+  // }
 }

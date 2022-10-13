@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
-import { AuthService } from './auth.service';
+import { AuthService3 } from './auth.service';
 import { AccountModule } from '../account-bak/account.module';
 import { LocalStrategy } from '../../guard/local/local.strategy';
 import { AuthController } from './auth.controller';
@@ -17,7 +17,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { User } from '../account/user/entities/user';
 import { Admin } from '../account/admin/entities/admin';
 import { Account2 } from '../account/entities/account';
-import { AuthService2 } from '../account/auth/auth2.service';
+import { AuthService } from '../account/auth/auth.service';
 import { KakaoStrategy } from 'src/guard/jwt/kakao.strategy';
 
 @Module({
@@ -33,13 +33,13 @@ import { KakaoStrategy } from 'src/guard/jwt/kakao.strategy';
   ],
   providers: [
     AccountService,
-    AuthService,
+    AuthService3,
     ConfigService,
     JwtManageService,
     JwtStrategy,
     JwtRefreshStrategy,
     LocalStrategy,
-    AuthService2,
+    AuthService,
     {
       provide: APP_GUARD,
       useClass: RolesGuard,

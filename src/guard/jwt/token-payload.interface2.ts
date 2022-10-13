@@ -1,4 +1,4 @@
-interface TokenPayload2 {
+interface TokenPayload {
   accountId: number;
   id: string;
 }

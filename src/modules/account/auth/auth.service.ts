@@ -7,6 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user/entities/user';
@@ -25,7 +26,7 @@ import { UserKakaoDto } from './dto/user.kakao.dto';
  * 로그인 관련 서비스
  */
 @Injectable()
-export class AuthService2 {
+export class AuthService {
   constructor(
     private jwtService: JwtService,
 
@@ -42,10 +43,18 @@ export class AuthService2 {
     return this.accountRepository.findOne({ where: { id } });
   }
 
+  async getById(id: string) {
+    const account = await this.accountRepository.findOneBy({
+      id: id,
+    });
+
+    return account;
+  }
+
   //회원가입 유무
   public async validateUser(id: string, plainTextPassword: string): Promise<any> {
     try {
-      const account = await this.accountService.getById(id);
+      const account = await this.getById(id);
       await this.verifyPassword(plainTextPassword, account.password);
       const { password, ...result } = account;
       return result;
@@ -62,8 +71,48 @@ export class AuthService2 {
     }
   }
 
+  async getByAccountId(id: string, showCurrentHashedRefreshToken: boolean) {
+    const account = await this.accountRepository.findOne({ where: { id } });
+    console.log('accountService- Id--------', id);
+    console.log('accountService- account--------', account);
+    if (account) {
+      delete account.password;
+      if (!showCurrentHashedRefreshToken) {
+        delete account.currentHashedRefreshToken;
+      }
+
+      return account;
+    }
+  }
+
+  async getAccountRefreshTokenMatches(
+    refreshToken: string,
+    id: string,
+  ): Promise<{ result: boolean }> {
+    const account = await this.accountRepository.findOne({ where: { id } });
+
+    if (!account) {
+      throw new UnauthorizedException('존재하지 않는 사용자입니다.');
+    }
+
+    const isRefreshTokenMatching = await compare(refreshToken, account.currentHashedRefreshToken);
+
+    if (isRefreshTokenMatching) {
+      return { result: true };
+    } else {
+      throw new UnauthorizedException('여기에서 접근에러입니다111');
+    }
+  }
+
+  async setCurrentRefreshToken(refreshToken: string, id: string) {
+    if (refreshToken) {
+      refreshToken = await bcrypt.hash(refreshToken, 10);
+    }
+    await this.accountRepository.update({ id }, { currentHashedRefreshToken: refreshToken });
+  }
+
   //AccessToken 발급
-  public getCookieWithJwtAccessToken2(id: string) {
+  public getCookieWithJwtAccessToken(id: string) {
     const payload = { id };
     const token = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
@@ -82,7 +131,7 @@ export class AuthService2 {
     };
   }
   //RefreshToken 발급
-  public getCookieWithJwtRefreshToken2(id: string) {
+  public getCookieWithJwtRefreshToken(id: string) {
     const payload = { id };
     const token = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
@@ -118,10 +167,10 @@ export class AuthService2 {
     if (account.division === false) {
       throw new UnauthorizedException('로그인 정보를 확인해주세요.');
     }
-    const { accessToken, accessOption } = await this.getCookieWithJwtAccessToken2(id);
+    const { accessToken, accessOption } = await this.getCookieWithJwtAccessToken(id);
 
-    const { refreshToken, refreshOption } = await this.getCookieWithJwtRefreshToken2(id);
-    await this.accountService.setCurrentRefreshToken2(refreshToken, id);
+    const { refreshToken, refreshOption } = await this.getCookieWithJwtRefreshToken(id);
+    await this.setCurrentRefreshToken(refreshToken, id);
 
     // const lastLoginDate = new Date(account.loginDate).getTime() / 1000;
 
@@ -177,10 +226,10 @@ export class AuthService2 {
     if (account.division === true) {
       throw new UnauthorizedException('로그인 정보를 확인해주세요.');
     }
-    const { accessToken, accessOption } = await this.getCookieWithJwtAccessToken2(id);
+    const { accessToken, accessOption } = await this.getCookieWithJwtAccessToken(id);
 
-    const { refreshToken, refreshOption } = await this.getCookieWithJwtRefreshToken2(id);
-    await this.accountService.setCurrentRefreshToken2(refreshToken, id);
+    const { refreshToken, refreshOption } = await this.getCookieWithJwtRefreshToken(id);
+    await this.setCurrentRefreshToken(refreshToken, id);
 
     const returnUser = await this.accountRepository
       .createQueryBuilder('account')
@@ -233,10 +282,10 @@ export class AuthService2 {
     };
   }
 
-  public async refreshTokenChange(accountId: number, payload: TokenPayload, refreshToken: string) {
+  public async refreshTokenChange(id: string, payload: TokenPayload, refreshToken: string) {
     if (this.jwtManageService.isNeedRefreshTokenChange(refreshToken)) {
       const newRefreshToken = this.jwtManageService.getCookieWithJwtRefreshToken(payload);
-      await this.accountService.setCurrentRefreshToken(accountId, newRefreshToken.refreshToken);
+      await this.setCurrentRefreshToken(id, newRefreshToken.refreshToken);
 
       return newRefreshToken;
     }
@@ -259,6 +308,15 @@ export class AuthService2 {
       .getOne();
 
     return returnId;
+  }
+
+  /**
+   *
+   * @param accountId
+   * @returns accountId 값으로 해당 사용자의 리프래쉬 토큰을 null처리
+   */
+  async removeRefreshToken2(accountId: number) {
+    return this.accountRepository.update({ accountId }, { currentHashedRefreshToken: null });
   }
 
   //kakako 로그인 서비스

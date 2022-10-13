@@ -9,7 +9,7 @@ import { User } from '../user/entities/user';
 import { Admin } from '../admin/entities/admin';
 import { Account2 } from '../entities/account';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthService2 } from './auth2.service';
+import { AuthService } from './auth.service';
 import { PassportModule } from '@nestjs/passport';
 import { AccountService } from 'src/modules/account-bak/account.service';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
@@ -41,7 +41,7 @@ import { SignInUserHandler } from './command/signin-user.handler';
     SignUpAdminHandler,
     SignInAdminHandler,
     SignInUserHandler,
-    AuthService2,
+    AuthService,
     AccountService,
     JwtManageService,
   ],

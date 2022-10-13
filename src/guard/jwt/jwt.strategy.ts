@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account2 } from 'src/modules/account/entities/account';
 import { Repository } from 'typeorm';
-import { AuthService2 } from 'src/modules/account/auth/auth2.service';
+import { AuthService } from 'src/modules/account/auth/auth.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -15,8 +15,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     @InjectRepository(Account2)
     private readonly accountRepository: Repository<Account2>,
     private readonly configService: ConfigService,
-    private readonly accountService: AccountService,
-    private readonly authService: AuthService2,
+    private readonly authService: AuthService,
   ) {
     super({
       // jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -31,10 +30,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  //Account 엔티티와 연동
-  async validate(payload: TokenPayload2) {
+  //Account 엔티티와 연동 here
+  async validate(payload: TokenPayload) {
     console.log('----payload----', payload);
     console.log('--------idididi-------------', payload.id);
-    return await this.accountService.getByAccountId2(payload.id, false);
+    return await this.authService.getByAccountId(payload.id, false);
   }
 }

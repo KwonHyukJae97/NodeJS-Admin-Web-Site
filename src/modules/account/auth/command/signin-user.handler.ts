@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { Account2 } from '../../entities/account';
 import * as bcrypt from 'bcrypt';
 import { SignInUserCommand } from './signin-user.command';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 @CommandHandler(SignInUserCommand)
@@ -14,6 +15,7 @@ export class SignInUserHandler implements ICommandHandler<SignInUserCommand> {
     @InjectRepository(Account2)
     private accountRepository: Repository<Account2>,
     private readonly accountService: AccountService,
+    private readonly authService: AuthService,
   ) {}
 
   async execute(command: SignInUserCommand) {
@@ -66,7 +68,7 @@ export class SignInUserHandler implements ICommandHandler<SignInUserCommand> {
   //회원가입 유무
   public async validateUser(id: string, plainTextPassword: string): Promise<any> {
     try {
-      const account = await this.accountService.getById(id);
+      const account = await this.authService.getById(id);
       await this.verifyPassword(plainTextPassword, account.password);
       const { password, ...result } = account;
       return result;
