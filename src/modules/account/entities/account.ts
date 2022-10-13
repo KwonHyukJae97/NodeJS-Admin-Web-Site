@@ -1,5 +1,6 @@
 import { Exclude } from 'class-transformer';
 import { IsOptional, IsString } from 'class-validator';
+import { Temporary } from 'src/modules/temporary/entities/temporary';
 // import { Sleeper } from 'src/modules/sleeper/entities/sleeper';
 import {
   BaseEntity,
@@ -171,6 +172,9 @@ export class Account extends BaseEntity {
 
   @OneToOne((type) => Admin, (admin) => admin.accountId)
   adminId: number;
+
+  @OneToOne((type) => Temporary, (temporary) => temporary.accountId)
+  temporaryId: number;
 
   // @OneToOne((type) => Sleeper, (sleeper) => sleeper.sleeperAccountId)
   // sleeperAccountId: number;
