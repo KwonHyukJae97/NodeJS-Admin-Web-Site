@@ -6,18 +6,24 @@ import {
   Param,
   Patch,
   Post,
-  UsePipes,
-  ValidationPipe
-} from "@nestjs/common";
-import { CreateNoticeDto } from "./dto/create-notice.dto";
-import { CommandBus, QueryBus } from "@nestjs/cqrs";
-import { CreateNoticeCommand } from "./command/create-notice.command";
-import { GetNoticeInfoQuery } from "./query/get-notice-info.query";
-import { Notice } from "./entities/notice";
-import { GetNoticeDetailQuery } from "./query/get-notice-detail.query";
-import { UpdateNoticeDto } from "./dto/update-notice.dto";
-import { UpdateNoticeCommand } from "./command/update-notice.command";
-import { DeleteNoticeCommand } from "./command/delete-notice.command";
+  Query,
+  UploadedFiles,
+  UseInterceptors,
+} from '@nestjs/common';
+import { CreateNoticeDto } from './dto/create-notice.dto';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { CreateNoticeCommand } from './command/create-notice.command';
+import { Notice } from './entities/notice';
+import { UpdateNoticeDto } from './dto/update-notice.dto';
+import { UpdateNoticeCommand } from './command/update-notice.command';
+import { DeleteNoticeCommand } from './command/delete-notice.command';
+import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/files.interceptor';
+import { GetNoticeDetailDto } from './dto/get-notice-detail.dto';
+import { GetNoticeDetailCommand } from './command/get-notice-detail.command';
+import { GetNoticeListQuery } from './query/get-notice-list.query';
+import { GetNoticeInfoDto } from './dto/get-notice-info.dto';
+import { DeleteNoticeInfoDto } from './dto/delete-notice-info.dto';
+import { GetNoticeRoleDto } from './dto/get-notice-role.dto';
 
 /**
  * 공지사항 관련 API 처리하는 컨트롤러
@@ -31,20 +37,37 @@ export class NoticeController {
    * 공지사항 등록
    */
   @Post()
-  @UsePipes(ValidationPipe)
-  createNotice(@Body() createNoticeDto: CreateNoticeDto): Promise<string> {
-    const { title, content, isTop, noticeGrant } = createNoticeDto;
-    const command = new CreateNoticeCommand(title, content, isTop, noticeGrant);
+  @UseInterceptors(FilesInterceptor('files'))
+  createNotice(
+    @Body() createNoticeDto: CreateNoticeDto,
+    @UploadedFiles() files: Express.MulterS3.File[],
+  ): Promise<string> {
+    const { title, content, isTop, noticeGrant, fileType, role } = createNoticeDto;
+    const command = new CreateNoticeCommand(
+      title,
+      content,
+      isTop,
+      noticeGrant,
+      fileType,
+      role,
+      files,
+    );
+    // '공지사항 등록 성공' 메세지 반환
     return this.commandBus.execute(command);
   }
 
   /**
-   * 공지사항 리스트 조회
+   * 공지사항 리스트/검색 조회
+   * @ query : keyword
    */
   @Get()
-  async getAllNotice() {
-    const getNoticeInfoQuery = new GetNoticeInfoQuery();
-    return this.queryBus.execute(getNoticeInfoQuery);
+  async getAllSearchNotice(
+    @Query('keyword') keyword: string,
+    @Body() getNoticeInfoDto: GetNoticeInfoDto,
+  ) {
+    const { role, noticeGrant } = getNoticeInfoDto;
+    const getNoticeListSearchQuery = new GetNoticeListQuery(keyword, role, noticeGrant);
+    return this.queryBus.execute(getNoticeListSearchQuery);
   }
 
   /**
@@ -52,9 +75,13 @@ export class NoticeController {
    * @ param : notice_id
    */
   @Get(':id')
-  async getNoticeDetail(@Param('id') noticeId: number): Promise<Notice> {
-    const getNoticeDetailQuery = new GetNoticeDetailQuery(noticeId);
-    return this.queryBus.execute(getNoticeDetailQuery);
+  async getNoticeDetail(
+    @Param('id') noticeId: number,
+    @Body() getNoticeRoleDto: GetNoticeRoleDto,
+  ): Promise<GetNoticeDetailDto> {
+    const { role } = getNoticeRoleDto;
+    const command = new GetNoticeDetailCommand(noticeId, role);
+    return this.commandBus.execute(command);
   }
 
   /**
@@ -62,12 +89,25 @@ export class NoticeController {
    * @ param : notice_id
    */
   @Patch(':id')
+  @UseInterceptors(FilesInterceptor('files'))
   async updateNotice(
     @Param('id') noticeId: number,
     @Body() updateNoticeDto: UpdateNoticeDto,
+    @UploadedFiles() files: Express.MulterS3.File[],
   ): Promise<Notice> {
-    const { title, content, isTop, noticeGrant } = updateNoticeDto;
-    const command = new UpdateNoticeCommand(title, content, isTop, noticeGrant, noticeId);
+    const { title, content, isTop, noticeGrant, fileType, role, accountId } = updateNoticeDto;
+    const command = new UpdateNoticeCommand(
+      title,
+      content,
+      isTop,
+      noticeGrant,
+      noticeId,
+      fileType,
+      role,
+      accountId,
+      files,
+    );
+    // notice 객체 반환
     return this.commandBus.execute(command);
   }
 
@@ -76,8 +116,13 @@ export class NoticeController {
    * @ param : notice_id
    */
   @Delete(':id')
-  async deleteNotice(@Param('id') noticeId: number): Promise<string> {
-    const command = new DeleteNoticeCommand(noticeId);
+  async deleteNotice(
+    @Param('id') noticeId: number,
+    @Body() deleteNoticeInfoDto: DeleteNoticeInfoDto,
+  ): Promise<string> {
+    const { role, accountId } = deleteNoticeInfoDto;
+    const command = new DeleteNoticeCommand(noticeId, role, accountId);
+    // '공지사항 삭제 성공' 메세지 반환
     return this.commandBus.execute(command);
   }
 }
