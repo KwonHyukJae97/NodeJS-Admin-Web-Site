@@ -22,8 +22,10 @@ import { TemporaryModule } from './modules/temporary/temporary.module';
 import { UserModule } from './modules/account/user/user.module';
 import { AdminModule } from './modules/account/admin/admin.module';
 import { AccountModule } from './modules/account/account.module';
+import { TranslatorModule } from 'nestjs-translator';
+import { ExceptionModule } from './common/exception/Exception.module';
 import { APP_FILTER } from '@nestjs/core';
-import { GlobalExceptionFilter } from './common/exception/GlobalException.Filter';
+import { TranslatorFilter } from 'nestjs-translator';
 
 @Module({
   imports: [
@@ -76,6 +78,11 @@ import { GlobalExceptionFilter } from './common/exception/GlobalException.Filter
         }),
       ],
     }),
+    TranslatorModule.forRoot({
+      global: true,
+      defaultLang: 'ko',
+      translationSource: '/src/common/i18n',
+    }),
     AccountModule2,
     AccountModule,
     AuthModule,
@@ -92,8 +99,16 @@ import { GlobalExceptionFilter } from './common/exception/GlobalException.Filter
     TemporaryModule,
     UserModule,
     AdminModule,
+    ExceptionModule,
   ],
   controllers: [AppController],
-  providers: [AppService, ConfigService, { provide: APP_FILTER, useClass: GlobalExceptionFilter }],
+  providers: [
+    AppService,
+    ConfigService,
+    {
+      provide: APP_FILTER,
+      useClass: TranslatorFilter,
+    },
+  ],
 })
 export class AppModule {}

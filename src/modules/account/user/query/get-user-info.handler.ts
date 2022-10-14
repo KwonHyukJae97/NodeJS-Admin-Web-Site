@@ -4,13 +4,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user';
 import { GetUserInfoQuery } from './get-user-info.query';
-
+import { TranslatorService } from 'nestjs-translator';
 /**
  * 앱 사용자 상세 정보 조회용 쿼리 핸들러
  */
+
 @QueryHandler(GetUserInfoQuery)
 export class GetUserInfoQueryHandler implements IQueryHandler<GetUserInfoQuery> {
-  constructor(@InjectRepository(User) private userRepository: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private userRepository: Repository<User>,
+    private translator: TranslatorService,
+  ) {}
 
   async execute(query: GetUserInfoQuery) {
     const { userId } = query;
@@ -22,7 +26,7 @@ export class GetUserInfoQueryHandler implements IQueryHandler<GetUserInfoQuery> 
       .getOne();
 
     if (!user) {
-      throw new NotFoundException('User does not exist');
+      throw new NotFoundException('NotFoundException');
     }
     //앱사용자 상세 정보 반환
     return user;
