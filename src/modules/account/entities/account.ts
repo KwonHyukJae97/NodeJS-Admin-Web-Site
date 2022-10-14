@@ -1,5 +1,4 @@
-import { Exclude } from 'class-transformer';
-import { IsOptional, IsString } from 'class-validator';
+import { Temporary } from 'src/modules/temporary/entities/temporary';
 // import { Sleeper } from 'src/modules/sleeper/entities/sleeper';
 import {
   BaseEntity,
@@ -7,6 +6,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
   Unique,
@@ -14,6 +14,10 @@ import {
 } from 'typeorm';
 import { Admin } from '../admin/entities/admin';
 import { User } from '../user/entities/user';
+
+/**
+ * account에 대한 엔티티 정의
+ */
 
 @Entity('account')
 @Unique(['id'])
@@ -95,6 +99,8 @@ export class Account extends BaseEntity {
   // @Exclude()
   @Column({
     name: 'current_hashed_refresh_token',
+    type: 'varchar',
+    length: '100',
     nullable: true,
   })
   currentHashedRefreshToken: string;
@@ -164,7 +170,7 @@ export class Account extends BaseEntity {
     name: 'division',
     type: 'boolean',
   })
-  division: Boolean;
+  division: boolean;
 
   @OneToOne((type) => User, (user) => user.accountId)
   userId: number;
@@ -172,6 +178,13 @@ export class Account extends BaseEntity {
   @OneToOne((type) => Admin, (admin) => admin.accountId)
   adminId: number;
 
+  @OneToOne((type) => Temporary, (temporary) => temporary.accountId)
+  temporaryId: number;
+
+  //user 정보 가져오기
+  @OneToOne(() => User)
+  @JoinColumn({ name: 'account_id' })
+  user: User;
   // @OneToOne((type) => Sleeper, (sleeper) => sleeper.sleeperAccountId)
   // sleeperAccountId: number;
 }

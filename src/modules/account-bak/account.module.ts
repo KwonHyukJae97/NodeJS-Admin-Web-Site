@@ -12,4 +12,4 @@ import { Account } from '../account/entities/account';
   providers: [AccountService],
   exports: [AccountService, TypeOrmModule],
 })
-export class AccountModule {}
+export class AccountModule2 {}

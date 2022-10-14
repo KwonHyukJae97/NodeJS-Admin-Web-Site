@@ -6,7 +6,7 @@ import JwtAuthGuard2 from '../../guard/jwt/jwt-auth.guard';
 import { Role, ROLES_ENUM } from '../../guard/role/roles.decorator';
 import { RolesGuard } from '../../guard/role/roles.guard';
 
-@Controller('account')
+@Controller('account12')
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
