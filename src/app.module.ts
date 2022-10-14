@@ -56,6 +56,7 @@ import { AccountModule } from './modules/account/account.module';
       autoLoadEntities: true,
       // entities: ["__DIR/**/*.entity{.ts,.js}"],
       timezone: 'UTC',
+      //logging: true,
     }),
     WinstonModule.forRoot({
       defaultMeta: {},
