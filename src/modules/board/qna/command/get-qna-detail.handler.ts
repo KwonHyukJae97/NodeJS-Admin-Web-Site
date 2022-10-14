@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Qna } from '../entities/qna';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
-import { BoardFile } from '../../../file/entities/board_file';
+import { BoardFile } from '../../../file/entities/board-file';
 import { Comment } from '../../comment/entities/comment';
 
 /**

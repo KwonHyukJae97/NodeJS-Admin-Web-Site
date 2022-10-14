@@ -19,10 +19,6 @@ export class CreateFaqDto {
   @IsString()
   categoryName: string;
 
-  @IsNotEmpty()
-  @IsString()
-  fileType: FileType.FAQ;
-
   // 등록 권한 확인을 위해 임시 사용
   @IsNotEmpty()
   @IsString()

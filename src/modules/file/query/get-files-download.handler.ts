@@ -2,7 +2,7 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { BoardFile } from '../entities/board_file';
+import { BoardFile } from '../entities/board-file';
 import * as AWS from 'aws-sdk';
 import { GetAllFileDownloadQuery } from './get-files-download.query';
 import { Board } from '../../board/entities/board';

@@ -6,8 +6,9 @@ import { Faq } from '../entities/faq';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { FaqCategory } from '../entities/faq_category';
-import { FileUpdateEvent } from '../../../file/event/file-update-event';
+import { FilesUpdateEvent } from '../../../file/event/files-update-event';
 import { BoardFileDb } from '../../board-file-db';
+import { FileType } from '../../../file/entities/file-type.enum';
 
 /**
  * FAQ 수정 시, 커맨드를 처리하는 커맨드 핸들러
@@ -33,7 +34,7 @@ export class UpdateFaqHandler implements ICommandHandler<UpdateFaqCommand> {
   ) {}
 
   async execute(command: UpdateFaqCommand) {
-    const { title, content, categoryName, fileType, role, accountId, faqId, files } = command;
+    const { title, content, categoryName, role, accountId, faqId, files } = command;
 
     if (role !== '본사 관리자') {
       throw new BadRequestException('본사 관리자만 접근 가능합니다.');
@@ -72,7 +73,9 @@ export class UpdateFaqHandler implements ICommandHandler<UpdateFaqCommand> {
     }
 
     // 파일 업데이트 이벤트 처리
-    this.eventBus.publish(new FileUpdateEvent(board.boardId, fileType, files, this.boardFileDb));
+    this.eventBus.publish(
+      new FilesUpdateEvent(board.boardId, FileType.FAQ, files, this.boardFileDb),
+    );
 
     // 변경된 FAQ 반환
     return faq;

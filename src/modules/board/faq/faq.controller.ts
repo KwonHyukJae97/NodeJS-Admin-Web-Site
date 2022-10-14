@@ -42,8 +42,8 @@ export class FaqController {
     @Body() createFaqDto: CreateFaqDto,
     @UploadedFiles() files: Express.MulterS3.File[],
   ): Promise<string> {
-    const { title, content, categoryName, fileType, role } = createFaqDto;
-    const command = new CreateFaqCommand(title, content, categoryName, fileType, role, files);
+    const { title, content, categoryName, role } = createFaqDto;
+    const command = new CreateFaqCommand(title, content, categoryName, role, files);
     // 'FAQ 등록 성공' 메세지 반환
     return this.commandBus.execute(command);
   }
@@ -99,12 +99,11 @@ export class FaqController {
     @Body() updateFaqDto: UpdateFaqDto,
     @UploadedFiles() files: Express.MulterS3.File[],
   ): Promise<Faq> {
-    const { title, content, categoryName, fileType, role, accountId } = updateFaqDto;
+    const { title, content, categoryName, role, accountId } = updateFaqDto;
     const command = new UpdateFaqCommand(
       title,
       content,
       categoryName,
-      fileType,
       role,
       accountId,
       faqId,

@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Res } from '@nestjs/common';
 import { FileService } from './file.service';
-import { BoardFile } from './entities/board_file';
+import { BoardFile } from './entities/board-file';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { GetFileDownloadQuery } from './query/get-file-download.query';

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import * as path from 'path';
-import { BoardFile } from './entities/board_file';
+import { BoardFile } from './entities/board-file';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Board } from '../board/entities/board';
 import { Repository } from 'typeorm';
@@ -80,12 +80,7 @@ async function deleteObjectS3(file) {
 
 @Injectable()
 export class FileService {
-  constructor(
-    @InjectRepository(Board)
-    private boardRepository: Repository<Board>,
-    @InjectRepository(BoardFile)
-    private fileRepository: Repository<BoardFile>,
-  ) {}
+  constructor() {}
 
   /**
    * 다중 파일 업로드 기능
@@ -177,5 +172,58 @@ export class FileService {
     deleteList.map(async (file) => {
       await deleteObjectS3(file);
     });
+  }
+
+  /**
+   * 단일 파일 업데이트 기능
+   */
+  async updateFile(
+    id: number,
+    fileType: string,
+    file: Express.MulterS3.File,
+    fileDbInterface: FileDbInterface,
+  ) {
+    // 기존 S3에 업로드된 파일 정보 조회
+    const deleteFile = await fileDbInterface.delete(id);
+
+    // 기본 이미지가 아닌 이미지들만 S3 삭제 요청 (기본 이미지가 저장되어 있다면 S3 삭제 예외)
+    if (deleteFile !== 'account/basic-profile.png') {
+      await deleteObjectS3(deleteFile);
+    }
+
+    const today = getToday();
+    const time = getTime();
+
+    // S3 업로드
+    await putObjectS3(file, fileType, today, time);
+
+    // 업로드 된 파일 url 가져오기
+    const url = await getObjectUrlS3(fileType, today, time);
+
+    const ext = path.extname(file.originalname);
+
+    const fileInfo = {
+      originalFileName: path.basename(file.originalname, ext),
+      fileName: url.split('com/')[1], // 전체 url - 공통 url(https://b2c-file-test.s3.amazonaws.com/)
+      fileExt: ext,
+      filePath: url,
+      fileSize: file.size,
+    };
+
+    // 신규 파일 정보 DB 저장
+    await fileDbInterface.save(id, fileInfo);
+  }
+
+  /**
+   * 단일 파일 삭제 기능
+   */
+  async deleteFile(id: number, fileDbInterface: FileDbInterface) {
+    // 기존 S3에 업로드된 파일 정보 조회
+    const deleteFile = await fileDbInterface.delete(id);
+
+    // 기본 이미지가 아닌 이미지들만 S3 삭제 요청 (기본 이미지가 저장되어 있다면 S3 삭제 예외)
+    if (deleteFile !== 'account/basic-profile.png') {
+      await deleteObjectS3(deleteFile);
+    }
   }
 }

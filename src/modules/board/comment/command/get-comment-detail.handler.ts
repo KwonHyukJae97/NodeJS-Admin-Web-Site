@@ -6,7 +6,7 @@ import { Comment } from '../entities/comment';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { Qna } from '../../qna/entities/qna';
-import { BoardFile } from '../../../file/entities/board_file';
+import { BoardFile } from '../../../file/entities/board-file';
 
 /**
  * 답변 상세조회 시, 커맨드를 처리하는 커맨드 핸들러 (서비스 로직 수행)

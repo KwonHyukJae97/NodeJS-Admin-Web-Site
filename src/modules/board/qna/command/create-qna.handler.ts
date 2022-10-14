@@ -5,8 +5,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Qna } from '../entities/qna';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
-import { FileCreateEvent } from '../../../file/event/file-create-event';
+import { FilesCreateEvent } from '../../../file/event/files-create-event';
 import { BoardFileDb } from '../../board-file-db';
+import { FileType } from '../../../file/entities/file-type.enum';
 
 /**
  * 1:1 문의 등록 시, 커맨드를 처리하는 커맨드 핸들러
@@ -29,7 +30,7 @@ export class CreateQnaHandler implements ICommandHandler<CreateQnaCommand> {
   ) {}
 
   async execute(command: CreateQnaCommand) {
-    const { title, content, fileType, files } = command;
+    const { title, content, files } = command;
 
     const board = this.boardRepository.create({
       // 임시 accountId 부여
@@ -57,7 +58,9 @@ export class CreateQnaHandler implements ICommandHandler<CreateQnaCommand> {
     }
 
     // 파일 업로드 이벤트 처리
-    this.eventBus.publish(new FileCreateEvent(board.boardId, fileType, files, this.boardFileDb));
+    this.eventBus.publish(
+      new FilesCreateEvent(board.boardId, FileType.QNA, files, this.boardFileDb),
+    );
 
     return '1:1 문의 등록 성공';
   }

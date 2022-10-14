@@ -42,16 +42,8 @@ export class NoticeController {
     @Body() createNoticeDto: CreateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
   ): Promise<string> {
-    const { title, content, isTop, noticeGrant, fileType, role } = createNoticeDto;
-    const command = new CreateNoticeCommand(
-      title,
-      content,
-      isTop,
-      noticeGrant,
-      fileType,
-      role,
-      files,
-    );
+    const { title, content, isTop, noticeGrant, role } = createNoticeDto;
+    const command = new CreateNoticeCommand(title, content, isTop, noticeGrant, role, files);
     // '공지사항 등록 성공' 메세지 반환
     return this.commandBus.execute(command);
   }
@@ -95,14 +87,13 @@ export class NoticeController {
     @Body() updateNoticeDto: UpdateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
   ): Promise<Notice> {
-    const { title, content, isTop, noticeGrant, fileType, role, accountId } = updateNoticeDto;
+    const { title, content, isTop, noticeGrant, role, accountId } = updateNoticeDto;
     const command = new UpdateNoticeCommand(
       title,
       content,
       isTop,
       noticeGrant,
       noticeId,
-      fileType,
       role,
       accountId,
       files,

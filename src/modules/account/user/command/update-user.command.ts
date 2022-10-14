@@ -12,5 +12,6 @@ export class UpdateUserCommand implements ICommand {
     readonly nickname: string,
     readonly grade: number,
     readonly userId: number,
+    readonly file: Express.MulterS3.File,
   ) {}
 }

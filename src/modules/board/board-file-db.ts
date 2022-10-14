@@ -2,7 +2,7 @@ import { FileDbInterface } from '../file/file-db.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Board } from './entities/board';
 import { Repository } from 'typeorm';
-import { BoardFile } from '../file/entities/board_file';
+import { BoardFile } from '../file/entities/board-file';
 import { BadRequestException, Injectable } from '@nestjs/common';
 
 /**
@@ -64,4 +64,6 @@ export class BoardFileDb implements FileDbInterface {
     // S3 key값이 담긴 배열 반환
     return deleteList;
   }
+
+  async initSave(id: number) {}
 }

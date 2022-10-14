@@ -26,10 +26,6 @@ export class UpdateNoticeDto {
   @MaxLength(10)
   noticeGrant: string;
 
-  @IsNotEmpty()
-  @IsString()
-  fileType: FileType.NOTICE;
-
   // 수정 권한 확인을 위해 임시 사용
   @IsNotEmpty()
   //@Type(() => Number)

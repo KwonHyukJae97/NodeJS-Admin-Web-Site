@@ -27,10 +27,6 @@ export class CreateNoticeDto {
   @MaxLength(10)
   noticeGrant: string;
 
-  @IsNotEmpty()
-  @IsString()
-  fileType: FileType.NOTICE;
-
   // 등록 권한 확인을 위해 임시 사용
   @IsNotEmpty()
   @IsString()

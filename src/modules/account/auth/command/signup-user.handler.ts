@@ -1,11 +1,12 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account } from 'src/modules/account/entities/account';
 import { User } from 'src/modules/account/user/entities/user';
 import { Repository } from 'typeorm';
 import { SignUpUserCommand } from './signup-user.command';
 import * as bcrypt from 'bcryptjs';
+import { AccountFileDb } from '../../account-file-db';
 
 /**
  * 사용자 회원가입 Handler
@@ -19,6 +20,9 @@ export class SignUpUserHandler implements ICommandHandler<SignUpUserCommand> {
 
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
+
+    @Inject('accountFile')
+    private accountFileDb: AccountFileDb,
   ) {}
 
   async execute(command: SignUpUserCommand) {
@@ -58,6 +62,9 @@ export class SignUpUserHandler implements ICommandHandler<SignUpUserCommand> {
       //Account 저장
       await this.accountRepository.save(accountUser);
     }
+
+    // 기본 이미지 파일 DB 저장
+    await this.accountFileDb.initSave(accountUser.accountId);
 
     const user = this.userRepository.create({
       accountId: accountUser,

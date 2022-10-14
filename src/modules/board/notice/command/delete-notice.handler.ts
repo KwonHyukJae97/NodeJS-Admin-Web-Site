@@ -5,8 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Notice } from '../entities/notice';
 import { Board } from '../../entities/board';
-import { BoardFile } from '../../../file/entities/board_file';
-import { FileDeleteEvent } from '../../../file/event/file-delete-event';
+import { BoardFile } from '../../../file/entities/board-file';
+import { FilesDeleteEvent } from '../../../file/event/files-delete-event';
 import { BoardFileDb } from '../../board-file-db';
 
 /**
@@ -52,7 +52,7 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
     const board = await this.boardRepository.findOneBy({ boardId: notice.boardId.boardId });
 
     // 파일 삭제 이벤트 처리
-    this.eventBus.publish(new FileDeleteEvent(board.boardId, this.boardFileDb));
+    this.eventBus.publish(new FilesDeleteEvent(board.boardId, this.boardFileDb));
 
     // notice db 삭제
     try {

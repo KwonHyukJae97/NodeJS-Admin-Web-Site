@@ -5,9 +5,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Qna } from '../entities/qna';
 import { Board } from '../../entities/board';
-import { BoardFile } from '../../../file/entities/board_file';
+import { BoardFile } from '../../../file/entities/board-file';
 import { Comment } from '../../comment/entities/comment';
-import { FileDeleteEvent } from '../../../file/event/file-delete-event';
+import { FilesDeleteEvent } from '../../../file/event/files-delete-event';
 import { BoardFileDb } from '../../board-file-db';
 
 /**
@@ -52,7 +52,7 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
     const board = await this.boardRepository.findOneBy({ boardId: qna.boardId.boardId });
 
     // 파일 삭제 이벤트 처리
-    this.eventBus.publish(new FileDeleteEvent(board.boardId, this.boardFileDb));
+    this.eventBus.publish(new FilesDeleteEvent(board.boardId, this.boardFileDb));
 
     const comments = await this.commentRepository.findBy({ qnaId: qnaId });
 

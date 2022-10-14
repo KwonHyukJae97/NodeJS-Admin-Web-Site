@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { GetFileDownloadQuery } from './get-file-download.query';
-import { BoardFile } from '../entities/board_file';
+import { BoardFile } from '../entities/board-file';
 import * as AWS from 'aws-sdk';
 
 /**

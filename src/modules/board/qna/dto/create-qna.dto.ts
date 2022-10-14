@@ -14,8 +14,4 @@ export class CreateQnaDto {
   @IsNotEmpty()
   @IsString()
   content: string;
-
-  @IsNotEmpty()
-  @IsString()
-  fileType: FileType.QNA;
 }
