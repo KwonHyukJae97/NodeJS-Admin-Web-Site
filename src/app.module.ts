@@ -22,6 +22,7 @@ import { FileModule } from './modules/file/file.module';
 import { TemporaryModule } from './modules/temporary/temporary.module';
 import { UserModule } from './modules/account/user/user.module';
 import { AdminModule } from './modules/account/admin/admin.module';
+import { AccountModule } from './modules/account/account.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { AdminModule } from './modules/account/admin/admin.module';
       autoLoadEntities: true,
       // entities: ["__DIR/**/*.entity{.ts,.js}"],
       timezone: 'UTC',
+      //logging: true,
     }),
     WinstonModule.forRoot({
       defaultMeta: {},
@@ -74,6 +76,7 @@ import { AdminModule } from './modules/account/admin/admin.module';
       ],
     }),
     AccountModule2,
+    AccountModule,
     AuthModule,
     LoggingModule,
     FileModule,
