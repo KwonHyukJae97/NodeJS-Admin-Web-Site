@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AccountModule } from './modules/account-bak/account.module';
+import { AccountModule2 } from './modules/account-bak/account.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
 import { AuthModule } from './modules/auth/auth.module';
@@ -73,7 +73,7 @@ import { AdminModule } from './modules/account/admin/admin.module';
         }),
       ],
     }),
-    AccountModule,
+    AccountModule2,
     AuthModule,
     LoggingModule,
     FileModule,

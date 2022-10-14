@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { AuthService3 } from './auth.service';
-import { AccountModule } from '../account-bak/account.module';
+import { AccountModule2 } from '../account-bak/account.module';
 import { LocalStrategy } from '../../guard/local/local.strategy';
 import { AuthController } from './auth.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -29,7 +29,7 @@ import { KakaoStrategy } from 'src/guard/jwt/kakao.strategy';
     }),
     PassportModule,
     ConfigModule,
-    AccountModule,
+    AccountModule2,
   ],
   providers: [
     AccountService,
