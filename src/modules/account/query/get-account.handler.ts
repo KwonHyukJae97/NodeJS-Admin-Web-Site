@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -21,15 +22,31 @@ export class GetAccountHandler implements IQueryHandler<GetAccountQuery> {
    * @returns temporary
    */
   async execute(query: GetAccountQuery) {
-    const { accountId, loginDate } = query;
+    const { accountId } = query;
 
-    const temporary = await this.accountRepository
+    // const temporary = await this.accountRepository
+    //   .createQueryBuilder('account')
+    //   .select(['account.accountId', 'account.loginDate'])
+    //   .where('account.accountId = :accountId', { accountId })
+    //   .getOne();
+
+    //최근 로그인 일자와 현재 시간과 비교하여 365일 초과시 처리
+    // diff 값이 null로 반환됨.
+    const diff = await this.accountRepository
       .createQueryBuilder('account')
-      .select(['account.accountId', 'account.loginDate'])
-      .where('account.accountId =: accountId', { accountId })
-      .where('account.loginDate =: loginDate', { loginDate })
+      .select(['DATEDIFF(now(), account.loginDate) AS DATEDIFF'])
+      .where('account.accountId = :accountId', { accountId })
+      // .where('DATEDIFF(NOW(), account.loginDate)')
       .getOne();
-    console.log('로그인 데이트 체크 테스트', temporary);
-    return temporary;
+    // .select('datediff(now(), account.loginDate) AS datediff')
+    // .where('account.accountId = :accountId', { accountId })
+    // .getOne();
+
+    console.log('diff 체크', diff);
+    // if (!temporary) {
+    //   throw new NotFoundException('존재하지 않음');
+    // }
+    // console.log('로그인 데이트 체크 테스트', temporary);
+    return { diff };
   }
 }
