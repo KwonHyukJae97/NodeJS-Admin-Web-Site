@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateQnaCommand } from './update-qna.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,6 +6,7 @@ import { Qna } from '../entities/qna';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { FileUpdateEvent } from '../../../file/event/file-update-event';
+import { BoardFileDb } from '../../board-file-db';
 
 /**
  * 1:1 문의 수정 시, 커맨드를 처리하는 커맨드 핸들러
@@ -20,6 +21,9 @@ export class UpdateQnaHandler implements ICommandHandler<UpdateQnaCommand> {
 
     @InjectRepository(Board)
     private boardRepository: Repository<Board>,
+
+    @Inject('qnaFile')
+    private boardFileDb: BoardFileDb,
 
     private eventBus: EventBus,
   ) {}
@@ -57,7 +61,7 @@ export class UpdateQnaHandler implements ICommandHandler<UpdateQnaCommand> {
     }
 
     // 파일 업데이트 이벤트 처리
-    this.eventBus.publish(new FileUpdateEvent(board.boardId, fileType, files));
+    this.eventBus.publish(new FileUpdateEvent(board.boardId, fileType, files, this.boardFileDb));
 
     // 변경된 문의 내역 반환
     return qna;

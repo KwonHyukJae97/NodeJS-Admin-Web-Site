@@ -8,10 +8,17 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { FileEventsHandler } from './event/file-events.handler';
 import { GetAllFilesDownloadHandler } from './query/get-files-download.handler';
 import { GetFileDownloadHandler } from './query/get-file-download.handler';
+import { BoardFileDb } from '../board/board-file-db';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Board, BoardFile]), CqrsModule],
   controllers: [FileController],
-  providers: [FileService, FileEventsHandler, GetAllFilesDownloadHandler, GetFileDownloadHandler],
+  providers: [
+    FileService,
+    FileEventsHandler,
+    GetAllFilesDownloadHandler,
+    GetFileDownloadHandler,
+    { provide: 'boardFile', useClass: BoardFileDb },
+  ],
 })
 export class FileModule {}

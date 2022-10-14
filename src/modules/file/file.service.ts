@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import * as AWS from 'aws-sdk';
 import { randomUUID } from 'crypto';
 import { getTime, getToday } from '../../common/utils/time-common-method';
+import { FileDbInterface } from './file-db.interface';
 
 /**
  * 파일 업로드 시, 필요 로직을 실질적으로 수행
@@ -82,7 +83,6 @@ export class FileService {
   constructor(
     @InjectRepository(Board)
     private boardRepository: Repository<Board>,
-
     @InjectRepository(BoardFile)
     private fileRepository: Repository<BoardFile>,
   ) {}
@@ -90,7 +90,12 @@ export class FileService {
   /**
    * 다중 파일 업로드 기능
    */
-  async uploadFiles(boardId: number, fileType: string, files: Express.MulterS3.File[]) {
+  async uploadFiles(
+    id: number,
+    fileType: string,
+    files: Express.MulterS3.File[],
+    fileDbInterface: FileDbInterface,
+  ) {
     if (!files) {
       throw new BadRequestException('파일이 존재하지 않습니다.');
     }
@@ -107,28 +112,28 @@ export class FileService {
 
       const ext = path.extname(file.originalname);
 
-      const boardFile = this.fileRepository.create({
-        boardId: boardId,
+      const fileInfo = {
         originalFileName: path.basename(file.originalname, ext),
         fileName: url.split('com/')[1], // 전체 url - 공통 url(https://b2c-file-test.s3.amazonaws.com/)
         fileExt: ext,
         filePath: url,
         fileSize: file.size,
-      });
+      };
 
-      try {
-        await this.fileRepository.save(boardFile);
-      } catch (err) {
-        console.log('DB 파일 저장 실패');
-        throw new BadRequestException('파일 저장에 실패하였습니다.');
-      }
+      // 신규 파일 정보 DB 저장
+      await fileDbInterface.save(id, fileInfo);
     });
   }
 
   /**
    * 다중 파일 업데이트 기능
    */
-  async updateFiles(boardId: number, fileType: string, files: Express.MulterS3.File[]) {
+  async updateFiles(
+    id: number,
+    fileType: string,
+    files: Express.MulterS3.File[],
+    fileDbInterface: FileDbInterface,
+  ) {
     files.map(async (file) => {
       const today = getToday();
       const time = getTime();
@@ -141,60 +146,34 @@ export class FileService {
 
       const ext = path.extname(file.originalname);
 
-      const boardFile = this.fileRepository.create({
-        boardId: boardId,
+      const fileInfo = {
         originalFileName: path.basename(file.originalname, ext),
-        fileName: url.split('com/')[1],
+        fileName: url.split('com/')[1], // 전체 url - 공통 url(https://b2c-file-test.s3.amazonaws.com/)
         fileExt: ext,
         filePath: url,
         fileSize: file.size,
-      });
+      };
 
-      try {
-        // 신규 파일 DB 저장
-        await this.fileRepository.save(boardFile);
-      } catch (err) {
-        console.log('DB 파일 저장 실패');
-        throw new BadRequestException('파일 저장에 실패하였습니다.');
-      }
+      // 신규 파일 정보 DB 저장
+      await fileDbInterface.save(id, fileInfo);
     });
 
-    // 기존 파일 조회 후, 삭제
-    const oldFiles = await this.fileRepository.findBy({ boardId: boardId });
-
-    // S3에 저장되어 있는 기존 파일 삭제
-    const deleteList = [];
-
-    for (const file of oldFiles) {
-      deleteList.push(file.fileName); // S3 key값으로 사용될 속성 추출 후, 새 배열에 추가
-    }
+    // 기존 파일 정보 DB 삭제
+    const deleteList = await fileDbInterface.delete(id);
 
     deleteList.map(async (file) => {
       await deleteObjectS3(file);
     });
-
-    // DB에 저장되어 있는 기존 파일 삭제
-    try {
-      oldFiles.map(async (file) => {
-        await this.fileRepository.delete({ boardFileId: file.boardFileId });
-      });
-    } catch (err) {
-      console.log('DB 파일 삭제 실패', err);
-      throw new BadRequestException('파일 삭제에 실패하였습니다.');
-    }
   }
 
   /**
    * 다중 파일 삭제 기능
    */
-  async deleteFiles(boardId: number, files: BoardFile[]) {
+  async deleteFiles(id: number, fileDbInterface: FileDbInterface) {
+    // S3 key값이 담긴 배열 받기
+    const deleteList = await fileDbInterface.delete(id);
+
     // S3에 저장되어 있는 기존 파일 삭제
-    const deleteList = [];
-
-    for (const file of files) {
-      deleteList.push(file.fileName); // S3 key값으로 사용될 속성 추출 후, 새 배열에 추가
-    }
-
     deleteList.map(async (file) => {
       await deleteObjectS3(file);
     });

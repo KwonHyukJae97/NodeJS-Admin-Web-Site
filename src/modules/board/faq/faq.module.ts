@@ -12,6 +12,7 @@ import { FaqCategory } from './entities/faq_category';
 import { CreateFaqHandler } from './command/create-faq.handler';
 import { GetCategoryListHandler } from './query/get-category-list.handler';
 import { GetFaqListHandler } from './query/get-faq-list.handler';
+import { BoardFileDb } from '../board-file-db';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Board, Faq, BoardFile, FaqCategory]), CqrsModule],
@@ -23,6 +24,7 @@ import { GetFaqListHandler } from './query/get-faq-list.handler';
     DeleteFaqHandler,
     GetCategoryListHandler,
     GetFaqListHandler,
+    { provide: 'faqFile', useClass: BoardFileDb },
   ],
 })
 export class FaqModule {}

@@ -11,6 +11,7 @@ import { DeleteQnaHandler } from './command/delete-qna.handler';
 import { BoardFile } from '../../file/entities/board_file';
 import { GetQnaDetailHandler } from './command/get-qna-detail.handler';
 import { Comment } from '../comment/entities/comment';
+import { BoardFileDb } from '../board-file-db';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Board, Qna, BoardFile, Comment]), CqrsModule],
@@ -21,6 +22,7 @@ import { Comment } from '../comment/entities/comment';
     GetQnaDetailHandler,
     UpdateQnaHandler,
     DeleteQnaHandler,
+    { provide: 'qnaFile', useClass: BoardFileDb },
   ],
 })
 export class QnaModule {}

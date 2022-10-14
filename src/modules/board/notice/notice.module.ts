@@ -9,6 +9,8 @@ import { UpdateNoticeHandler } from './command/update-notice.handler';
 import { DeleteNoticeHandler } from './command/delete-notice.handler';
 import { BoardFile } from '../../file/entities/board_file';
 import { GetNoticeListHandler } from './query/get-notice-list.handler';
+import { BoardFileDb } from '../board-file-db';
+import { GetNoticeDetailHandler } from './command/get-notice-detail.handler';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Board, Notice, BoardFile]), CqrsModule],
@@ -18,7 +20,8 @@ import { GetNoticeListHandler } from './query/get-notice-list.handler';
     GetNoticeListHandler,
     UpdateNoticeHandler,
     DeleteNoticeHandler,
-    GetNoticeListHandler,
+    GetNoticeDetailHandler,
+    { provide: 'noticeFile', useClass: BoardFileDb },
   ],
 })
 export class NoticeModule {}

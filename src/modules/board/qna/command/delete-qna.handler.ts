@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { DeleteQnaCommand } from './delete-qna.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,6 +8,7 @@ import { Board } from '../../entities/board';
 import { BoardFile } from '../../../file/entities/board_file';
 import { Comment } from '../../comment/entities/comment';
 import { FileDeleteEvent } from '../../../file/event/file-delete-event';
+import { BoardFileDb } from '../../board-file-db';
 
 /**
  * 1:1 문의 삭제 시, 커맨드를 처리하는 커맨드 핸들러
@@ -29,6 +30,9 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
     @InjectRepository(Comment)
     private commentRepository: Repository<Comment>,
 
+    @Inject('qnaFile')
+    private boardFileDb: BoardFileDb,
+
     private eventBus: EventBus,
   ) {}
 
@@ -47,15 +51,8 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
 
     const board = await this.boardRepository.findOneBy({ boardId: qna.boardId.boardId });
 
-    const files = await this.fileRepository.findBy({ boardId: board.boardId });
-
     // 파일 삭제 이벤트 처리
-    this.eventBus.publish(new FileDeleteEvent(board.boardId, files));
-
-    // board_file db 삭제
-    files.map((file) => {
-      this.fileRepository.softDelete({ boardFileId: file.boardFileId });
-    });
+    this.eventBus.publish(new FileDeleteEvent(board.boardId, this.boardFileDb));
 
     const comments = await this.commentRepository.findBy({ qnaId: qnaId });
 

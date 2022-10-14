@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateNoticeCommand } from './update-notice.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,6 +6,7 @@ import { Notice } from '../entities/notice';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { FileUpdateEvent } from '../../../file/event/file-update-event';
+import { BoardFileDb } from '../../board-file-db';
 
 /**
  * 공지사항 수정 시, 커맨드를 처리하는 커맨드 핸들러
@@ -20,6 +21,9 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
 
     @InjectRepository(Board)
     private boardRepository: Repository<Board>,
+
+    @Inject('noticeFile')
+    private boardFileDb: BoardFileDb,
 
     private eventBus: EventBus,
   ) {}
@@ -64,7 +68,7 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
     }
 
     // 파일 업데이트 이벤트 처리
-    this.eventBus.publish(new FileUpdateEvent(board.boardId, fileType, files));
+    this.eventBus.publish(new FileUpdateEvent(board.boardId, fileType, files, this.boardFileDb));
 
     // 변경된 공지사항 반환
     return notice;

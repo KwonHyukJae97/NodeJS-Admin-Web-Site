@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { CreateFaqCommand } from './create-faq.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { FaqCategory } from '../entities/faq_category';
 import { FileCreateEvent } from '../../../file/event/file-create-event';
+import { BoardFileDb } from '../../board-file-db';
 
 /**
  * FAQ 등록 시, 커맨드를 처리하는 커맨드 핸들러
@@ -24,6 +25,9 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
 
     @InjectRepository(FaqCategory)
     private categoryRepository: Repository<FaqCategory>,
+
+    @Inject('faqFile')
+    private boardFileDb: BoardFileDb,
 
     private eventBus: EventBus,
   ) {}
@@ -68,7 +72,7 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
     }
 
     // 파일 업로드 이벤트 처리
-    this.eventBus.publish(new FileCreateEvent(board.boardId, fileType, files));
+    this.eventBus.publish(new FileCreateEvent(board.boardId, fileType, files, this.boardFileDb));
 
     return 'FAQ 등록 성공';
   }

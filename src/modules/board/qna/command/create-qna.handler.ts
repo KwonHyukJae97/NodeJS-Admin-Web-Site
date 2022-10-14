@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { CreateQnaCommand } from './create-qna.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,6 +6,7 @@ import { Qna } from '../entities/qna';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { FileCreateEvent } from '../../../file/event/file-create-event';
+import { BoardFileDb } from '../../board-file-db';
 
 /**
  * 1:1 문의 등록 시, 커맨드를 처리하는 커맨드 핸들러
@@ -20,6 +21,9 @@ export class CreateQnaHandler implements ICommandHandler<CreateQnaCommand> {
 
     @InjectRepository(Board)
     private boardRepository: Repository<Board>,
+
+    @Inject('qnaFile')
+    private boardFileDb: BoardFileDb,
 
     private eventBus: EventBus,
   ) {}
@@ -53,7 +57,7 @@ export class CreateQnaHandler implements ICommandHandler<CreateQnaCommand> {
     }
 
     // 파일 업로드 이벤트 처리
-    this.eventBus.publish(new FileCreateEvent(board.boardId, fileType, files));
+    this.eventBus.publish(new FileCreateEvent(board.boardId, fileType, files, this.boardFileDb));
 
     return '1:1 문의 등록 성공';
   }

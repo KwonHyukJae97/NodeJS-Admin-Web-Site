@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { CreateNoticeCommand } from './create-notice.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,6 +6,7 @@ import { Notice } from '../entities/notice';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { FileCreateEvent } from '../../../file/event/file-create-event';
+import { BoardFileDb } from '../../board-file-db';
 
 /**
  * 공지사항 등록 시, 커맨드를 처리하는 커맨드 핸들러
@@ -20,6 +21,9 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
 
     @InjectRepository(Board)
     private boardRepository: Repository<Board>,
+
+    @Inject('noticeFile')
+    private boardFileDb: BoardFileDb,
 
     private eventBus: EventBus,
   ) {}
@@ -59,7 +63,7 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
     }
 
     // 파일 업로드 이벤트 처리
-    this.eventBus.publish(new FileCreateEvent(board.boardId, fileType, files));
+    this.eventBus.publish(new FileCreateEvent(board.boardId, fileType, files, this.boardFileDb));
 
     return '공지사항 등록 성공';
   }
