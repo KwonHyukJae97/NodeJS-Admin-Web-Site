@@ -11,8 +11,6 @@ import { Account } from './entities/account';
 export class AccountContoller {
   constructor(private queryBus: QueryBus) {}
 
-  //loginDate 1년 지난 사용자 추출하기
-  //먼저 특정 아이디값 조회 부터
   /**
    *
    * @param accountId
