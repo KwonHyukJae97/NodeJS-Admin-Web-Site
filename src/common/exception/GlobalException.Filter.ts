@@ -43,6 +43,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     console.log('요청 url: ', url);
     console.log('error 정보: ', res.error);
+    console.log('message:', errorMessage);
     console.log('발생 시간: ', timeStamp);
 
     // 에러 정보 클라이언트에게 반환
