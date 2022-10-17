@@ -44,6 +44,7 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand> {
         id: '*****',
         name: '*****',
         phone: '*****',
+        nickname: '*****',
         email: '*****',
         birth: '*****',
         snsId: '*****',

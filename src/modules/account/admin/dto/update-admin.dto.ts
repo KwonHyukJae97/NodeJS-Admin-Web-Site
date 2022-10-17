@@ -1,6 +1,9 @@
 import { Type } from 'class-transformer';
 import { IsEmail, IsNumber, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 
+/**
+ * 관리자 정보 수정 시 필요한 dto
+ */
 export class UpdateAdminDto {
   @IsString()
   @MinLength(2)

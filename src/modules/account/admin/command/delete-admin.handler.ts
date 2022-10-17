@@ -3,17 +3,26 @@ import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Account } from '../../entities/account';
+import { Admin } from '../entities/admin';
 import { DeleteAdminCommand } from './delete-admin.command';
 
+/**
+ * 관리자 정보 삭제용 커맨드 핸들러
+ */
 @Injectable()
 @CommandHandler(DeleteAdminCommand)
 export class DeleteAdminHandler implements ICommandHandler<DeleteAdminCommand> {
   constructor(
+    @InjectRepository(Admin) private adminRepository: Repository<Admin>,
     @InjectRepository(Account) private accountRepository: Repository<Account>,
     private eventBus: EventBus,
   ) {}
   async execute(command: DeleteAdminCommand) {
-    const { accountId, delDate } = command;
+    const { adminId, delDate } = command;
+
+    const admin = await this.adminRepository.findOneBy({ adminId: adminId });
+    const accountId = admin.accountId.accountId;
+
     const account = await this.accountRepository.findOneBy({ accountId: accountId, delDate });
 
     // new Date()에서 반환하는 UTC시간을 KST시간으로 변경
@@ -34,6 +43,7 @@ export class DeleteAdminHandler implements ICommandHandler<DeleteAdminCommand> {
         id: '*****',
         name: '*****',
         phone: '*****',
+        nickname: '*****',
         email: '*****',
         birth: '*****',
         snsId: '*****',
@@ -44,6 +54,6 @@ export class DeleteAdminHandler implements ICommandHandler<DeleteAdminCommand> {
       .where('account.account_id = :accountId', { accountId: accountId })
       .execute();
 
-    return '삭제 완료~';
+    return '관리자 삭제 완료';
   }
 }

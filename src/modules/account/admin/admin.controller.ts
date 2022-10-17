@@ -1,9 +1,21 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  ValidationPipe,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { SignUpAdminCommand } from '../auth/command/signup-admin.command';
 import { SignUpAdminDto } from '../auth/dto/signup-admin.dto';
+import { CreateAdminCommand } from './command/create-admin.command';
 import { DeleteAdminCommand } from './command/delete-admin.command';
 import { UpdateAdminCommand } from './command/update-admin.command';
+import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { GetAdminInfoQuery } from './query/get-admin-info.query';
 import { GetAllAdminQuery } from './query/get-all-admin.query';
@@ -15,40 +27,40 @@ export class AdminController {
   /**
    * 관리자 회원가입 컨트롤러
    */
-  @Post()
-  async signupAdmin(@Body() signUpAdmindto: SignUpAdminDto): Promise<void> {
-    const {
-      id,
-      password,
-      email,
-      name,
-      phone,
-      nickname,
-      birth,
-      gender,
-      companyId,
-      roleId,
-      isSuper,
-      division,
-    } = signUpAdmindto;
+  // @Post()
+  // async signupAdmin(@Body() signUpAdmindto: SignUpAdminDto): Promise<void> {
+  //   const {
+  //     id,
+  //     password,
+  //     email,
+  //     name,
+  //     phone,
+  //     nickname,
+  //     birth,
+  //     gender,
+  //     companyId,
+  //     roleId,
+  //     isSuper,
+  //     division,
+  //   } = signUpAdmindto;
 
-    const command = new SignUpAdminCommand(
-      id,
-      password,
-      email,
-      name,
-      phone,
-      nickname,
-      birth,
-      gender,
-      companyId,
-      roleId,
-      isSuper,
-      division,
-    );
+  //   const command = new SignUpAdminCommand(
+  //     id,
+  //     password,
+  //     email,
+  //     name,
+  //     phone,
+  //     nickname,
+  //     birth,
+  //     gender,
+  //     companyId,
+  //     roleId,
+  //     isSuper,
+  //     division,
+  //   );
 
-    return this.commandBus.execute(command);
-  }
+  //   return this.commandBus.execute(command);
+  // }
 
   /**
    * 관리자 전체 리스트 조회
@@ -86,6 +98,40 @@ export class AdminController {
       adminId,
     );
 
+    return this.commandBus.execute(command);
+  }
+
+  @Post()
+  async createAdmin(@Body(ValidationPipe) dto: CreateAdminDto): Promise<string> {
+    const {
+      id,
+      password,
+      name,
+      email,
+      phone,
+      nickname,
+      birth,
+      gender,
+      companyId,
+      roleId,
+      isSuper,
+      division,
+    } = dto;
+    console.log('Admin 등록 로그', dto);
+    const command = new CreateAdminCommand(
+      id,
+      password,
+      name,
+      email,
+      phone,
+      nickname,
+      birth,
+      gender,
+      companyId,
+      roleId,
+      isSuper,
+      division,
+    );
     return this.commandBus.execute(command);
   }
 

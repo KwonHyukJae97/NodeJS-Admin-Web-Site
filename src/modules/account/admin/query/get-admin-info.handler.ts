@@ -18,7 +18,8 @@ export class GetAdminInfoQueryHandler implements IQueryHandler<GetAdminInfoQuery
     const admin = await this.adminRepository
       .createQueryBuilder('admin')
       .leftJoinAndSelect('admin.account', 'account')
-      .where('account.account_id =:accountId', { accountId: adminId })
+      .where('admin.admin_id = :adminId', { adminId: adminId })
+      // .where('account.account_id =:accountId', { accountId: adminId })
       .getOne();
 
     if (!admin) {

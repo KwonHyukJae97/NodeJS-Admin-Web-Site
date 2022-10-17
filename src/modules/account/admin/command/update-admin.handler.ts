@@ -7,6 +7,9 @@ import { Admin } from '../entities/admin';
 import { UpdateAdminCommand } from './update-admin.command';
 import * as bcrypt from 'bcryptjs';
 
+/**
+ * 관리자 정보 수정용 커맨드 핸들러
+ */
 @Injectable()
 @CommandHandler(UpdateAdminCommand)
 export class UpdateAdminHandler implements ICommandHandler<UpdateAdminCommand> {
@@ -19,7 +22,8 @@ export class UpdateAdminHandler implements ICommandHandler<UpdateAdminCommand> {
     const { password, email, phone, nickname, roleId, isSuper, adminId } = command;
 
     const admin = await this.adminRepository.findOneBy({ adminId: adminId });
-    const account = await this.accountRepository.findOneBy({ accountId: adminId });
+    const accountId = admin.accountId.accountId;
+    const account = await this.accountRepository.findOneBy({ accountId: accountId });
 
     admin.roleId = roleId;
     admin.isSuper = isSuper;
@@ -35,6 +39,7 @@ export class UpdateAdminHandler implements ICommandHandler<UpdateAdminCommand> {
     account.nickname = nickname;
     await this.accountRepository.save(account);
 
+    //수정된 내용 반환
     return account;
   }
 }

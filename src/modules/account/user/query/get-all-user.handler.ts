@@ -19,6 +19,7 @@ export class GetAllUserQueryHandler implements IQueryHandler<GetAllUserQuery> {
       throw new NotFoundException('User does not exist');
     }
     // 앱 사용자 전체 리스트 반환
+    console.log('유저리스트!!', user);
     return user;
   }
 }
