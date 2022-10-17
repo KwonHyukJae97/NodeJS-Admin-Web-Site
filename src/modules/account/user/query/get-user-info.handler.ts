@@ -18,7 +18,8 @@ export class GetUserInfoQueryHandler implements IQueryHandler<GetUserInfoQuery> 
     const user = await this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.account', 'account')
-      .where('account.account_id = :accountId', { accountId: userId })
+      // .where('account.account_id = :accountId', { accountId: userId })
+      .where('user.user_id = :userId', { userId: userId })
       .getOne();
 
     if (!user) {

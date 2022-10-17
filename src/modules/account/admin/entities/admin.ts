@@ -1,5 +1,5 @@
-import { IsBoolean, IsNumber } from 'class-validator';
-import { Account } from '../../entities/account';
+import { Account } from 'src/modules/account/entities/account';
+import { RolePermission } from 'src/modules/adminRole/entities/rolePermission.entity';
 import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('admin')
@@ -16,9 +16,9 @@ export class Admin extends BaseEntity {
     name: 'company_id',
     type: 'int',
   })
+  companyId: number;
 
   //역할 번호
-  companyId: number;
   @Column({
     name: 'role_id',
     type: 'int',
@@ -38,4 +38,9 @@ export class Admin extends BaseEntity {
     name: 'account_id',
   })
   accountId: Account;
+
+  //역할_권한 정보 가져오기
+  @OneToOne(() => RolePermission)
+  @JoinColumn({ name: 'role_id' })
+  rolePermission: RolePermission;
 }

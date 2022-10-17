@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteCompanyCommand } from './delete-company.command';
 import { Repository } from 'typeorm';
 import { Company } from '../entities/company.entity';
-import { Admin } from 'src/modules/admin/entities/admin.entity';
+import { Admin } from 'src/modules/account/admin/entities/admin';
 import { RolePermission } from 'src/modules/adminRole/entities/rolePermission.entity';
 
 /**

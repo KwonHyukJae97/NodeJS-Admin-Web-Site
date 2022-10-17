@@ -22,7 +22,8 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
     const { password, email, phone, nickname, grade, userId } = command;
 
     const user = await this.userRepository.findOneBy({ userId: userId });
-    const account = await this.accountRepository.findOneBy({ accountId: userId });
+    const accountId = user.accountId.accountId;
+    const account = await this.accountRepository.findOneBy({ accountId: accountId });
 
     user.grade = grade;
     await this.userRepository.save(user);
@@ -30,7 +31,7 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
     // 비밀번호 암호화 저장 (bcrypt)
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
-
+    console.log('패스워드 확인', hashedPassword);
     account.password = hashedPassword;
     account.email = email;
     account.phone = phone;
