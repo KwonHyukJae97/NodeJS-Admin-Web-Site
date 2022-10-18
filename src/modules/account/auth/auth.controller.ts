@@ -260,7 +260,7 @@ export class SignController {
   }
 
   //kakao 로그인
-  @Get('/kakao')
+  @Get('/kakao/callback')
   @HttpCode(200)
   @UseGuards(AuthGuard('kakao'))
   async kakaoLogin() {
