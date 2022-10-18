@@ -315,7 +315,7 @@ export class AuthService {
    * @param accountId
    * @returns accountId 값으로 해당 사용자의 리프래쉬 토큰을 null처리
    */
-  async removeRefreshToken2(accountId: number) {
+  async removeRefreshToken(accountId: number) {
     return this.accountRepository.update({ accountId }, { currentHashedRefreshToken: null });
   }
 

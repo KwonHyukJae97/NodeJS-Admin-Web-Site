@@ -27,6 +27,8 @@ export class GetAllUserQueryHandler implements IQueryHandler<GetAllUserQuery> {
     if (!user) {
       return this.convertException.notFoundError('사용자', 404);
     }
+    // 앱 사용자 전체 리스트 반환
+    console.log('유저리스트!!', user);
     return user;
   }
 }

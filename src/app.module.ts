@@ -59,7 +59,7 @@ import { TranslatorFilter } from 'nestjs-translator';
       autoLoadEntities: true,
       // entities: ["__DIR/**/*.entity{.ts,.js}"],
       timezone: 'UTC',
-      //logging: true,
+      logging: true,
     }),
     WinstonModule.forRoot({
       defaultMeta: {},

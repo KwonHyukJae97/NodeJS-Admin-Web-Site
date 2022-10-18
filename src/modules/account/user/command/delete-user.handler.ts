@@ -28,6 +28,7 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand> {
   async execute(command: DeleteUserCommand) {
     const { userId, delDate } = command;
     const user = await this.userRepository.findOneBy({ userId: userId });
+
     const accountId = user.accountId.accountId;
     const account = await this.accountRepository.findOneBy({ accountId: accountId, delDate });
 

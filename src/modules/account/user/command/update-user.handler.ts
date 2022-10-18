@@ -43,6 +43,7 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
     // 비밀번호 암호화 저장 (bcrypt)
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
+    console.log('패스워드 확인', hashedPassword);
 
     //계정 정보 수정
     try {
