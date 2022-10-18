@@ -10,25 +10,23 @@ import { BoardFileDb } from '../../board-file-db';
 import { FileType } from '../../../file/entities/file-type.enum';
 
 /**
- * 공지사항 등록 시, 커맨드를 처리하는 커맨드 핸들러
+ * 공지사항 등록용 커맨드 핸들러
  */
-
 @Injectable()
 @CommandHandler(CreateNoticeCommand)
 export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand> {
   constructor(
-    @InjectRepository(Notice)
-    private noticeRepository: Repository<Notice>,
-
-    @InjectRepository(Board)
-    private boardRepository: Repository<Board>,
-
-    @Inject('noticeFile')
-    private boardFileDb: BoardFileDb,
-
+    @InjectRepository(Notice) private noticeRepository: Repository<Notice>,
+    @InjectRepository(Board) private boardRepository: Repository<Board>,
+    @Inject('noticeFile') private boardFileDb: BoardFileDb,
     private eventBus: EventBus,
   ) {}
 
+  /**
+   * 공지사항 등록 메소드
+   * @param command : 공지사항 등록에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 등록 완료 시 공지사항 정보 반환
+   */
   async execute(command: CreateNoticeCommand) {
     const { title, content, isTop, noticeGrant, role, files } = command;
 
@@ -68,6 +66,6 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
       new FilesCreateEvent(board.boardId, FileType.NOTICE, files, this.boardFileDb),
     );
 
-    return '공지사항 등록 성공';
+    return notice;
   }
 }

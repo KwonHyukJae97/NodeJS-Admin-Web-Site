@@ -6,16 +6,17 @@ import { Repository } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
 
 /**
- * FAQ 카테고리 리스트 조회 시, 쿼리를 구현하는 쿼리 핸들러
+ * FAQ 카테고리 리스트 조회용 쿼리 핸들러
  */
-
 @QueryHandler(GetCategoryListQuery)
 export class GetCategoryListHandler implements IQueryHandler<GetCategoryListQuery> {
-  constructor(
-    @InjectRepository(FaqCategory)
-    private categoryRepository: Repository<FaqCategory>,
-  ) {}
+  constructor(@InjectRepository(FaqCategory) private categoryRepository: Repository<FaqCategory>) {}
 
+  /**
+   * FAQ 카테고리 조회 메소드
+   * @param query : FAQ 카테고리 조회 쿼리
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 FAQ 카테고리 리스트 반환
+   */
   async execute(query: GetCategoryListQuery) {
     const { role } = query;
 

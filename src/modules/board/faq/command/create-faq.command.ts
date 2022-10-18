@@ -1,9 +1,8 @@
 import { ICommand } from '@nestjs/cqrs';
 
 /**
- * FAQ 등록 시, 사용되는 커맨드 정의
+ * FAQ 등록용 커맨드 정의
  */
-
 export class CreateFaqCommand implements ICommand {
   constructor(
     readonly title: string,

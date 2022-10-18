@@ -7,20 +7,21 @@ import { Repository } from 'typeorm';
 import { Qna } from '../../qna/entities/qna';
 
 /**
- * 답변 등록 시, 커맨드를 처리하는 커맨드 핸들러
+ * 답변 등록용 커맨드 핸들러
  */
-
 @Injectable()
 @CommandHandler(CreateCommentCommand)
 export class CreateCommentHandler implements ICommandHandler<CreateCommentCommand> {
   constructor(
-    @InjectRepository(Comment)
-    private commentRepository: Repository<Comment>,
-
-    @InjectRepository(Qna)
-    private qnaRepository: Repository<Qna>,
+    @InjectRepository(Comment) private commentRepository: Repository<Comment>,
+    @InjectRepository(Qna) private qnaRepository: Repository<Qna>,
   ) {}
 
+  /**
+   * 답변 등록 메소드
+   * @param command : 답변 등록에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 등록 완료 시 답변 정보 반환
+   */
   async execute(command: CreateCommentCommand) {
     const { qnaId, comment, adminId } = command;
 
@@ -49,6 +50,6 @@ export class CreateCommentHandler implements ICommandHandler<CreateCommentComman
       console.log(err);
     }
 
-    return '답변 등록 성공';
+    return qnaComment;
   }
 }

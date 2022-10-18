@@ -1,9 +1,8 @@
 import { ICommand } from '@nestjs/cqrs';
 
 /**
- * 공지사항 수정 시, 사용되는 커맨드 정의
+ * 공지사항 정보 수정용 커맨드 정의
  */
-
 export class UpdateNoticeCommand implements ICommand {
   constructor(
     readonly title: string,

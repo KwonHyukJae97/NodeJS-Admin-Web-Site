@@ -1,9 +1,8 @@
 import { ICommand } from '@nestjs/cqrs';
 
 /**
- * 1:1 문의 수정 시, 사용되는 커맨드 정의
+ * 1:1 문의 정보 수정용 커맨드 정의
  */
-
 export class UpdateQnaCommand implements ICommand {
   constructor(
     readonly title: string,

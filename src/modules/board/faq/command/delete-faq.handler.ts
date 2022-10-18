@@ -10,28 +10,24 @@ import { FilesDeleteEvent } from '../../../file/event/files-delete-event';
 import { BoardFileDb } from '../../board-file-db';
 
 /**
- * FAQ 삭제 시, 커맨드를 처리하는 커맨드 핸들러
+ * FAQ 삭제용 커맨드 핸들러
  */
-
 @Injectable()
 @CommandHandler(DeleteFaqCommand)
 export class DeleteFaqHandler implements ICommandHandler<DeleteFaqCommand> {
   constructor(
-    @InjectRepository(Faq)
-    private faqRepository: Repository<Faq>,
-
-    @InjectRepository(Board)
-    private boardRepository: Repository<Board>,
-
-    @InjectRepository(BoardFile)
-    private fileRepository: Repository<BoardFile>,
-
-    @Inject('faqFile')
-    private boardFileDb: BoardFileDb,
-
+    @InjectRepository(Faq) private faqRepository: Repository<Faq>,
+    @InjectRepository(Board) private boardRepository: Repository<Board>,
+    @InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>,
+    @Inject('faqFile') private boardFileDb: BoardFileDb,
     private eventBus: EventBus,
   ) {}
 
+  /**
+   * FAQ 삭제 메소드
+   * @param command : FAQ 삭제에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 완료 메시지 반환
+   */
   async execute(command: DeleteFaqCommand) {
     const { faqId, role, accountId } = command;
 
@@ -54,20 +50,18 @@ export class DeleteFaqHandler implements ICommandHandler<DeleteFaqCommand> {
     // 파일 삭제 이벤트 처리
     this.eventBus.publish(new FilesDeleteEvent(board.boardId, this.boardFileDb));
 
-    // faq db 삭제
     try {
       await this.faqRepository.delete(faq);
     } catch (err) {
       console.log(err);
     }
 
-    // board db 삭제 (fk)
     try {
       await this.boardRepository.softDelete({ boardId: board.boardId });
     } catch (err) {
       console.log(err);
     }
 
-    return 'FAQ 삭제 성공';
+    return '삭제가 완료 되었습니다.';
   }
 }

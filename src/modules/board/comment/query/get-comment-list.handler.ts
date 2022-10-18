@@ -7,18 +7,20 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Qna } from '../../qna/entities/qna';
 
 /**
- * 답변 전체 조회 시, 쿼리를 구현하는 쿼리 핸들러
+ * 답변 전체 리스트 조회용 쿼리 핸들러
  */
-
 @QueryHandler(GetCommentListQuery)
 export class GetCommentListHandler implements IQueryHandler<GetCommentListQuery> {
   constructor(
-    @InjectRepository(Comment)
-    private commentRepository: Repository<Comment>,
-    @InjectRepository(Qna)
-    private qnaRepository: Repository<Qna>,
+    @InjectRepository(Comment) private commentRepository: Repository<Comment>,
+    @InjectRepository(Qna) private qnaRepository: Repository<Qna>,
   ) {}
 
+  /**
+   * 답변 전체 리스트 조회 메소드
+   * @param query : 답변 전체 조회 쿼리
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 답변 전체 리스트 반환
+   */
   async execute(query: GetCommentListQuery) {
     const { role } = query;
 
@@ -60,6 +62,7 @@ export class GetCommentListHandler implements IQueryHandler<GetCommentListQuery>
         return qnaCommentListDto;
       }),
     );
+
     return qnaCommentList;
   }
 }

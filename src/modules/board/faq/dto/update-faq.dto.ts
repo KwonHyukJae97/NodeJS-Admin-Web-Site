@@ -1,10 +1,8 @@
 import { IsNotEmpty, IsNumber, IsString, MaxLength } from 'class-validator';
-import { FileType } from '../../../file/entities/file-type.enum';
 
 /**
- * FAQ 수정 시, 필요한 필드로 구성한 dto
+ * FAQ 수정에 필요한 요청 Dto 정의
  */
-
 export class UpdateFaqDto {
   @IsNotEmpty()
   @IsString()

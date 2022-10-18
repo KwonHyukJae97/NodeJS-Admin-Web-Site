@@ -11,14 +11,12 @@ import { BoardFile } from '../../file/entities/board-file';
 import { GetCommentDetailHandler } from './command/get-comment-detail.handler';
 import { Qna } from '../qna/entities/qna';
 
+const CommandHandlers = [CreateCommentHandler, UpdateCommentHandler, GetCommentDetailHandler];
+const QueryHandlers = [GetCommentListHandler];
+
 @Module({
   imports: [TypeOrmModule.forFeature([Board, Comment, BoardFile, Qna]), CqrsModule],
   controllers: [CommentController],
-  providers: [
-    CreateCommentHandler,
-    GetCommentListHandler,
-    GetCommentDetailHandler,
-    UpdateCommentHandler,
-  ],
+  providers: [...CommandHandlers, ...QueryHandlers],
 })
 export class CommentModule {}

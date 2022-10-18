@@ -1,11 +1,9 @@
 import { Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Board } from '../../entities/board';
-import { Comment } from '../../comment/entities/comment';
 
 /**
  * 1:1 문의에 대한 엔티티 정의
  */
-
 @Entity()
 export class Qna {
   // 문의 번호

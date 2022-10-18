@@ -7,20 +7,21 @@ import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 
 /**
- * 답변 수정 시, 커맨드를 처리하는 커맨드 핸들러
+ * 답변 정보 수정용 커맨드 핸들러
  */
-
 @Injectable()
 @CommandHandler(UpdateCommentCommand)
 export class UpdateCommentHandler implements ICommandHandler<UpdateCommentCommand> {
   constructor(
-    @InjectRepository(Comment)
-    private commentRepository: Repository<Comment>,
-
-    @InjectRepository(Board)
-    private boardRepository: Repository<Board>,
+    @InjectRepository(Comment) private commentRepository: Repository<Comment>,
+    @InjectRepository(Board) private boardRepository: Repository<Board>,
   ) {}
 
+  /**
+   * 답변 정보 수정 메소드
+   * @param command : 답변 정보 수정에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 수정 성공 시 답변 정보 반환
+   */
   async execute(command: UpdateCommentCommand) {
     const { commentId, comment, adminId } = command;
 
@@ -49,7 +50,6 @@ export class UpdateCommentHandler implements ICommandHandler<UpdateCommentComman
       console.log(err);
     }
 
-    // 변경된 답변 반환
     return commentDetail;
   }
 }

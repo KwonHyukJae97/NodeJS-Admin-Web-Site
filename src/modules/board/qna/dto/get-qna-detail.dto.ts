@@ -4,9 +4,8 @@ import { BoardFile } from '../../../file/entities/board-file';
 import { Comment } from '../../comment/entities/comment';
 
 /**
- * 1:1 문의 상세 조회 시, 필요한 필드로 구성한 응답 dto
+ * 1:1 문의 상세 조회에 필요한 응답 Dto 정의
  */
-
 export class GetQnaDetailDto {
   @IsNotEmpty()
   @IsNumber()

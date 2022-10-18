@@ -12,15 +12,20 @@ import { GetNoticeListHandler } from './query/get-notice-list.handler';
 import { BoardFileDb } from '../board-file-db';
 import { GetNoticeDetailHandler } from './command/get-notice-detail.handler';
 
+const CommandHandlers = [
+  CreateNoticeHandler,
+  UpdateNoticeHandler,
+  DeleteNoticeHandler,
+  GetNoticeDetailHandler,
+];
+const QueryHandlers = [GetNoticeListHandler];
+
 @Module({
   imports: [TypeOrmModule.forFeature([Board, Notice, BoardFile]), CqrsModule],
   controllers: [NoticeController],
   providers: [
-    CreateNoticeHandler,
-    GetNoticeListHandler,
-    UpdateNoticeHandler,
-    DeleteNoticeHandler,
-    GetNoticeDetailHandler,
+    ...CommandHandlers,
+    ...QueryHandlers,
     { provide: 'noticeFile', useClass: BoardFileDb },
   ],
 })

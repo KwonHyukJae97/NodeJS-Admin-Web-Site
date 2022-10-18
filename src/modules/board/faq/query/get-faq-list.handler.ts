@@ -2,21 +2,26 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Faq } from '../entities/faq';
 import { Repository } from 'typeorm';
-import { GetFaqLisQuery } from './get-faq-lis.query';
+import { GetFaqListQuery } from './get-faq-list.query';
 import { NotFoundException } from '@nestjs/common';
 
 /**
- * FAQ 목록/카테고리별 검색어 조회 시, 쿼리를 구현하는 쿼리 핸들러
+ * FAQ 전체 & 카테고리별 검색어에 해당하는 리스트 조회용 쿼리 핸들러
  */
+@QueryHandler(GetFaqListQuery)
+export class GetFaqListHandler implements IQueryHandler<GetFaqListQuery> {
+  constructor(@InjectRepository(Faq) private faqRepository: Repository<Faq>) {}
 
-@QueryHandler(GetFaqLisQuery)
-export class GetFaqListHandler implements IQueryHandler<GetFaqLisQuery> {
-  constructor(
-    @InjectRepository(Faq)
-    private faqRepository: Repository<Faq>,
-  ) {}
-
-  async execute(query: GetFaqLisQuery) {
+  /**
+   * FAQ 전체 리스트 조회 및 검색어 조회 메소드
+   * @param query : FAQ 전체 조회 쿼리
+   * @returns : DB처리 실패 시 에러 메시지 반환 /
+   *            카테고리, 검색어가 모두 없을 경우, 조회 성공 시 FAQ 전체 리스트 반환 /
+   *            카테고리, 검색어가 모두 있을 경우, 조회 성공 시 카테고리 내에서 검색어에 포함되는 FAQ 리스트 반환 /
+   *            카테고리가 없고 검색어만 있을 경우, 조회 성공 시 검색어에 포함되는 FAQ 리스트 반환 /
+   *            카테고리만 있고 검색어가 없을 경우, 조회 성공 시 카테고리에 대한 FAQ 리스트 반환
+   */
+  async execute(query: GetFaqListQuery) {
     const { categoryName, keyword, role } = query;
 
     // role = 본사 관리자일 경우 전체 데이터 조회
@@ -34,7 +39,7 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqLisQuery> {
         if (!faq || faq.length === 0) {
           throw new NotFoundException('검색 결과가 없습니다.');
         }
-        // FAQ 전체 조회
+
         return faq;
       }
 
@@ -52,7 +57,7 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqLisQuery> {
         if (!faq || faq.length === 0) {
           throw new NotFoundException('검색 결과가 없습니다.');
         }
-        // FAQ 전체 조회
+
         return faq;
       }
 
@@ -69,7 +74,7 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqLisQuery> {
         if (!faq || faq.length === 0) {
           throw new NotFoundException('검색 결과가 없습니다.');
         }
-        // FAQ 리스트 반환
+
         return faq;
       }
 
@@ -82,7 +87,7 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqLisQuery> {
         if (!faq) {
           throw new NotFoundException('작성된 게시글이 없습니다.');
         }
-        // FAQ 리스트 반환
+
         return faq;
       }
 
@@ -102,7 +107,7 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqLisQuery> {
         if (!faq || faq.length === 0) {
           throw new NotFoundException('검색 결과가 없습니다.');
         }
-        // FAQ 전체 조회
+
         return faq;
       }
 
@@ -121,7 +126,7 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqLisQuery> {
         if (!faq || faq.length === 0) {
           throw new NotFoundException('검색 결과가 없습니다.');
         }
-        // FAQ 전체 조회
+
         return faq;
       }
 
@@ -139,7 +144,7 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqLisQuery> {
         if (!faq || faq.length === 0) {
           throw new NotFoundException('검색 결과가 없습니다.');
         }
-        // FAQ 리스트 반환
+
         return faq;
       }
 
@@ -156,7 +161,7 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqLisQuery> {
         if (!faq) {
           throw new NotFoundException('작성된 게시글이 없습니다.');
         }
-        // FAQ 리스트 반환
+
         return faq;
       }
     }

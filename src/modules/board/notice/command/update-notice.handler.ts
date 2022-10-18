@@ -10,25 +10,23 @@ import { BoardFileDb } from '../../board-file-db';
 import { FileType } from '../../../file/entities/file-type.enum';
 
 /**
- * 공지사항 수정 시, 커맨드를 처리하는 커맨드 핸들러
+ * 공지사항 정보 수정용 커맨드 핸들러
  */
-
 @Injectable()
 @CommandHandler(UpdateNoticeCommand)
 export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand> {
   constructor(
-    @InjectRepository(Notice)
-    private noticeRepository: Repository<Notice>,
-
-    @InjectRepository(Board)
-    private boardRepository: Repository<Board>,
-
-    @Inject('noticeFile')
-    private boardFileDb: BoardFileDb,
-
+    @InjectRepository(Notice) private noticeRepository: Repository<Notice>,
+    @InjectRepository(Board) private boardRepository: Repository<Board>,
+    @Inject('noticeFile') private boardFileDb: BoardFileDb,
     private eventBus: EventBus,
   ) {}
 
+  /**
+   * 공지사항 정보 수정 메소드
+   * @param command : 공지사항 정보 수정에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 수정 성공 시 공지사항 정보 반환
+   */
   async execute(command: UpdateNoticeCommand) {
     const { title, content, isTop, noticeGrant, noticeId, role, accountId, files } = command;
 
@@ -72,7 +70,6 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
       new FilesUpdateEvent(board.boardId, FileType.NOTICE, files, this.boardFileDb),
     );
 
-    // 변경된 공지사항 반환
     return notice;
   }
 }

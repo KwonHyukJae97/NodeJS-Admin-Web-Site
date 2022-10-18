@@ -10,25 +10,23 @@ import { BoardFileDb } from '../../board-file-db';
 import { FileType } from '../../../file/entities/file-type.enum';
 
 /**
- * 1:1 문의 등록 시, 커맨드를 처리하는 커맨드 핸들러
+ * 1:1 문의 등록용 커맨드 핸들러
  */
-
 @Injectable()
 @CommandHandler(CreateQnaCommand)
 export class CreateQnaHandler implements ICommandHandler<CreateQnaCommand> {
   constructor(
-    @InjectRepository(Qna)
-    private qnaRepository: Repository<Qna>,
-
-    @InjectRepository(Board)
-    private boardRepository: Repository<Board>,
-
-    @Inject('qnaFile')
-    private boardFileDb: BoardFileDb,
-
+    @InjectRepository(Qna) private qnaRepository: Repository<Qna>,
+    @InjectRepository(Board) private boardRepository: Repository<Board>,
+    @Inject('qnaFile') private boardFileDb: BoardFileDb,
     private eventBus: EventBus,
   ) {}
 
+  /**
+   * 1:1 문의 등록 메소드
+   * @param command : 1:1 문의 등록에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 등록 완료 시 1:1 문의 정보 반환
+   */
   async execute(command: CreateQnaCommand) {
     const { title, content, files } = command;
 
@@ -62,6 +60,6 @@ export class CreateQnaHandler implements ICommandHandler<CreateQnaCommand> {
       new FilesCreateEvent(board.boardId, FileType.QNA, files, this.boardFileDb),
     );
 
-    return '1:1 문의 등록 성공';
+    return qna;
   }
 }

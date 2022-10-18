@@ -6,9 +6,8 @@ import { BoardFile } from '../file/entities/board-file';
 import { BadRequestException, Injectable } from '@nestjs/common';
 
 /**
- * 게시판 파일 관련 DB 저장/수정/삭제 시, 사용되는 인터페이스 구현체
+ * 게시판 관련 파일 DB 저장/수정/삭제용 인터페이스 구현체
  */
-
 @Injectable()
 export class BoardFileDb implements FileDbInterface {
   constructor(

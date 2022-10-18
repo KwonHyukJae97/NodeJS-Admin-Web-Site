@@ -5,7 +5,6 @@ import { Board } from '../../entities/board';
 /**
  * 공지사항에 대한 엔티티 정의
  */
-
 @Entity()
 export class Notice {
   // 공지사항 번호

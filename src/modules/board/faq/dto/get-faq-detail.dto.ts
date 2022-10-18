@@ -4,9 +4,8 @@ import { BoardFile } from '../../../file/entities/board-file';
 import { FaqCategory } from '../entities/faq_category';
 
 /**
- * FAQ 상세 조회 시, 필요한 필드로 구성한 응답 dto
+ * FAQ 상세 조회에 필요한 응답 Dto 정의
  */
-
 export class GetFaqDetailDto {
   @IsNotEmpty()
   @IsNumber()

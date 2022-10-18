@@ -14,17 +14,12 @@ import { GetCategoryListHandler } from './query/get-category-list.handler';
 import { GetFaqListHandler } from './query/get-faq-list.handler';
 import { BoardFileDb } from '../board-file-db';
 
+const CommandHandlers = [CreateFaqHandler, UpdateFaqHandler, DeleteFaqHandler, GetFaqDetailHandler];
+const QueryHandlers = [GetFaqListHandler, GetCategoryListHandler];
+
 @Module({
   imports: [TypeOrmModule.forFeature([Board, Faq, BoardFile, FaqCategory]), CqrsModule],
   controllers: [FaqController],
-  providers: [
-    CreateFaqHandler,
-    GetFaqDetailHandler,
-    UpdateFaqHandler,
-    DeleteFaqHandler,
-    GetCategoryListHandler,
-    GetFaqListHandler,
-    { provide: 'faqFile', useClass: BoardFileDb },
-  ],
+  providers: [...CommandHandlers, ...QueryHandlers, { provide: 'faqFile', useClass: BoardFileDb }],
 })
 export class FaqModule {}

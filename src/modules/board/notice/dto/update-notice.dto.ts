@@ -1,11 +1,9 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsString, MaxLength } from 'class-validator';
-import { FileType } from '../../../file/entities/file-type.enum';
+import { IsBoolean, IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { Type } from 'class-transformer';
 
 /**
- * 공지사항 수정 시, 필요한 필드로 구성한 dto
+ * 공지사항 수정에 필요한 요청 Dto 정의
  */
-
 export class UpdateNoticeDto {
   @IsNotEmpty()
   @IsString()

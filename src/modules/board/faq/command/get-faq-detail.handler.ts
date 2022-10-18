@@ -9,26 +9,23 @@ import { BoardFile } from '../../../file/entities/board-file';
 import { FaqCategory } from '../entities/faq_category';
 
 /**
- * FAQ 상세조회 시, 커맨드를 처리하는 커맨드 핸들러 (서비스 로직 수행)
+ * FAQ 상세 정보 조회용 커맨드 핸들러
  */
-
 @Injectable()
 @CommandHandler(GetFaqDetailCommand)
 export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand> {
   constructor(
-    @InjectRepository(Faq)
-    private faqRepository: Repository<Faq>,
-
-    @InjectRepository(Board)
-    private boardRepository: Repository<Board>,
-
-    @InjectRepository(BoardFile)
-    private fileRepository: Repository<BoardFile>,
-
-    @InjectRepository(FaqCategory)
-    private categoryRepository: Repository<FaqCategory>,
+    @InjectRepository(Faq) private faqRepository: Repository<Faq>,
+    @InjectRepository(Board) private boardRepository: Repository<Board>,
+    @InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>,
+    @InjectRepository(FaqCategory) private categoryRepository: Repository<FaqCategory>,
   ) {}
 
+  /**
+   * FAQ 상세 정보 조회 메소드
+   * @param command : FAQ 상세 정보 조회 커맨드
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 FAQ 상세 정보 반환
+   */
   async execute(command: GetFaqDetailCommand) {
     const { faqId, role } = command;
 

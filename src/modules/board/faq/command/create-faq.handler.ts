@@ -11,28 +11,24 @@ import { BoardFileDb } from '../../board-file-db';
 import { FileType } from '../../../file/entities/file-type.enum';
 
 /**
- * FAQ 등록 시, 커맨드를 처리하는 커맨드 핸들러
+ * FAQ 등록용 커맨드 핸들러
  */
-
 @Injectable()
 @CommandHandler(CreateFaqCommand)
 export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
   constructor(
-    @InjectRepository(Faq)
-    private faqRepository: Repository<Faq>,
-
-    @InjectRepository(Board)
-    private boardRepository: Repository<Board>,
-
-    @InjectRepository(FaqCategory)
-    private categoryRepository: Repository<FaqCategory>,
-
-    @Inject('faqFile')
-    private boardFileDb: BoardFileDb,
-
+    @InjectRepository(Faq) private faqRepository: Repository<Faq>,
+    @InjectRepository(Board) private boardRepository: Repository<Board>,
+    @InjectRepository(FaqCategory) private categoryRepository: Repository<FaqCategory>,
+    @Inject('faqFile') private boardFileDb: BoardFileDb,
     private eventBus: EventBus,
   ) {}
 
+  /**
+   * FAQ 등록 메소드
+   * @param command : FAQ 등록에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 등록 완료 시 FAQ 정보 반환
+   */
   async execute(command: CreateFaqCommand) {
     const { title, content, categoryName, role, files } = command;
 
@@ -77,6 +73,6 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
       new FilesCreateEvent(board.boardId, FileType.FAQ, files, this.boardFileDb),
     );
 
-    return 'FAQ 등록 성공';
+    return faq;
   }
 }

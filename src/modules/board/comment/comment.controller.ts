@@ -12,64 +12,56 @@ import { GetCommentInfoDto } from './dto/get-comment-info.dto';
 import { GetCommentListDto } from './dto/get-comment-list.dto';
 
 /**
- * 답변 관련 API 처리하는 컨트롤러
+ * 답변 API controller
  */
-
 @Controller('comment')
 export class CommentController {
   constructor(private commandBus: CommandBus, private queryBus: QueryBus) {}
 
   /**
    * 답변 등록
-   * @ param : qna_id
+   * @Param : qna_id
+   * @Return : 답변 등록 커맨드 전송
    */
   @Post(':id')
-  createComment(
-    @Param('id') qnaId: number,
-    @Body() createCommentDto: CreateCommentDto,
-  ): Promise<string> {
+  createComment(@Param('id') qnaId: number, @Body() createCommentDto: CreateCommentDto) {
     const { comment, adminId } = createCommentDto;
     const command = new CreateCommentCommand(qnaId, comment, adminId);
-    // '답변 등록 성공' 메세지 반환
     return this.commandBus.execute(command);
   }
 
   /**
-   * 답변 리스트 조회
+   * 답변 전체 리스트 조회
+   * @Return : 답변 리스트 조회 쿼리 전송
    */
   @Get()
-  async getAllComment(@Body() getCommentInfoDto: GetCommentInfoDto): Promise<GetCommentListDto> {
+  async getAllComment(@Body() getCommentInfoDto: GetCommentInfoDto) {
     const { role } = getCommentInfoDto;
     const getCommentListQuery = new GetCommentListQuery(role);
     return this.queryBus.execute(getCommentListQuery);
   }
 
   /**
-   * 답변 상세 조회
-   * @ param : qna_id
+   * 답변 상세 정보 조회
+   * @Param : qna_id
+   * @Return : 답변 상세 정보 조회 커맨드 전송
    */
   @Get(':id')
-  async getCommentDetail(
-    @Param('id') qnaId: number,
-    @Body() getCommentInfoDto: GetCommentInfoDto,
-  ): Promise<GetCommentDetailDto> {
+  async getCommentDetail(@Param('id') qnaId: number, @Body() getCommentInfoDto: GetCommentInfoDto) {
     const { role } = getCommentInfoDto;
     const command = new GetCommentDetailCommand(qnaId, role);
     return this.commandBus.execute(command);
   }
 
   /**
-   * 답변 수정
-   * @ param : comment_id
+   * 답변 상세 정보 수정
+   * @Param : comment_id
+   * @Return : 답변 상세 정보 수정 커맨드 전송
    */
   @Patch(':id')
-  async updateComment(
-    @Param('id') commentId: number,
-    @Body() updateCommentDto: UpdateCommentDto,
-  ): Promise<Comment> {
+  async updateComment(@Param('id') commentId: number, @Body() updateCommentDto: UpdateCommentDto) {
     const { comment, adminId } = updateCommentDto;
     const command = new UpdateCommentCommand(commentId, comment, adminId);
-    // comment 객체 반환
     return this.commandBus.execute(command);
   }
 }

@@ -13,16 +13,12 @@ import { GetQnaDetailHandler } from './command/get-qna-detail.handler';
 import { Comment } from '../comment/entities/comment';
 import { BoardFileDb } from '../board-file-db';
 
+const CommandHandlers = [CreateQnaHandler, UpdateQnaHandler, DeleteQnaHandler, GetQnaDetailHandler];
+const QueryHandlers = [GetQnaListHandler];
+
 @Module({
   imports: [TypeOrmModule.forFeature([Board, Qna, BoardFile, Comment]), CqrsModule],
   controllers: [QnaController],
-  providers: [
-    CreateQnaHandler,
-    GetQnaListHandler,
-    GetQnaDetailHandler,
-    UpdateQnaHandler,
-    DeleteQnaHandler,
-    { provide: 'qnaFile', useClass: BoardFileDb },
-  ],
+  providers: [...CommandHandlers, ...QueryHandlers, { provide: 'qnaFile', useClass: BoardFileDb }],
 })
 export class QnaModule {}

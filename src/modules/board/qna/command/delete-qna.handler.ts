@@ -11,31 +11,25 @@ import { FilesDeleteEvent } from '../../../file/event/files-delete-event';
 import { BoardFileDb } from '../../board-file-db';
 
 /**
- * 1:1 문의 삭제 시, 커맨드를 처리하는 커맨드 핸들러
+ * 1:1 문의 삭제용 커맨드 핸들러
  */
-
 @Injectable()
 @CommandHandler(DeleteQnaCommand)
 export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
   constructor(
-    @InjectRepository(Qna)
-    private qnaRepository: Repository<Qna>,
-
-    @InjectRepository(Board)
-    private boardRepository: Repository<Board>,
-
-    @InjectRepository(BoardFile)
-    private fileRepository: Repository<BoardFile>,
-
-    @InjectRepository(Comment)
-    private commentRepository: Repository<Comment>,
-
-    @Inject('qnaFile')
-    private boardFileDb: BoardFileDb,
-
+    @InjectRepository(Qna) private qnaRepository: Repository<Qna>,
+    @InjectRepository(Board) private boardRepository: Repository<Board>,
+    @InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>,
+    @InjectRepository(Comment) private commentRepository: Repository<Comment>,
+    @Inject('qnaFile') private boardFileDb: BoardFileDb,
     private eventBus: EventBus,
   ) {}
 
+  /**
+   * 1:1 문의 삭제 메소드
+   * @param command : 1:1 문의 삭제에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 완료 메시지 반환
+   */
   async execute(command: DeleteQnaCommand) {
     const { qnaId, accountId } = command;
 
@@ -60,20 +54,18 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
       this.commentRepository.softDelete({ commentId: comment.commentId });
     });
 
-    // qna db 삭제
     try {
       await this.qnaRepository.delete(qna);
     } catch (err) {
       console.log(err);
     }
 
-    // board db 삭제 (fk)
     try {
       await this.boardRepository.softDelete({ boardId: board.boardId });
     } catch (err) {
       console.log(err);
     }
 
-    return '1:1 문의 삭제 성공';
+    return '삭제가 완료 되었습니다.';
   }
 }

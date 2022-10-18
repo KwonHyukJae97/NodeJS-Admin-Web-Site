@@ -9,26 +9,23 @@ import { Qna } from '../../qna/entities/qna';
 import { BoardFile } from '../../../file/entities/board-file';
 
 /**
- * 답변 상세조회 시, 커맨드를 처리하는 커맨드 핸들러 (서비스 로직 수행)
+ * 답변 상세 정보 조회용 커맨드 핸들러
  */
-
 @Injectable()
 @CommandHandler(GetCommentDetailCommand)
 export class GetCommentDetailHandler implements ICommandHandler<GetCommentDetailCommand> {
   constructor(
-    @InjectRepository(Comment)
-    private commentRepository: Repository<Comment>,
-
-    @InjectRepository(Qna)
-    private qnaRepository: Repository<Qna>,
-
-    @InjectRepository(Board)
-    private boardRepository: Repository<Board>,
-
-    @InjectRepository(BoardFile)
-    private fileRepository: Repository<BoardFile>,
+    @InjectRepository(Comment) private commentRepository: Repository<Comment>,
+    @InjectRepository(Qna) private qnaRepository: Repository<Qna>,
+    @InjectRepository(Board) private boardRepository: Repository<Board>,
+    @InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>,
   ) {}
 
+  /**
+   * 답변 상세 정보 조회 메소드
+   * @param command : 답변 상세 정보 조회 커맨드
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 답변 상세 정보 반환
+   */
   async execute(command: GetCommentDetailCommand) {
     const { qnaId, role } = command;
 

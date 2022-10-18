@@ -6,16 +6,19 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { GetNoticeListQuery } from './get-notice-list.query';
 
 /**
- * 공지사항 목록/검색어 조회 시, 쿼리를 구현하는 쿼리 핸들러
+ * 공지사항 전체 & 검색어에 해당하는 리스트 조회용 쿼리 핸들러
  */
-
 @QueryHandler(GetNoticeListQuery)
 export class GetNoticeListHandler implements IQueryHandler<GetNoticeListQuery> {
-  constructor(
-    @InjectRepository(Notice)
-    private noticeRepository: Repository<Notice>,
-  ) {}
+  constructor(@InjectRepository(Notice) private noticeRepository: Repository<Notice>) {}
 
+  /**
+   * 공지사항 전체 리스트 조회 및 검색어 조회 메소드
+   * @param query : 공지사항 전체 조회 쿼리
+   * @returns : DB처리 실패 시 에러 메시지 반환 /
+   *            검색어가 없을 경우, 조회 성공 시 공지사항 전체 리스트 반환 /
+   *            검색어가 있을 경우, 조회 성공 시 검색어에 포함되는 공지사항 리스트 반환
+   */
   async execute(query: GetNoticeListQuery) {
     const { keyword, role, noticeGrant } = query;
 
@@ -44,7 +47,7 @@ export class GetNoticeListHandler implements IQueryHandler<GetNoticeListQuery> {
       if (!notice || notice.length === 0) {
         throw new NotFoundException('검색 결과가 없습니다.');
       }
-      // 공지사항 리스트 반환
+
       return notice;
 
       // 검색 키워드가 없을 경우
@@ -59,7 +62,7 @@ export class GetNoticeListHandler implements IQueryHandler<GetNoticeListQuery> {
       if (notice.length === 0) {
         throw new NotFoundException('작성된 공지사항이 없습니다.');
       }
-      // 공지사항 리스트 반환
+
       return notice;
     }
   }
