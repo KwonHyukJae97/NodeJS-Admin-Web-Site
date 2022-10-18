@@ -1,16 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpException,
-  HttpStatus,
-  Param,
-  Patch,
-  Post,
-  UseFilters,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, ValidationPipe } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { SignUpUserCommand } from '../auth/command/signup-user.command';
 import { SignUpUserDto } from '../auth/dto/signup-user.dto';
@@ -19,19 +7,13 @@ import { UpdateUserCommand } from './command/update-user.command';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { GetAllUserQuery } from './query/get-all-user.query';
 import { GetUserInfoQuery } from './query/get-user-info.query';
-import { TranslatorService, TranslatorFilter } from 'nestjs-translator';
 
 /**
  * 앱사용자 가입/로그인 처리 컨트롤러
  */
-@UseFilters(TranslatorFilter)
 @Controller('user')
 export class UserController {
-  constructor(
-    private translator: TranslatorService,
-    private commandBus: CommandBus,
-    private queryBus: QueryBus,
-  ) {}
+  constructor(private commandBus: CommandBus, private queryBus: QueryBus) {}
 
   /**
    * 앱사용자 회원가입 컨트롤러

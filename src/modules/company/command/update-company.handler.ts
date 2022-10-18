@@ -22,6 +22,7 @@ export class UpdateCompanyHandler implements ICommandHandler<UpdateCompanyComman
     const company = await this.companyRepository.findOneBy({ companyId: companyId });
 
     if (!company) {
+      //정보 찾을 수 없을 경우 에러메시지 반환
       return this.convertException.throwError('notFound', '회원사', 404);
     }
 
@@ -33,6 +34,7 @@ export class UpdateCompanyHandler implements ICommandHandler<UpdateCompanyComman
       await this.companyRepository.save(company);
     } catch (err) {
       console.log(err);
+      //저장 실패할 경우 에러 메시지 반환
       return this.convertException.throwError('badInput', '회원사 정보에 ', 400);
     }
 

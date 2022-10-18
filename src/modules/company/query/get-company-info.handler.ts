@@ -22,9 +22,10 @@ export class GetCompanyInfoQueryHandler implements IQueryHandler<GetCompanyInfoQ
     const company = await this.companyRepository.findOneBy({ companyId: companyId });
 
     if (!company) {
+      //정보 찾을 수 없을 경우 에러메시지 반환
       return this.convertException.throwError('notFound', '회원사', 404);
     }
-    //회원사 상세 정보
+    //회원사 상세 정보 반환
     return company;
   }
 }

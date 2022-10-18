@@ -1,10 +1,10 @@
-import { NotFoundException } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConvertException } from 'src/common/utils/convert-exception';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user';
 import { GetUserInfoQuery } from './get-user-info.query';
-import { TranslatorService } from 'nestjs-translator';
 /**
  * 앱 사용자 상세 정보 조회용 쿼리 핸들러
  */
@@ -13,7 +13,7 @@ import { TranslatorService } from 'nestjs-translator';
 export class GetUserInfoQueryHandler implements IQueryHandler<GetUserInfoQuery> {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
-    private translator: TranslatorService,
+    @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
   async execute(query: GetUserInfoQuery) {
@@ -22,11 +22,12 @@ export class GetUserInfoQueryHandler implements IQueryHandler<GetUserInfoQuery> 
     const user = await this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.account', 'account')
-      .where('account.account_id = :accountId', { accountId: userId })
+      .where('user.user_id = :userId', { userId: userId })
       .getOne();
 
     if (!user) {
-      throw new NotFoundException('NotFoundException');
+      //정보 찾을 수 없을 경우 에러메시지 반환
+      return this.convertException.throwError('notFound', '사용자', 404);
     }
     //앱사용자 상세 정보 반환
     return user;

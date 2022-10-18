@@ -1,12 +1,12 @@
-import { HttpException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteCompanyCommand } from './delete-company.command';
-import { Repository } from 'typeorm';
-import { Company } from '../entities/company.entity';
+import { ConvertException } from 'src/common/utils/convert-exception';
 import { Admin } from 'src/modules/admin/entities/admin.entity';
 import { RolePermission } from 'src/modules/adminRole/entities/rolePermission.entity';
-import { ConvertException } from 'src/common/utils/convert-exception';
+import { Repository } from 'typeorm';
+import { Company } from '../entities/company.entity';
+import { DeleteCompanyCommand } from './delete-company.command';
 
 /**
  * 회원사 삭제용 커맨드 핸들러
@@ -46,6 +46,7 @@ export class DeleteCompanyHandler implements ICommandHandler<DeleteCompanyComman
       }
     } catch (err) {
       console.log(err);
+      //삭제처리 에러 메시지 반환
       return this.convertException.throwError('commonError', '', 500);
     }
   }
