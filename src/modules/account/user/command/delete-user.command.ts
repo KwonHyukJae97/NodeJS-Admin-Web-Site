@@ -5,5 +5,5 @@ import { ICommand } from '@nestjs/cqrs';
  */
 
 export class DeleteUserCommand implements ICommand {
-  constructor(readonly accountId: number, readonly delDate: Date) {}
+  constructor(readonly userId: number, readonly delDate: Date) {}
 }

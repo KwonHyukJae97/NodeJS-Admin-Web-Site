@@ -11,12 +11,13 @@ import { Company } from '../company/entities/company.entity';
 import { GetAllAdminRoleQueryHandler } from './query/get-all-adminRole.handler';
 import { RolePermission } from './entities/rolePermission.entity';
 import { Permission } from '../permission/entities/permission.entity';
+import { ConvertException } from 'src/common/utils/convert-exception';
 
 const CommandHandlers = [CreateAdminRoleHandler, UpdateAdminRoleHandler, DeleteAdminRoleHandler];
 const QueryHandlers = [GetAdminRoleInfoQueryHandler, GetAllAdminRoleQueryHandler];
 @Module({
   imports: [TypeOrmModule.forFeature([AdminRole, Company, RolePermission, Permission]), CqrsModule],
   controllers: [AdminRoleController],
-  providers: [...CommandHandlers, ...QueryHandlers],
+  providers: [...CommandHandlers, ...QueryHandlers, ConvertException],
 })
 export class AdminRoleModule {}
