@@ -7,6 +7,9 @@ import { Admin } from '../entities/admin';
 import { CreateAdminCommand } from './create-admin.command';
 import * as bcrypt from 'bcryptjs';
 
+/**
+ * 관리자 정보 등록 커맨드 핸들러
+ */
 @Injectable()
 @CommandHandler(CreateAdminCommand)
 export class CreateAdminhandler implements ICommandHandler<CreateAdminCommand> {

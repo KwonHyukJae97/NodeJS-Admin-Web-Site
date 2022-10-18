@@ -101,6 +101,10 @@ export class AdminController {
     return this.commandBus.execute(command);
   }
 
+  /**
+   * 관리자 정보 등록
+   * @param dto
+   */
   @Post()
   async createAdmin(@Body(ValidationPipe) dto: CreateAdminDto): Promise<string> {
     const {

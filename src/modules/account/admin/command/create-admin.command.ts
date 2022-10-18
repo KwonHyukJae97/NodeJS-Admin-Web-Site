@@ -1,5 +1,8 @@
 import { ICommand } from '@nestjs/cqrs';
 
+/**
+ * 관리자 정보 등록 커맨드 정의
+ */
 export class CreateAdminCommand implements ICommand {
   constructor(
     readonly id: string,
