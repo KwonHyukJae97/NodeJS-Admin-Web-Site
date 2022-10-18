@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreatePermissionCommand } from './create-permission.command';
 import { Permission } from '../entities/permission.entity';
 import { Repository } from 'typeorm';
+import { ConvertException } from 'src/common/utils/convert-exception';
 
 /**
  * 권한 등록용 커맨드 핸들러
@@ -11,8 +12,16 @@ import { Repository } from 'typeorm';
 @Injectable()
 @CommandHandler(CreatePermissionCommand)
 export class CreatePermissionHandler implements ICommandHandler<CreatePermissionCommand> {
-  constructor(@InjectRepository(Permission) private permissionRepository: Repository<Permission>) {}
+  constructor(
+    @InjectRepository(Permission) private permissionRepository: Repository<Permission>,
+    @Inject(ConvertException) private convertException: ConvertException,
+  ) {}
 
+  /**
+   * 권한 등록 메소드
+   * @param command : 권한 등록에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 등록 완료 시 권한 정보 반환
+   */
   async execute(command: CreatePermissionCommand) {
     const { menuName, grantType } = command;
 
@@ -21,9 +30,13 @@ export class CreatePermissionHandler implements ICommandHandler<CreatePermission
       grantType,
     });
 
-    await this.permissionRepository.save(permission);
+    //권한 정보 DB저장
+    try {
+      await this.permissionRepository.save(permission);
+    } catch (err) {
+      return this.convertException.badRequestError('권한 정보에 ', 400);
+    }
 
-    //등록된 내용 반환
     return permission;
   }
 }

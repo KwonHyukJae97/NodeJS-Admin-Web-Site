@@ -8,6 +8,9 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+/**
+ * 회원사 정보 수정에 필요한 엔티티 정의
+ */
 @Entity('company')
 export class Company extends BaseEntity {
   //회원사 번호

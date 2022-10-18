@@ -9,6 +9,7 @@ import * as bcrypt from 'bcryptjs';
 import { AccountFileDb } from '../../account-file-db';
 import { FileType } from '../../../file/entities/file-type.enum';
 import { FileUpdateEvent } from '../../../file/event/file-update-event';
+import { ConvertException } from 'src/common/utils/convert-exception';
 
 /**
  * 앱 사용자 정보 수정용 커맨드 핸들러
@@ -21,33 +22,50 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
     @InjectRepository(Account) private accountRepository: Repository<Account>,
     @Inject('accountFile') private accountFileDb: AccountFileDb,
     private eventBus: EventBus,
+    @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
+  /**
+   * 앱 사용자 정보 수정 메소드
+   * @param command : 앱 사용자 정보 수정에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 수정 성공 시 수정된 정보 반환
+   */
   async execute(command: UpdateUserCommand) {
     const { password, email, phone, nickname, grade, userId, file } = command;
 
     const user = await this.userRepository.findOneBy({ userId: userId });
-    const account = await this.accountRepository.findOneBy({ accountId: userId });
+    const accountId = user.accountId.accountId;
+    const account = await this.accountRepository.findOneBy({ accountId: accountId });
 
-    user.grade = grade;
-    await this.userRepository.save(user);
+    //학년정보 수정
+    try {
+      user.grade = grade;
+      await this.userRepository.save(user);
+    } catch (err) {
+      return this.convertException.badRequestError('학년정보에', 400);
+    }
 
     // 비밀번호 암호화 저장 (bcrypt)
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
+    console.log('패스워드 확인', hashedPassword);
 
-    account.password = hashedPassword;
-    account.email = email;
-    account.phone = phone;
-    account.nickname = nickname;
-    await this.accountRepository.save(account);
+    //계정 정보 수정
+    try {
+      account.password = hashedPassword;
+      account.email = email;
+      account.phone = phone;
+      account.nickname = nickname;
+      await this.accountRepository.save(account);
+    } catch (err) {
+      return this.convertException.CommonError(500);
+    }
 
     // 단일 파일 업데이트 이벤트 처리
     this.eventBus.publish(
       new FileUpdateEvent(account.accountId, FileType.ACCOUNT, file, this.accountFileDb),
     );
 
-    //수정된 내용 반환
     return account;
   }
 }

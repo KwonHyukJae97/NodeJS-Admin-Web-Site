@@ -11,6 +11,7 @@ import { DeleteUserHandler } from './command/delete-user.handler';
 import { UpdateUserHandler } from './command/update-user.handler';
 import { AccountFile } from '../../file/entities/account-file';
 import { AccountFileDb } from '../account-file-db';
+import { ConvertException } from 'src/common/utils/convert-exception';
 
 const CommandHandlers = [SignUpUserHandler, UpdateUserHandler, DeleteUserHandler];
 const QueryHandlers = [GetUserInfoQueryHandler, GetAllUserQueryHandler];
@@ -20,6 +21,7 @@ const QueryHandlers = [GetUserInfoQueryHandler, GetAllUserQueryHandler];
   providers: [
     ...CommandHandlers,
     ...QueryHandlers,
+    ConvertException,
     { provide: 'accountFile', useClass: AccountFileDb },
   ],
 })

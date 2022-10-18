@@ -28,7 +28,9 @@ export class UserController {
   constructor(private commandBus: CommandBus, private queryBus: QueryBus) {}
 
   /**
-   * 앱사용자 회원가입 컨트롤러
+   * 앱사용자 회원가입 메소드
+   * @param signUpUserdto : 앱사용자 회원가입에 필요한 dto
+   * @return : 앱사용자 회원 가입 커맨드 전송
    */
   @Post()
   async secondSignupUser(@Body(ValidationPipe) signUpUserdto: SignUpUserDto): Promise<void> {
@@ -48,8 +50,10 @@ export class UserController {
 
     return this.commandBus.execute(command);
   }
+
   /**
-   * 앱사용자 전체 리스트 조회
+   * 앱 사용자 전체 리스트 조회
+   * @return : 앱 사용자 리스트 조회 커맨드 전송
    */
   @Get()
   getAllUser() {
@@ -60,6 +64,7 @@ export class UserController {
   /**
    * 앱사용자 상세 정보 조회
    * @Param : user_id
+   * @return : 앱사용자 상세 정보 조회 쿼리 전송
    */
   @Get(':id')
   getUserInfo(@Param('id') userId: number) {
@@ -70,6 +75,7 @@ export class UserController {
   /**
    * 앱사용자 상세 정보 수정
    * @Param : user_id
+   * @return : 앱 사용자 정보 수정 커맨드 전송
    */
   @Patch(':id')
   @UseInterceptors(FileInterceptor('file'))
@@ -86,7 +92,8 @@ export class UserController {
 
   /**
    * 앱 사용자 정보 삭제
-   * @ param : user_id
+   * @Param : user_id
+   * @return : 앱 사용자 정보 삭제 커맨드 전송
    */
   @Delete(':id')
   deleteUser(@Param('id') userId: number, delDate: Date) {

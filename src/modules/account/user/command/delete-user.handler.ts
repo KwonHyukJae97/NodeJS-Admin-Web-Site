@@ -1,9 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteUserCommand } from './delete-user.command';
-import { Account } from '../../entities/account';
+import { ConvertException } from 'src/common/utils/convert-exception';
 import { Repository } from 'typeorm';
+import { Account } from '../../entities/account';
+import { User } from '../entities/user';
+import { DeleteUserCommand } from './delete-user.command';
 import { AccountFileDb } from '../../account-file-db';
 import { FileDeleteEvent } from '../../../file/event/file-delete-event';
 
@@ -14,15 +16,28 @@ import { FileDeleteEvent } from '../../../file/event/file-delete-event';
 @CommandHandler(DeleteUserCommand)
 export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand> {
   constructor(
+    @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(Account) private accountRepository: Repository<Account>,
+    @Inject(ConvertException) private convertException: ConvertException,
     @Inject('accountFile') private accountFileDb: AccountFileDb,
     private eventBus: EventBus,
   ) {}
 
+  /**
+   * 앱 사용자 삭제 메소드
+   * @param command : 앱 사용자 삭제에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 완료 메시지 반환
+   */
   async execute(command: DeleteUserCommand) {
-    const { accountId, delDate } = command;
+    const { userId, delDate } = command;
+    const user = await this.userRepository.findOneBy({ userId: userId });
+
+    const accountId = user.accountId.accountId;
     const account = await this.accountRepository.findOneBy({ accountId: accountId, delDate });
 
+    if (!account) {
+      return this.convertException.notFoundError('사용자', 404);
+    }
     // new Date()에서 반환하는 UTC시간을 KST시간으로 변경
     const getDate = new Date();
     getDate.setHours(getDate.getHours() + 9);
@@ -36,25 +51,30 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand> {
     this.eventBus.publish(new FileDeleteEvent(account.accountId, this.accountFileDb));
 
     //탈퇴회원의 개인정보 유출가능한 데이터는 *표로 표시 (기준:휴면계정 데이터)
-    await this.accountRepository
-      .createQueryBuilder()
-      .update(account)
-      .set({
-        password: '*****',
-        id: '*****',
-        name: '*****',
-        phone: '*****',
-        email: '*****',
-        birth: '*****',
-        snsId: '*****',
-        snsType: '**',
-        gender: '*',
-        ci: '*****',
-      })
-      .where('account.account_id = :accountId', { accountId: accountId })
-      .execute();
+    try {
+      await this.accountRepository
+        .createQueryBuilder()
+        .update(account)
+        .set({
+          password: '*****',
+          id: '*****',
+          name: '*****',
+          phone: '*****',
+          nickname: '*****',
+          email: '*****',
+          birth: '*****',
+          snsId: '*****',
+          snsType: '**',
+          gender: '*',
+          ci: '*****',
+        })
+        .where('account.account_id = :accountId', { accountId: accountId })
+        .execute();
+    } catch (err) {
+      console.log(err);
+      return this.convertException.CommonError(500);
+    }
 
-    //삭제처리 메시지 반환
     return '삭제가 완료 되었습니다.';
   }
 }

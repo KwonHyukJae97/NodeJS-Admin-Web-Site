@@ -223,11 +223,11 @@ export class SignController {
   @Post('/logout/admin')
   async logoutAdmin(@Req() request, @Res() response) {
     const { accessOption, refreshOption } = this.authService.getCookiesForLogOut2();
-    await this.authService.removeRefreshToken2(request.user.accountId);
+    await this.authService.removeRefreshToken(request.user.accountId);
     response.cookie('authentication', '', accessOption);
     response.cookie('Refresh', '', refreshOption);
 
-    return response.sendStatus(200);
+    return response.sendStatus(200), '로그아웃 완료';
   }
 
   /**
@@ -240,7 +240,7 @@ export class SignController {
   @Post('/logout/user')
   async logoutUser(@Req() request, @Res() response) {
     const { accessOption, refreshOption } = this.authService.getCookiesForLogOut2();
-    await this.authService.removeRefreshToken2(request.user.accountId);
+    await this.authService.removeRefreshToken(request.user.accountId);
     response.cookie('authentication', '', accessOption);
     response.cookie('Refresh', '', refreshOption);
 

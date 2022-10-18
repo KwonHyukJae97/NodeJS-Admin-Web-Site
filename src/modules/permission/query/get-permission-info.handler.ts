@@ -1,6 +1,7 @@
-import { NotFoundException } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConvertException } from 'src/common/utils/convert-exception';
 import { Repository } from 'typeorm';
 import { Permission } from '../entities/permission.entity';
 import { GetPermissionInfoQuery } from './get-permission-info.query';
@@ -10,7 +11,16 @@ import { GetPermissionInfoQuery } from './get-permission-info.query';
  */
 @QueryHandler(GetPermissionInfoQuery)
 export class GetPermissionInfoQueryHandler implements IQueryHandler<GetPermissionInfoQuery> {
-  constructor(@InjectRepository(Permission) private permissionRepository: Repository<Permission>) {}
+  constructor(
+    @InjectRepository(Permission) private permissionRepository: Repository<Permission>,
+    @Inject(ConvertException) private convertException: ConvertException,
+  ) {}
+
+  /**
+   * 권한 상세 정보 조회 메소드
+   * @param query : 권한 상세 정보 조회 쿼리
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 권한 상세 정보 반환
+   */
 
   async execute(query: GetPermissionInfoQuery) {
     const { permissionId } = query;
@@ -18,9 +28,9 @@ export class GetPermissionInfoQueryHandler implements IQueryHandler<GetPermissio
     const permission = await this.permissionRepository.findOneBy({ permissionId: permissionId });
 
     if (!permission) {
-      throw new NotFoundException('Permission does not exist');
+      return this.convertException.notFoundError('권한', 404);
     }
-    //권한 상세 정보
+
     return permission;
   }
 }
