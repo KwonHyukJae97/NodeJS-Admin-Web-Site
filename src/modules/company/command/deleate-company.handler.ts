@@ -21,6 +21,11 @@ export class DeleteCompanyHandler implements ICommandHandler<DeleteCompanyComman
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
+  /**
+   * 회원사 삭제 메소드
+   * @param command : 회원사 삭제에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 삭제 권한 없음 메시지 반환 / 삭제 성공 시 완료 메시지 반환
+   */
   async execute(command: DeleteCompanyCommand) {
     const { companyId, roleId } = command;
     //const rolePermission = await this.rolePermissionRepository.findOneBy({ roleId: roleId });
@@ -38,16 +43,12 @@ export class DeleteCompanyHandler implements ICommandHandler<DeleteCompanyComman
       if (adminCompanyId == companyId && adminPermissionId == 2) {
         //softDelete: 데이터를 완전히 삭제하지 않고 삭제일시만 기록 후 update
         this.companyRepository.softDelete({ companyId: companyId });
-        //삭제처리 완료 메시지 반환
         return '삭제가 완료 되었습니다.';
       } else {
-        //삭제처리 불가 메시지 반환
         return '삭제할 수 있는 권한이 없습니다.';
       }
     } catch (err) {
-      console.log(err);
-      //삭제처리 에러 메시지 반환
-      return this.convertException.throwError('commonError', '', 500);
+      return this.convertException.CommonError(500);
     }
   }
 }

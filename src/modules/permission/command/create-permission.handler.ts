@@ -17,6 +17,11 @@ export class CreatePermissionHandler implements ICommandHandler<CreatePermission
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
+  /**
+   * 권한 등록 메소드
+   * @param command : 권한 등록에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 등록 완료 시 권한 정보 반환
+   */
   async execute(command: CreatePermissionCommand) {
     const { menuName, grantType } = command;
 
@@ -29,12 +34,9 @@ export class CreatePermissionHandler implements ICommandHandler<CreatePermission
     try {
       await this.permissionRepository.save(permission);
     } catch (err) {
-      console.log(err);
-      //저장 실패할 경우 에러 메시지 반환
-      return this.convertException.throwError('badInput', '권한 정보에 ', 400);
+      return this.convertException.badRequestError('권한 정보에 ', 400);
     }
 
-    //등록된 내용 반환
     return permission;
   }
 }

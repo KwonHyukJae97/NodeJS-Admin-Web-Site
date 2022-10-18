@@ -16,6 +16,11 @@ export class GetUserInfoQueryHandler implements IQueryHandler<GetUserInfoQuery> 
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
+  /**
+   * 앱 사용자 상세 정보 조회 메소드
+   * @param query : 앱 사용자 정보 조회 쿼리
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 앱 사용자 정보 반환
+   */
   async execute(query: GetUserInfoQuery) {
     const { userId } = query;
 
@@ -26,10 +31,9 @@ export class GetUserInfoQueryHandler implements IQueryHandler<GetUserInfoQuery> 
       .getOne();
 
     if (!user) {
-      //정보 찾을 수 없을 경우 에러메시지 반환
-      return this.convertException.throwError('notFound', '사용자', 404);
+      return this.convertException.notFoundError('사용자', 404);
     }
-    //앱사용자 상세 정보 반환
+
     return user;
   }
 }

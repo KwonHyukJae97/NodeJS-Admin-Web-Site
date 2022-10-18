@@ -19,33 +19,32 @@ export class DeleteAdminRoleHandler implements ICommandHandler<DeleteAdminRoleCo
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
+  /**
+   * 역할 삭제 메소드
+   * @param command : 역할 삭제에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 완료 메시지 반환
+   */
   async execute(command: DeleteAdminRoleCommand) {
     const { roleId } = command;
     const role = await this.adminroleRepository.findOneBy({ roleId: roleId });
 
     if (!role) {
-      //정보 찾을 수 없을 경우 에러메시지 반환
-      return this.convertException.throwError('notFound', '역할', 404);
+      return this.convertException.notFoundError('역할', 404);
     }
     //역할정보 DB삭제
     try {
       await this.adminroleRepository.softDelete({ roleId: roleId });
     } catch (err) {
-      console.log(err);
-      //저장 실패 에러메시지 반환
-      return this.convertException.throwError('commonError', '', 500);
+      return this.convertException.CommonError(500);
     }
 
     //역할_권한정보 DB삭제
     try {
       await this.rolePermissionRepository.softDelete({ roleId: roleId });
     } catch (err) {
-      console.log(err);
-      //저장 실패 에러메시지 반환
-      return this.convertException.throwError('commonError', '', 500);
+      return this.convertException.CommonError(500);
     }
 
-    //삭제처리 완료 메시지 반환
     return '삭제가 완료 되었습니다.';
   }
 }

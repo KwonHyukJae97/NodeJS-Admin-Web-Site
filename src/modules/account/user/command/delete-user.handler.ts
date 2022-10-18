@@ -1,11 +1,11 @@
-import { HttpException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteUserCommand } from './delete-user.command';
-import { Account } from '../../entities/account';
-import { Repository } from 'typeorm';
-import { User } from '../entities/user';
 import { ConvertException } from 'src/common/utils/convert-exception';
+import { Repository } from 'typeorm';
+import { Account } from '../../entities/account';
+import { User } from '../entities/user';
+import { DeleteUserCommand } from './delete-user.command';
 
 /**
  * 앱 사용자 정보 삭제용 커맨드 핸들러
@@ -20,6 +20,11 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand> {
     private eventBus: EventBus,
   ) {}
 
+  /**
+   * 앱 사용자 삭제 메소드
+   * @param command : 앱 사용자 삭제에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 완료 메시지 반환
+   */
   async execute(command: DeleteUserCommand) {
     const { userId, delDate } = command;
     const user = await this.userRepository.findOneBy({ userId: userId });
@@ -27,8 +32,7 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand> {
     const account = await this.accountRepository.findOneBy({ accountId: accountId, delDate });
 
     if (!account) {
-      //정보 찾을 수 없을 경우 에러메시지 반환
-      return this.convertException.throwError('notFound', '사용자', 404);
+      return this.convertException.notFoundError('사용자', 404);
     }
     // new Date()에서 반환하는 UTC시간을 KST시간으로 변경
     const getDate = new Date();
@@ -61,11 +65,9 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand> {
         .execute();
     } catch (err) {
       console.log(err);
-      //저장 실패 에러 메시지 반환
-      return this.convertException.throwError('commonError', '', 400);
+      return this.convertException.CommonError(500);
     }
 
-    //삭제처리 메시지 반환
     return '삭제가 완료 되었습니다.';
   }
 }

@@ -18,14 +18,18 @@ export class GetAllAdminRoleQueryHandler implements IQueryHandler<GetAllAdminRol
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
+  /**
+   * 역할 리스트 조회 메소드
+   * @param query : 역할 리스트 조회 쿼리
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 역할 리스트 반환
+   */
   async execute(query: GetAllAdminRoleQuery) {
     const adminrole = await this.adminrolesRepository.find({});
 
     if (!adminrole) {
-      //정보 찾을 수 없을 경우 에러메시지 반환
-      return this.convertException.throwError('notFound', '역할', 404);
+      return this.convertException.notFoundError('역할', 404);
     }
-    // 역할 전체 리스트
+
     return adminrole;
   }
 }
