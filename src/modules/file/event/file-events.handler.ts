@@ -10,9 +10,8 @@ import { FileUpdateEvent } from './file-update-event';
 import { FileDeleteEvent } from './file-delete-event';
 
 /**
- * 게시글의 파일 관련 필요 로직을 처리하는 이벤트 핸들러
+ * 파일 등록/수정/삭제용 이벤트 핸들러
  */
-
 @EventsHandler(
   FilesCreateEvent,
   FilesUpdateEvent,
@@ -28,14 +27,15 @@ export class FileEventsHandler
 {
   constructor(
     private fileService: FileService,
-
-    @Inject('boardFile')
-    private boardFileDb: BoardFileDb,
-
-    @Inject('accountFile')
-    private accountFileDb: AccountFileDb,
+    @Inject('boardFile') private boardFileDb: BoardFileDb,
+    @Inject('accountFile') private accountFileDb: AccountFileDb,
   ) {}
 
+  /**
+   * 파일 관련 이벤트 핸들링 메소드
+   * @param evnet : 각 파일 이벤트에 필요한 파라미터
+   * @returns : S3/DB처리 실패 시 에러 메시지 반환 / 이벤트 성공 시 void 반환
+   */
   // 하나의 이벤트 핸들러에 여러 이벤트를 받을 수 있기에, 하나의 이벤트 핸들러로 관리하도록 개선
   async handle(
     event:

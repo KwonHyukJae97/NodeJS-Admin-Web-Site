@@ -10,7 +10,6 @@ import {
 /**
  * 계정 파일에 대한 엔티티 정의
  */
-
 @Entity('account_file')
 export class AccountFile {
   // 파일 번호

@@ -1,18 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import * as path from 'path';
-import { BoardFile } from './entities/board-file';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Board } from '../board/entities/board';
-import { Repository } from 'typeorm';
 import * as AWS from 'aws-sdk';
 import { randomUUID } from 'crypto';
 import { getTime, getToday } from '../../common/utils/time-common-method';
 import { FileDbInterface } from './file-db.interface';
 
 /**
- * 파일 업로드 시, 필요 로직을 실질적으로 수행
+ * 파일 관련 서비스 로직
  */
-
+// S3 연결을 위한 설정
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -21,7 +17,14 @@ const s3 = new AWS.S3({
 
 export const uuid = randomUUID();
 
-// S3 파일 업로드 메서드
+/**
+ * S3 파일 업로드 메소드
+ * @param file : 신규 파일
+ * @param fileType : 파일 타입명
+ * @param today : 업로드 요청일
+ * @param time : 업로드 요청 시간
+ * @returns : S3처리 실패 시 에러 메시지 반환 / 업로드 성공 시 void 반환
+ */
 async function putObjectS3(
   file: Express.MulterS3.File,
   fileType: string,
@@ -43,7 +46,13 @@ async function putObjectS3(
   }
 }
 
-// S3에 업로드 된 파일의 Url 가져오는 메서드
+/**
+ * S3 파일 url 조회 메소드
+ * @param fileType : 파일 타입명
+ * @param today : 업로드 요청일
+ * @param time : 업로드 요청 시간
+ * @returns : S3처리 실패 시 에러 메시지 반환 / 조회 성공 시 void 반환
+ */
 async function getObjectUrlS3(fileType: string, today: string, time: string) {
   const getParams = {
     Bucket: process.env.AWS_BUCKET_NAME,
@@ -62,7 +71,11 @@ async function getObjectUrlS3(fileType: string, today: string, time: string) {
   return url;
 }
 
-// S3 파일 삭제 메서드
+/**
+ * S3 파일 삭제 메소드
+ * @param file : S3 파일 객체의 key
+ * @returns : S3처리 실패 시 에러 메시지 반환 / 삭제 성공 시 void 반환
+ */
 async function deleteObjectS3(file) {
   const deleteParams = {
     Bucket: process.env.AWS_BUCKET_NAME,
@@ -83,7 +96,12 @@ export class FileService {
   constructor() {}
 
   /**
-   * 다중 파일 업로드 기능
+   * 다중 파일 등록(업로드) 메소드
+   * @param id : board_id
+   * @param fileType : 파일 타입명
+   * @param files : 신규 파일 리스트
+   * @param fileDbInterface : 파일 관련 DB 처리용 인터페이스
+   * @returns : S3/DB처리 실패 시 에러 메시지 반환 / 등록(업로드) 성공 시 void 반환
    */
   async uploadFiles(
     id: number,
@@ -121,7 +139,12 @@ export class FileService {
   }
 
   /**
-   * 다중 파일 업데이트 기능
+   * 다중 파일 수정(업로드/삭제) 메소드
+   * @param id : board_id
+   * @param fileType : 파일 타입명
+   * @param files : 신규 파일 리스트
+   * @param fileDbInterface : 파일 관련 DB 처리용 인터페이스
+   * @returns : S3/DB처리 실패 시 에러 메시지 반환 / 수정(업로드/삭제) 성공 시 void 반환
    */
   async updateFiles(
     id: number,
@@ -162,7 +185,10 @@ export class FileService {
   }
 
   /**
-   * 다중 파일 삭제 기능
+   * 다중 파일 삭제 메소드
+   * @param id : board_id
+   * @param fileDbInterface : 파일 관련 DB 처리용 인터페이스
+   * @returns : S3/DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 void 반환
    */
   async deleteFiles(id: number, fileDbInterface: FileDbInterface) {
     // S3 key값이 담긴 배열 받기
@@ -175,7 +201,12 @@ export class FileService {
   }
 
   /**
-   * 단일 파일 업데이트 기능
+   * 단일 파일 수정(업로드/삭제) 메소드
+   * @param id : account_id
+   * @param fileType : 파일 타입명
+   * @param files : 신규 파일
+   * @param fileDbInterface : 파일 관련 DB 처리용 인터페이스
+   * @returns : S3/DB처리 실패 시 에러 메시지 반환 / 수정(업로드/삭제) 성공 시 void 반환
    */
   async updateFile(
     id: number,
@@ -215,7 +246,10 @@ export class FileService {
   }
 
   /**
-   * 단일 파일 삭제 기능
+   * 단일 파일 삭제 메소드
+   * @param id : account_id
+   * @param fileDbInterface : 파일 관련 DB 처리용 인터페이스
+   * @returns : S3/DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 void 반환
    */
   async deleteFile(id: number, fileDbInterface: FileDbInterface) {
     // 기존 S3에 업로드된 파일 정보 조회

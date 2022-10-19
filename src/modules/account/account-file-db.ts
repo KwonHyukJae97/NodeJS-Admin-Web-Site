@@ -6,19 +6,21 @@ import { Account } from './entities/account';
 import { AccountFile } from '../file/entities/account-file';
 
 /**
- * 계정 파일 관련 DB 저장/수정/삭제 시, 사용되는 인터페이스 구현체
+ * 계정 관련 파일 DB 저장/수정/삭제용 인터페이스 구현체
  */
-
 @Injectable()
 export class AccountFileDb implements FileDbInterface {
   constructor(
-    @InjectRepository(Account)
-    private accountRepository: Repository<Account>,
-    @InjectRepository(AccountFile)
-    private fileRepository: Repository<AccountFile>,
+    @InjectRepository(Account) private accountRepository: Repository<Account>,
+    @InjectRepository(AccountFile) private fileRepository: Repository<AccountFile>,
   ) {}
 
-  // DB 파일 정보 저장하는 메서드
+  /**
+   * 파일 정보 저장 메소드
+   * @param id : account_id
+   * @param fileInfo : 파일 정보
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 저장 성공 시 void 반환
+   */
   async save(id: number, fileInfo: any) {
     const { originalFileName, fileName, fileExt, filePath, fileSize } = fileInfo;
 
@@ -39,7 +41,11 @@ export class AccountFileDb implements FileDbInterface {
     }
   }
 
-  // DB 파일 정보 삭제하는 메서드
+  /**
+   * 파일 정보 삭제 메소드
+   * @param id : account_id
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 void 반환
+   */
   async delete(id: number) {
     // 기존 파일 조회
     const file = await this.fileRepository.findOneBy({ accountId: id });
@@ -59,6 +65,7 @@ export class AccountFileDb implements FileDbInterface {
     }
   }
 
+  /* 삭제 예정 메서드 */
   // 회원가입 시, DB 기본 이미지 파일 정보 저장하는 메서드
   async initSave(id: number) {
     const accountFile = this.fileRepository.create({

@@ -11,14 +11,16 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 @Injectable()
 export class BoardFileDb implements FileDbInterface {
   constructor(
-    @InjectRepository(Board)
-    private boardRepository: Repository<Board>,
-
-    @InjectRepository(BoardFile)
-    private fileRepository: Repository<BoardFile>,
+    @InjectRepository(Board) private boardRepository: Repository<Board>,
+    @InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>,
   ) {}
 
-  // DB 파일 정보 저장하는 메서드
+  /**
+   * 파일 정보 저장 메소드
+   * @param id : board_id
+   * @param fileInfo : 파일 정보
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 저장 성공 시 void 반환
+   */
   async save(id: number, fileInfo: any) {
     const { originalFileName, fileName, fileExt, filePath, fileSize } = fileInfo;
 
@@ -39,7 +41,11 @@ export class BoardFileDb implements FileDbInterface {
     }
   }
 
-  // DB 파일 정보 삭제하는 메서드
+  /**
+   * 파일 정보 삭제 메소드
+   * @param id : board_id
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 void 반환
+   */
   async delete(id: number) {
     // 기존 파일 조회
     const files = await this.fileRepository.findBy({ boardId: id });
@@ -64,5 +70,6 @@ export class BoardFileDb implements FileDbInterface {
     return deleteList;
   }
 
+  /* 삭제 예정 메서드 */
   async initSave(id: number) {}
 }

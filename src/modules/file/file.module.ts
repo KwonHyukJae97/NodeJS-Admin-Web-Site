@@ -13,14 +13,15 @@ import { AccountFileDb } from '../account/account-file-db';
 import { AccountFile } from './entities/account-file';
 import { Account } from '../account/entities/account';
 
+const QueryHandlers = [GetAllFilesDownloadHandler, GetFileDownloadHandler];
+
 @Module({
   imports: [TypeOrmModule.forFeature([Board, BoardFile, Account, AccountFile]), CqrsModule],
   controllers: [FileController],
   providers: [
     FileService,
     FileEventsHandler,
-    GetAllFilesDownloadHandler,
-    GetFileDownloadHandler,
+    ...QueryHandlers,
     { provide: 'boardFile', useClass: BoardFileDb },
     { provide: 'accountFile', useClass: AccountFileDb },
   ],

@@ -11,16 +11,20 @@ import * as archiver from 'archiver';
 import { getTime } from '../../../common/utils/time-common-method';
 
 /**
- * 다중 파일 다운로드 시, 쿼리를 구현하는 쿼리 핸들러
+ * 다중 파일 다운로드용 쿼리 핸들러
  */
-
+// S3 연결을 위한 설정
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   region: process.env.AWS_REGION,
 });
 
-// 파일 압축
+/**
+ * 다중 파일 압축 메소드
+ * @param files : 다중 파일
+ * @returns : S3/압축처리 실패 시 에러 메시지 반환 / 조회 성공 시 압축 파일 정보 반환
+ */
 const multiFilesStream = async (files) => {
   const archive = archiver('zip', { zlib: { level: 5 } });
 
@@ -58,13 +62,15 @@ const multiFilesStream = async (files) => {
 @QueryHandler(GetAllFileDownloadQuery)
 export class GetAllFilesDownloadHandler implements IQueryHandler<GetAllFileDownloadQuery> {
   constructor(
-    @InjectRepository(BoardFile)
-    private fileRepository: Repository<BoardFile>,
-
-    @InjectRepository(Board)
-    private boardRepository: Repository<Board>,
+    @InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>,
+    @InjectRepository(Board) private boardRepository: Repository<Board>,
   ) {}
 
+  /**
+   * 다중 파일 다운로드(조회) 메소드
+   * @param query : 다중 파일 조회 쿼리
+   * @returns : S3/DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 압축 파일 정보 반환
+   */
   async execute(query: GetAllFileDownloadQuery) {
     const { boardId, res } = query;
 

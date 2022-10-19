@@ -10,7 +10,6 @@ import {
 /**
  * 게시글 파일에 대한 엔티티 정의
  */
-
 @Entity('board_file')
 export class BoardFile {
   // 파일 번호

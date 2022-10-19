@@ -7,9 +7,9 @@ import { BoardFile } from '../entities/board-file';
 import * as AWS from 'aws-sdk';
 
 /**
- * 단일 파일 다운로드 시, 쿼리를 구현하는 쿼리 핸들러
+ * 단일 파일 다운로드용 쿼리 핸들러
  */
-
+// S3 연결을 위한 설정
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -18,11 +18,13 @@ const s3 = new AWS.S3({
 
 @QueryHandler(GetFileDownloadQuery)
 export class GetFileDownloadHandler implements IQueryHandler<GetFileDownloadQuery> {
-  constructor(
-    @InjectRepository(BoardFile)
-    private fileRepository: Repository<BoardFile>,
-  ) {}
+  constructor(@InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>) {}
 
+  /**
+   * 단일 파일 다운로드(조회) 메소드
+   * @param query : 단일 파일 조회 쿼리
+   * @returns : S3/DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 파일 정보 반환
+   */
   async execute(query: GetFileDownloadQuery) {
     const { fileId, res } = query;
 

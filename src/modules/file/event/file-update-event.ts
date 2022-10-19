@@ -4,9 +4,8 @@ import { FileType } from '../entities/file-type.enum';
 import { FileDbInterface } from '../file-db.interface';
 
 /**
- * 단일 파일 업데이트 로직 처리 시, 사용되는 이벤트 정의
+ * 단일 파일 수정용 이벤트 정의
  */
-
 export class FileUpdateEvent extends CqrsEvent implements IEvent {
   constructor(
     readonly id: number,
