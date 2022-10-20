@@ -13,6 +13,7 @@ import { CreateFaqHandler } from './command/create-faq.handler';
 import { GetCategoryListHandler } from './query/get-category-list.handler';
 import { GetFaqListHandler } from './query/get-faq-list.handler';
 import { BoardFileDb } from '../board-file-db';
+import { ConvertException } from '../../../common/utils/convert-exception';
 
 const CommandHandlers = [CreateFaqHandler, UpdateFaqHandler, DeleteFaqHandler, GetFaqDetailHandler];
 const QueryHandlers = [GetFaqListHandler, GetCategoryListHandler];
@@ -20,6 +21,11 @@ const QueryHandlers = [GetFaqListHandler, GetCategoryListHandler];
 @Module({
   imports: [TypeOrmModule.forFeature([Board, Faq, BoardFile, FaqCategory]), CqrsModule],
   controllers: [FaqController],
-  providers: [...CommandHandlers, ...QueryHandlers, { provide: 'faqFile', useClass: BoardFileDb }],
+  providers: [
+    ...CommandHandlers,
+    ...QueryHandlers,
+    ConvertException,
+    { provide: 'faqFile', useClass: BoardFileDb },
+  ],
 })
 export class FaqModule {}

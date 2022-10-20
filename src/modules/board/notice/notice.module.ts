@@ -11,6 +11,7 @@ import { BoardFile } from '../../file/entities/board-file';
 import { GetNoticeListHandler } from './query/get-notice-list.handler';
 import { BoardFileDb } from '../board-file-db';
 import { GetNoticeDetailHandler } from './command/get-notice-detail.handler';
+import { ConvertException } from '../../../common/utils/convert-exception';
 
 const CommandHandlers = [
   CreateNoticeHandler,
@@ -26,6 +27,7 @@ const QueryHandlers = [GetNoticeListHandler];
   providers: [
     ...CommandHandlers,
     ...QueryHandlers,
+    ConvertException,
     { provide: 'noticeFile', useClass: BoardFileDb },
   ],
 })

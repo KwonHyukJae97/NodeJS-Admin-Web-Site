@@ -9,6 +9,7 @@ import { BoardFile } from '../../../file/entities/board-file';
 import { Comment } from '../../comment/entities/comment';
 import { FilesDeleteEvent } from '../../../file/event/files-delete-event';
 import { BoardFileDb } from '../../board-file-db';
+import { ConvertException } from '../../../../common/utils/convert-exception';
 
 /**
  * 1:1 문의 삭제용 커맨드 핸들러
@@ -22,6 +23,7 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
     @InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>,
     @InjectRepository(Comment) private commentRepository: Repository<Comment>,
     @Inject('qnaFile') private boardFileDb: BoardFileDb,
+    @Inject(ConvertException) private convertException: ConvertException,
     private eventBus: EventBus,
   ) {}
 
@@ -36,14 +38,19 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
     const qna = await this.qnaRepository.findOneBy({ qnaId: qnaId });
 
     if (!qna) {
-      throw new NotFoundException('존재하지 않는 문의 내역입니다.');
+      return this.convertException.notFoundError('QnA', 404);
     }
 
+    // TODO : 유저 정보 데코레이터 적용시 확인 후, 삭제 예정
     if (accountId != qna.boardId.accountId) {
       throw new BadRequestException('작성자만 삭제가 가능합니다.');
     }
 
     const board = await this.boardRepository.findOneBy({ boardId: qna.boardId.boardId });
+
+    if (!board) {
+      return this.convertException.notFoundError('게시글', 404);
+    }
 
     // 파일 삭제 이벤트 처리
     this.eventBus.publish(new FilesDeleteEvent(board.boardId, this.boardFileDb));
@@ -51,19 +58,23 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
     const comments = await this.commentRepository.findBy({ qnaId: qnaId });
 
     comments.map((comment) => {
-      this.commentRepository.softDelete({ commentId: comment.commentId });
+      try {
+        this.commentRepository.softDelete({ commentId: comment.commentId });
+      } catch (err) {
+        return this.convertException.CommonError(500);
+      }
     });
 
     try {
       await this.qnaRepository.delete(qna);
     } catch (err) {
-      console.log(err);
+      return this.convertException.CommonError(500);
     }
 
     try {
       await this.boardRepository.softDelete({ boardId: board.boardId });
     } catch (err) {
-      console.log(err);
+      return this.convertException.CommonError(500);
     }
 
     return '삭제가 완료 되었습니다.';

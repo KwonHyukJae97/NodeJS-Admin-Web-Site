@@ -32,7 +32,7 @@ export class FaqController {
 
   /**
    * FAQ 등록
-   * @Return : FAQ 등록 커맨드 전송
+   * @returns : FAQ 등록 커맨드 전송
    */
   @Post()
   @UseInterceptors(FilesInterceptor('files'))
@@ -44,36 +44,36 @@ export class FaqController {
 
   /**
    * FAQ 전체 & 카테고리별 검색 결과 리스트 조회
-   * @Query : category_name
-   * @Query : keyword
-   * @Return : FAQ 리스트 조회 쿼리 전송
+   * @query : category_name
+   * @query : keyword
+   * @returns : FAQ 리스트 조회 쿼리 전송
    */
   @Get()
   async getFaqSearch(
     @Query('categoryName') categoryName: string,
     @Query('keyword') keyword: string,
-    @Body() getFaqInfoDto: GetFaqInfoDto,
+    @Param('role') role: string,
   ) {
-    const { role } = getFaqInfoDto;
+    //const { role } = getFaqInfoDto;
     const getFaqListSearchQuery = new GetFaqListQuery(categoryName, keyword, role);
     return this.queryBus.execute(getFaqListSearchQuery);
   }
 
   /**
    * FAQ 카테고리 리스트 조회
-   * @Return : FAQ 카테고리 리스트 조회 쿼리 전송
+   * @returns : FAQ 카테고리 리스트 조회 쿼리 전송
    */
   @Get('category')
-  async getAllCategory(@Body() getFaqInfoDto: GetFaqInfoDto) {
-    const { role } = getFaqInfoDto;
+  async getAllCategory(@Param('role') role: string) {
+    //const { role } = getFaqInfoDto;
     const getCategoryListQuery = new GetCategoryListQuery(role);
     return this.queryBus.execute(getCategoryListQuery);
   }
 
   /**
    * FAQ 상세 정보 조회
-   * @Param : faq_id
-   * @Return : FAQ 상세 정보 조회 커맨드 전송
+   * @param : faq_id
+   * @returns : FAQ 상세 정보 조회 커맨드 전송
    */
   @Get(':id')
   async getFaqDetail(@Param('id') faqId: number, @Body() getFaqInfoDto: GetFaqInfoDto) {
@@ -84,8 +84,8 @@ export class FaqController {
 
   /**
    * FAQ 상세 정보 수정
-   * @Param : faq_id
-   * @Return : FAQ 상세 정보 수정 커맨드 전송
+   * @param : faq_id
+   * @returns : FAQ 상세 정보 수정 커맨드 전송
    */
   @Patch(':id')
   @UseInterceptors(FilesInterceptor('files'))
@@ -109,8 +109,8 @@ export class FaqController {
 
   /**
    * FAQ 정보 삭제
-   * @Param : faq_id
-   * @Return : FAQ 정보 삭제 커맨드 전송
+   * @param : faq_id
+   * @returns : FAQ 정보 삭제 커맨드 전송
    */
   @Delete(':id')
   async deleteFaq(@Param('id') faqId: number, @Body() deleteFaqInfoDto: DeleteFaqInfoDto) {

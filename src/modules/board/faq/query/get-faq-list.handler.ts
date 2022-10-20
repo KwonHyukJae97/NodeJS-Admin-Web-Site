@@ -3,14 +3,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Faq } from '../entities/faq';
 import { Repository } from 'typeorm';
 import { GetFaqListQuery } from './get-faq-list.query';
-import { NotFoundException } from '@nestjs/common';
+import { Inject, NotFoundException } from '@nestjs/common';
+import { ConvertException } from '../../../../common/utils/convert-exception';
 
 /**
  * FAQ 전체 & 카테고리별 검색어에 해당하는 리스트 조회용 쿼리 핸들러
  */
 @QueryHandler(GetFaqListQuery)
 export class GetFaqListHandler implements IQueryHandler<GetFaqListQuery> {
-  constructor(@InjectRepository(Faq) private faqRepository: Repository<Faq>) {}
+  constructor(
+    @InjectRepository(Faq) private faqRepository: Repository<Faq>,
+    @Inject(ConvertException) private convertException: ConvertException,
+  ) {}
 
   /**
    * FAQ 전체 리스트 조회 및 검색어 조회 메소드
@@ -24,6 +28,7 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqListQuery> {
   async execute(query: GetFaqListQuery) {
     const { categoryName, keyword, role } = query;
 
+    // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
     // role = 본사 관리자일 경우 전체 데이터 조회
     if (role === '본사 관리자') {
       // FAQ 전체에서 키워드 검색
@@ -37,7 +42,7 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqListQuery> {
           .getMany();
 
         if (!faq || faq.length === 0) {
-          throw new NotFoundException('검색 결과가 없습니다.');
+          return this.convertException.notFoundError('해당 키워드에 대한 FAQ', 404);
         }
 
         return faq;
@@ -55,7 +60,7 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqListQuery> {
           .getMany();
 
         if (!faq || faq.length === 0) {
-          throw new NotFoundException('검색 결과가 없습니다.');
+          return this.convertException.notFoundError('해당 키워드에 대한 FAQ', 404);
         }
 
         return faq;
@@ -72,7 +77,7 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqListQuery> {
           .getMany();
 
         if (!faq || faq.length === 0) {
-          throw new NotFoundException('검색 결과가 없습니다.');
+          return this.convertException.notFoundError('해당 키워드에 대한 FAQ', 404);
         }
 
         return faq;
@@ -85,7 +90,7 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqListQuery> {
         });
 
         if (!faq) {
-          throw new NotFoundException('작성된 게시글이 없습니다.');
+          return this.convertException.notFoundError('FAQ', 404);
         }
 
         return faq;
@@ -105,7 +110,7 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqListQuery> {
           .getMany();
 
         if (!faq || faq.length === 0) {
-          throw new NotFoundException('검색 결과가 없습니다.');
+          return this.convertException.notFoundError('해당 키워드에 대한 FAQ', 404);
         }
 
         return faq;
@@ -124,7 +129,7 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqListQuery> {
           .getMany();
 
         if (!faq || faq.length === 0) {
-          throw new NotFoundException('검색 결과가 없습니다.');
+          return this.convertException.notFoundError('해당 키워드에 대한 FAQ', 404);
         }
 
         return faq;
@@ -142,7 +147,7 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqListQuery> {
           .getMany();
 
         if (!faq || faq.length === 0) {
-          throw new NotFoundException('검색 결과가 없습니다.');
+          return this.convertException.notFoundError('해당 키워드에 대한 FAQ', 404);
         }
 
         return faq;
@@ -159,7 +164,7 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqListQuery> {
           .getMany();
 
         if (!faq) {
-          throw new NotFoundException('작성된 게시글이 없습니다.');
+          return this.convertException.notFoundError('FAQ', 404);
         }
 
         return faq;

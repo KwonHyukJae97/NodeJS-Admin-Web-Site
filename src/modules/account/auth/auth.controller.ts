@@ -49,6 +49,17 @@ export class SignController {
   ) {}
 
   /**
+   * 사용자 정보 조회
+   * @returns : account 정보 반환
+   */
+  @Get('me')
+  @UseGuards(AuthGuard())
+  async getAuthInfo(@Req() req) {
+    const authInfo = req.user;
+    return authInfo;
+  }
+
+  /**
    * 관리자 회원가입 컨트롤러
    */
   @HttpCode(201)

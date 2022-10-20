@@ -8,6 +8,7 @@ import { Board } from '../../entities/board';
 import { FilesUpdateEvent } from '../../../file/event/files-update-event';
 import { BoardFileDb } from '../../board-file-db';
 import { FileType } from '../../../file/entities/file-type.enum';
+import { ConvertException } from '../../../../common/utils/convert-exception';
 
 /**
  * 1:1 문의 정보 수정용 커맨드 핸들러
@@ -19,6 +20,7 @@ export class UpdateQnaHandler implements ICommandHandler<UpdateQnaCommand> {
     @InjectRepository(Qna) private qnaRepository: Repository<Qna>,
     @InjectRepository(Board) private boardRepository: Repository<Board>,
     @Inject('qnaFile') private boardFileDb: BoardFileDb,
+    @Inject(ConvertException) private convertException: ConvertException,
     private eventBus: EventBus,
   ) {}
 
@@ -33,14 +35,19 @@ export class UpdateQnaHandler implements ICommandHandler<UpdateQnaCommand> {
     const qna = await this.qnaRepository.findOneBy({ qnaId: qnaId });
 
     if (!qna) {
-      throw new NotFoundException('존재하지 않는 문의 내역입니다.');
+      return this.convertException.notFoundError('QnA', 404);
     }
 
+    // TODO : 유저 정보 데코레이터 적용시 확인 후, 삭제 예정
     if (accountId !== qna.boardId.accountId) {
       throw new BadRequestException('작성자만 수정이 가능합니다.');
     }
 
     const board = await this.boardRepository.findOneBy({ boardId: qna.boardId.boardId });
+
+    if (!board) {
+      return this.convertException.notFoundError('게시글', 404);
+    }
 
     board.title = title;
     board.content = content;
@@ -48,7 +55,7 @@ export class UpdateQnaHandler implements ICommandHandler<UpdateQnaCommand> {
     try {
       await this.boardRepository.save(board);
     } catch (err) {
-      console.log(err);
+      return this.convertException.badRequestError('게시글 정보에', 400);
     }
 
     qna.boardId = board;
@@ -56,7 +63,7 @@ export class UpdateQnaHandler implements ICommandHandler<UpdateQnaCommand> {
     try {
       await this.qnaRepository.save(qna);
     } catch (err) {
-      console.log(err);
+      return this.convertException.badRequestError('QnA 정보에', 400);
     }
 
     // 파일 업데이트 이벤트 처리

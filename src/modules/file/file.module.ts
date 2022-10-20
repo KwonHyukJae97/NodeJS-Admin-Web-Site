@@ -12,6 +12,7 @@ import { BoardFileDb } from '../board/board-file-db';
 import { AccountFileDb } from '../account/account-file-db';
 import { AccountFile } from './entities/account-file';
 import { Account } from '../account/entities/account';
+import { ConvertException } from '../../common/utils/convert-exception';
 
 const QueryHandlers = [GetAllFilesDownloadHandler, GetFileDownloadHandler];
 
@@ -22,6 +23,7 @@ const QueryHandlers = [GetAllFilesDownloadHandler, GetFileDownloadHandler];
     FileService,
     FileEventsHandler,
     ...QueryHandlers,
+    ConvertException,
     { provide: 'boardFile', useClass: BoardFileDb },
     { provide: 'accountFile', useClass: AccountFileDb },
   ],

@@ -8,6 +8,7 @@ import { Board } from '../../entities/board';
 import { FilesCreateEvent } from '../../../file/event/files-create-event';
 import { BoardFileDb } from '../../board-file-db';
 import { FileType } from '../../../file/entities/file-type.enum';
+import { ConvertException } from '../../../../common/utils/convert-exception';
 
 /**
  * 공지사항 등록용 커맨드 핸들러
@@ -19,6 +20,7 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
     @InjectRepository(Notice) private noticeRepository: Repository<Notice>,
     @InjectRepository(Board) private boardRepository: Repository<Board>,
     @Inject('noticeFile') private boardFileDb: BoardFileDb,
+    @Inject(ConvertException) private convertException: ConvertException,
     private eventBus: EventBus,
   ) {}
 
@@ -30,10 +32,12 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
   async execute(command: CreateNoticeCommand) {
     const { title, content, isTop, noticeGrant, role, files } = command;
 
+    // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
     if (role !== '본사 관리자' && role !== '회원사 관리자') {
       throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
     }
 
+    // TODO : 유저 정보 데코레이터 적용시 accountId 연결 후, 삭제 예정
     const board = this.boardRepository.create({
       // 임시 accountId 부여
       accountId: 2,
@@ -46,7 +50,7 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
     try {
       await this.boardRepository.save(board);
     } catch (err) {
-      console.log(err);
+      return this.convertException.badRequestError('게시글 정보에', 400);
     }
 
     const notice = this.noticeRepository.create({
@@ -58,7 +62,7 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
     try {
       await this.noticeRepository.save(notice);
     } catch (err) {
-      console.log(err);
+      return this.convertException.badRequestError('공지사항 정보에', 400);
     }
 
     // 파일 업로드 이벤트 처리

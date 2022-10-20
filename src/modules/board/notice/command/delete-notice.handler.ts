@@ -8,6 +8,7 @@ import { Board } from '../../entities/board';
 import { BoardFile } from '../../../file/entities/board-file';
 import { FilesDeleteEvent } from '../../../file/event/files-delete-event';
 import { BoardFileDb } from '../../board-file-db';
+import { ConvertException } from '../../../../common/utils/convert-exception';
 
 /**
  * 공지사항 삭제용 커맨드 핸들러
@@ -20,6 +21,7 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
     @InjectRepository(Board) private boardRepository: Repository<Board>,
     @InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>,
     @Inject('noticeFile') private boardFileDb: BoardFileDb,
+    @Inject(ConvertException) private convertException: ConvertException,
     private eventBus: EventBus,
   ) {}
 
@@ -31,6 +33,7 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
   async execute(command: DeleteNoticeCommand) {
     const { noticeId, role, accountId } = command;
 
+    // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
     if (role !== '본사 관리자' && role !== '회원사 관리자') {
       throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
     }
@@ -38,14 +41,19 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
     const notice = await this.noticeRepository.findOneBy({ noticeId: noticeId });
 
     if (!notice) {
-      throw new NotFoundException('존재하지 않는 공지사항입니다.');
+      return this.convertException.notFoundError('공지사항', 404);
     }
 
+    // TODO : 유저 정보 데코레이터 적용시 확인 후, 삭제 예정
     if (accountId != notice.boardId.accountId) {
       throw new BadRequestException('작성자만 삭제가 가능합니다.');
     }
 
     const board = await this.boardRepository.findOneBy({ boardId: notice.boardId.boardId });
+
+    if (!board) {
+      return this.convertException.notFoundError('게시글', 404);
+    }
 
     // 파일 삭제 이벤트 처리
     this.eventBus.publish(new FilesDeleteEvent(board.boardId, this.boardFileDb));
@@ -53,13 +61,13 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
     try {
       await this.noticeRepository.delete(notice);
     } catch (err) {
-      console.log(err);
+      return this.convertException.CommonError(500);
     }
 
     try {
       await this.boardRepository.softDelete({ boardId: board.boardId });
     } catch (err) {
-      console.log(err);
+      return this.convertException.CommonError(500);
     }
 
     return '삭제가 완료 되었습니다.';

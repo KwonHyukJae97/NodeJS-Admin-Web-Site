@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import * as path from 'path';
 import * as AWS from 'aws-sdk';
 import { randomUUID } from 'crypto';
 import { getTime, getToday } from '../../common/utils/time-common-method';
 import { FileDbInterface } from './file-db.interface';
+import { ConvertException } from '../../common/utils/convert-exception';
 
 /**
  * 파일 관련 서비스 로직
@@ -42,7 +43,7 @@ async function putObjectS3(
     console.log('정상적으로 업로드 되었습니다.');
   } catch (err) {
     console.log('S3 파일 업로드 실패', err);
-    throw new BadRequestException('파일 업로드에 실패하였습니다.');
+    return this.convertException.badRequestS3Error('업로드 ', 400);
   }
 }
 
@@ -62,7 +63,7 @@ async function getObjectUrlS3(fileType: string, today: string, time: string) {
   const url: string = await new Promise((resolve, reject) =>
     s3.getSignedUrl('getObject', getParams, (err, url) => {
       if (err) {
-        reject(new BadRequestException('해당 파일이 존재하지 않습니다.'));
+        reject(this.convertException.notFoundError('S3 파일', 404));
       } else {
         resolve(url.split('?')[0]);
       }
@@ -87,13 +88,13 @@ async function deleteObjectS3(file) {
     console.log('정상적으로 삭제되었습니다.');
   } catch (err) {
     console.log('S3 파일 삭제 실패', err);
-    throw new BadRequestException('파일 삭제에 실패하였습니다.');
+    return this.convertException.badRequestS3Error('삭제 ', 400);
   }
 }
 
 @Injectable()
 export class FileService {
-  constructor() {}
+  constructor(@Inject(ConvertException) private convertException: ConvertException) {}
 
   /**
    * 다중 파일 등록(업로드) 메소드
@@ -110,7 +111,7 @@ export class FileService {
     fileDbInterface: FileDbInterface,
   ) {
     if (!files) {
-      throw new BadRequestException('파일이 존재하지 않습니다.');
+      return this.convertException.notFoundError('신규 파일', 404);
     }
 
     files.map(async (file) => {

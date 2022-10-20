@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateCommentCommand } from './update-comment.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from '../entities/comment';
 import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
+import { ConvertException } from '../../../../common/utils/convert-exception';
 
 /**
  * 답변 정보 수정용 커맨드 핸들러
@@ -15,6 +16,7 @@ export class UpdateCommentHandler implements ICommandHandler<UpdateCommentComman
   constructor(
     @InjectRepository(Comment) private commentRepository: Repository<Comment>,
     @InjectRepository(Board) private boardRepository: Repository<Board>,
+    @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
   /**
@@ -25,6 +27,7 @@ export class UpdateCommentHandler implements ICommandHandler<UpdateCommentComman
   async execute(command: UpdateCommentCommand) {
     const { commentId, comment, adminId } = command;
 
+    // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
     // 본사 관리자만 접근 가능
     // const admin = await this.adminRepository.findOneBy({ adminId: adminId });
     //
@@ -35,9 +38,10 @@ export class UpdateCommentHandler implements ICommandHandler<UpdateCommentComman
     const commentDetail = await this.commentRepository.findOneBy({ commentId: commentId });
 
     if (!commentDetail) {
-      throw new NotFoundException('존재하지 않는 답변 내역입니다.');
+      return this.convertException.notFoundError('답변', 404);
     }
 
+    // TODO : 유저 정보 데코레이터 적용시 확인 후, 삭제 예정
     if (adminId !== commentDetail.adminId) {
       throw new BadRequestException('작성자만 수정이 가능합니다.');
     }
@@ -47,7 +51,7 @@ export class UpdateCommentHandler implements ICommandHandler<UpdateCommentComman
     try {
       await this.commentRepository.save(commentDetail);
     } catch (err) {
-      console.log(err);
+      return this.convertException.badRequestError('답변 정보에', 400);
     }
 
     return commentDetail;

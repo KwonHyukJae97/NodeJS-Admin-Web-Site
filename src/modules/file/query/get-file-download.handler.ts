@@ -1,10 +1,11 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
 import { GetFileDownloadQuery } from './get-file-download.query';
 import { BoardFile } from '../entities/board-file';
 import * as AWS from 'aws-sdk';
+import { ConvertException } from '../../../common/utils/convert-exception';
 
 /**
  * 단일 파일 다운로드용 쿼리 핸들러
@@ -18,7 +19,10 @@ const s3 = new AWS.S3({
 
 @QueryHandler(GetFileDownloadQuery)
 export class GetFileDownloadHandler implements IQueryHandler<GetFileDownloadQuery> {
-  constructor(@InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>) {}
+  constructor(
+    @InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>,
+    @Inject(ConvertException) private convertException: ConvertException,
+  ) {}
 
   /**
    * 단일 파일 다운로드(조회) 메소드
@@ -31,7 +35,7 @@ export class GetFileDownloadHandler implements IQueryHandler<GetFileDownloadQuer
     const file = await this.fileRepository.findOneBy({ boardFileId: fileId });
 
     if (!file) {
-      throw new NotFoundException('DB에 해당 파일이 존재하지 않습니다.');
+      return this.convertException.notFoundError('파일', 404);
     }
 
     const fileName = file.originalFileName + file.fileExt;
@@ -56,15 +60,15 @@ export class GetFileDownloadHandler implements IQueryHandler<GetFileDownloadQuer
           .pipe(res)
           .on('error', (err) => {
             console.log(err);
-            return new BadRequestException('파일 읽기에 실패하였습니다.');
+            return this.convertException.CommonError(500);
           });
       } catch (err) {
         console.log('파일 읽어오기 실패', err);
-        return new BadRequestException('해당 파일을 읽어올 수 없습니다.');
+        return this.convertException.badRequestS3Error('읽기 ', 400);
       }
     } catch (err) {
       console.log('S3 파일 다운로드 실패', err);
-      throw new NotFoundException('S3에 파일이 존재하지 않습니다.');
+      return this.convertException.notFoundError('S3 파일', 404);
     }
 
     // 파일 정보 반환 (임시)

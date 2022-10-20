@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateNoticeCommand } from './update-notice.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,6 +8,7 @@ import { Board } from '../../entities/board';
 import { FilesUpdateEvent } from '../../../file/event/files-update-event';
 import { BoardFileDb } from '../../board-file-db';
 import { FileType } from '../../../file/entities/file-type.enum';
+import { ConvertException } from '../../../../common/utils/convert-exception';
 
 /**
  * 공지사항 정보 수정용 커맨드 핸들러
@@ -19,6 +20,7 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
     @InjectRepository(Notice) private noticeRepository: Repository<Notice>,
     @InjectRepository(Board) private boardRepository: Repository<Board>,
     @Inject('noticeFile') private boardFileDb: BoardFileDb,
+    @Inject(ConvertException) private convertException: ConvertException,
     private eventBus: EventBus,
   ) {}
 
@@ -30,6 +32,7 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
   async execute(command: UpdateNoticeCommand) {
     const { title, content, isTop, noticeGrant, noticeId, role, accountId, files } = command;
 
+    // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
     if (role !== '본사 관리자' && role !== '회원사 관리자') {
       throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
     }
@@ -37,14 +40,19 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
     const notice = await this.noticeRepository.findOneBy({ noticeId: noticeId });
 
     if (!notice) {
-      throw new NotFoundException('존재하지 않는 공지사항입니다.');
+      return this.convertException.notFoundError('공지사항', 404);
     }
 
+    // TODO : 유저 정보 데코레이터 적용시 확인 후, 삭제 예정
     if (accountId !== notice.boardId.accountId) {
       throw new BadRequestException('작성자만 수정이 가능합니다.');
     }
 
     const board = await this.boardRepository.findOneBy({ boardId: notice.boardId.boardId });
+
+    if (!board) {
+      return this.convertException.notFoundError('게시글', 404);
+    }
 
     board.title = title;
     board.content = content;
@@ -52,7 +60,7 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
     try {
       await this.boardRepository.save(board);
     } catch (err) {
-      console.log(err);
+      return this.convertException.badRequestError('게시글 정보에', 400);
     }
 
     notice.isTop = isTop;
@@ -62,7 +70,7 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
     try {
       await this.noticeRepository.save(notice);
     } catch (err) {
-      console.log(err);
+      return this.convertException.badRequestError('공지사항 정보에', 400);
     }
 
     // 파일 업데이트 이벤트 처리

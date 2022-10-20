@@ -8,6 +8,7 @@ import { Board } from '../../entities/board';
 import { FilesCreateEvent } from '../../../file/event/files-create-event';
 import { BoardFileDb } from '../../board-file-db';
 import { FileType } from '../../../file/entities/file-type.enum';
+import { ConvertException } from '../../../../common/utils/convert-exception';
 
 /**
  * 1:1 문의 등록용 커맨드 핸들러
@@ -19,6 +20,7 @@ export class CreateQnaHandler implements ICommandHandler<CreateQnaCommand> {
     @InjectRepository(Qna) private qnaRepository: Repository<Qna>,
     @InjectRepository(Board) private boardRepository: Repository<Board>,
     @Inject('qnaFile') private boardFileDb: BoardFileDb,
+    @Inject(ConvertException) private convertException: ConvertException,
     private eventBus: EventBus,
   ) {}
 
@@ -30,6 +32,7 @@ export class CreateQnaHandler implements ICommandHandler<CreateQnaCommand> {
   async execute(command: CreateQnaCommand) {
     const { title, content, files } = command;
 
+    // TODO : 유저 정보 데코레이터 적용시 accountId 연결 후, 삭제 예정
     const board = this.boardRepository.create({
       // 임시 accountId 부여
       accountId: 3,
@@ -42,7 +45,7 @@ export class CreateQnaHandler implements ICommandHandler<CreateQnaCommand> {
     try {
       await this.boardRepository.save(board);
     } catch (err) {
-      console.log(err);
+      return this.convertException.badRequestError('게시글 정보에', 400);
     }
 
     const qna = this.qnaRepository.create({
@@ -52,7 +55,7 @@ export class CreateQnaHandler implements ICommandHandler<CreateQnaCommand> {
     try {
       await this.qnaRepository.save(qna);
     } catch (err) {
-      console.log(err);
+      return this.convertException.badRequestError('QnA 정보에', 400);
     }
 
     // 파일 업로드 이벤트 처리

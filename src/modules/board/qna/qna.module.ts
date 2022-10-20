@@ -12,6 +12,7 @@ import { BoardFile } from '../../file/entities/board-file';
 import { GetQnaDetailHandler } from './command/get-qna-detail.handler';
 import { Comment } from '../comment/entities/comment';
 import { BoardFileDb } from '../board-file-db';
+import { ConvertException } from '../../../common/utils/convert-exception';
 
 const CommandHandlers = [CreateQnaHandler, UpdateQnaHandler, DeleteQnaHandler, GetQnaDetailHandler];
 const QueryHandlers = [GetQnaListHandler];
@@ -19,6 +20,11 @@ const QueryHandlers = [GetQnaListHandler];
 @Module({
   imports: [TypeOrmModule.forFeature([Board, Qna, BoardFile, Comment]), CqrsModule],
   controllers: [QnaController],
-  providers: [...CommandHandlers, ...QueryHandlers, { provide: 'qnaFile', useClass: BoardFileDb }],
+  providers: [
+    ...CommandHandlers,
+    ...QueryHandlers,
+    ConvertException,
+    { provide: 'qnaFile', useClass: BoardFileDb },
+  ],
 })
 export class QnaModule {}

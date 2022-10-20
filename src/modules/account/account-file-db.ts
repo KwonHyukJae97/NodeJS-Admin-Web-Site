@@ -1,9 +1,10 @@
 import { FileDbInterface } from '../file/file-db.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Account } from './entities/account';
 import { AccountFile } from '../file/entities/account-file';
+import { ConvertException } from '../../common/utils/convert-exception';
 
 /**
  * 계정 관련 파일 DB 저장/수정/삭제용 인터페이스 구현체
@@ -13,6 +14,7 @@ export class AccountFileDb implements FileDbInterface {
   constructor(
     @InjectRepository(Account) private accountRepository: Repository<Account>,
     @InjectRepository(AccountFile) private fileRepository: Repository<AccountFile>,
+    @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
   /**
@@ -37,7 +39,7 @@ export class AccountFileDb implements FileDbInterface {
       await this.fileRepository.save(accountFile);
     } catch (err) {
       console.log('DB 파일 저장 실패');
-      throw new BadRequestException('파일 저장에 실패하였습니다.');
+      return this.convertException.badRequestError('계정 파일 정보에', 400);
     }
   }
 
@@ -58,14 +60,14 @@ export class AccountFileDb implements FileDbInterface {
         await this.fileRepository.softDelete({ accountFileId: file.accountFileId });
       } catch (err) {
         console.log('DB 파일 삭제 실패', err);
-        throw new BadRequestException('파일 삭제에 실패하였습니다.');
+        return this.convertException.CommonError(500);
       }
       // S3 key값 반환
       return deleteFile;
     }
   }
 
-  /* 삭제 예정 메서드 */
+  // TODO : 단일 파일 업로드 로직 수정 후, 삭제 예정
   // 회원가입 시, DB 기본 이미지 파일 정보 저장하는 메서드
   async initSave(id: number) {
     const accountFile = this.fileRepository.create({
@@ -81,7 +83,7 @@ export class AccountFileDb implements FileDbInterface {
       await this.fileRepository.save(accountFile);
     } catch (err) {
       console.log('DB 파일 저장 실패');
-      throw new BadRequestException('파일 저장에 실패하였습니다.');
+      return this.convertException.badRequestError('계정 파일 정보에', 400);
     }
   }
 }

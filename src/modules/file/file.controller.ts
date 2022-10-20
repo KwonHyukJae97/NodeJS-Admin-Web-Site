@@ -19,7 +19,7 @@ export class FileController {
     private queryBus: QueryBus,
   ) {}
 
-  /* 수정 예정 */
+  // TODO : 파일 모듈화 적용 버전으로 수정 예정
   /**
    * 단일 파일 다운로드(조회)
    * @Param : board_file_id
@@ -31,7 +31,7 @@ export class FileController {
     return this.queryBus.execute(getFileDownloadQuery);
   }
 
-  /* 수정 예정 */
+  // TODO : 파일 모듈화 적용 버전으로 수정 예정
   /**
    * 다중 파일 다운로드(조회)
    * @Param : board_id

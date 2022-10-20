@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreateCommentCommand } from './create-comment.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from '../entities/comment';
 import { Repository } from 'typeorm';
 import { Qna } from '../../qna/entities/qna';
+import { ConvertException } from '../../../../common/utils/convert-exception';
 
 /**
  * 답변 등록용 커맨드 핸들러
@@ -15,6 +16,7 @@ export class CreateCommentHandler implements ICommandHandler<CreateCommentComman
   constructor(
     @InjectRepository(Comment) private commentRepository: Repository<Comment>,
     @InjectRepository(Qna) private qnaRepository: Repository<Qna>,
+    @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
   /**
@@ -25,6 +27,7 @@ export class CreateCommentHandler implements ICommandHandler<CreateCommentComman
   async execute(command: CreateCommentCommand) {
     const { qnaId, comment, adminId } = command;
 
+    // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
     // 본사 관리자만 접근 가능
     // const admin = await this.adminRepository.findOneBy({ adminId: adminId });
     //
@@ -35,7 +38,7 @@ export class CreateCommentHandler implements ICommandHandler<CreateCommentComman
     const qna = await this.qnaRepository.findOneBy({ qnaId: qnaId });
 
     if (!qna) {
-      throw new NotFoundException('존재하지 않는 문의 내역입니다.');
+      return this.convertException.notFoundError('QnA', 404);
     }
 
     const qnaComment = this.commentRepository.create({
@@ -47,7 +50,7 @@ export class CreateCommentHandler implements ICommandHandler<CreateCommentComman
     try {
       await this.commentRepository.save(qnaComment);
     } catch (err) {
-      console.log(err);
+      return this.convertException.badRequestError('답변 정보에', 400);
     }
 
     return qnaComment;

@@ -3,7 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Board } from './entities/board';
 import { Repository } from 'typeorm';
 import { BoardFile } from '../file/entities/board-file';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { ConvertException } from '../../common/utils/convert-exception';
 
 /**
  * 게시판 관련 파일 DB 저장/수정/삭제용 인터페이스 구현체
@@ -13,6 +14,7 @@ export class BoardFileDb implements FileDbInterface {
   constructor(
     @InjectRepository(Board) private boardRepository: Repository<Board>,
     @InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>,
+    @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
   /**
@@ -37,7 +39,7 @@ export class BoardFileDb implements FileDbInterface {
       await this.fileRepository.save(boardFile);
     } catch (err) {
       console.log('DB 파일 저장 실패');
-      throw new BadRequestException('파일 저장에 실패하였습니다.');
+      return this.convertException.badRequestError('게시글 파일 정보에', 400);
     }
   }
 
@@ -63,13 +65,13 @@ export class BoardFileDb implements FileDbInterface {
       });
     } catch (err) {
       console.log('DB 파일 삭제 실패', err);
-      throw new BadRequestException('파일 삭제에 실패하였습니다.');
+      return this.convertException.CommonError(500);
     }
 
     // S3 key값이 담긴 배열 반환
     return deleteList;
   }
 
-  /* 삭제 예정 메서드 */
+  // TODO : 단일 파일 업로드 로직 수정 후, 삭제 예정
   async initSave(id: number) {}
 }

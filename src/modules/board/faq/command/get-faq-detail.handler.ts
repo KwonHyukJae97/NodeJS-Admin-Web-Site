@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { GetFaqDetailCommand } from './get-faq-detail.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { BoardFile } from '../../../file/entities/board-file';
 import { FaqCategory } from '../entities/faq_category';
+import { ConvertException } from '../../../../common/utils/convert-exception';
 
 /**
  * FAQ 상세 정보 조회용 커맨드 핸들러
@@ -19,6 +20,7 @@ export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand>
     @InjectRepository(Board) private boardRepository: Repository<Board>,
     @InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>,
     @InjectRepository(FaqCategory) private categoryRepository: Repository<FaqCategory>,
+    @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
   /**
@@ -35,15 +37,21 @@ export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand>
       categoryId: faq.categoryId['categoryId'],
     });
 
+    // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
     if (!category.isUse && role !== '본사 관리자') {
       throw new BadRequestException('본사 관리자만 접근 가능합니다.');
     }
 
     if (!faq) {
-      throw new NotFoundException('존재하지 않는 FAQ입니다.');
+      return this.convertException.notFoundError('FAQ', 404);
     }
 
     const board = await this.boardRepository.findOneBy({ boardId: faq.boardId.boardId });
+
+    if (!board) {
+      return this.convertException.notFoundError('게시글', 404);
+    }
+
     // FAQ 상세 조회할 때마다 조회수 반영
     /* 데이터 수정 및 새로고침 등의 경우, 무한대로 조회수가 증가할 수 있는 문제점은 추후 보완 예정 */
     board.viewCount++;
@@ -51,7 +59,7 @@ export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand>
     try {
       await this.boardRepository.save(board);
     } catch (err) {
-      console.log(err);
+      return this.convertException.badRequestError('게시글 정보에', 400);
     }
 
     faq.boardId = board;
@@ -59,7 +67,7 @@ export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand>
     try {
       await this.faqRepository.save(faq);
     } catch (err) {
-      console.log(err);
+      return this.convertException.badRequestError('FAQ', 400);
     }
 
     const files = await this.fileRepository.findBy({ boardId: board.boardId });

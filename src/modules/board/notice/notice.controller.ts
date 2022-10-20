@@ -32,7 +32,7 @@ export class NoticeController {
 
   /**
    * 공지사항 등록
-   * @Return : 공지사항 등록 커맨드 전송
+   * @returns : 공지사항 등록 커맨드 전송
    */
   @Post()
   @UseInterceptors(FilesInterceptor('files'))
@@ -47,8 +47,8 @@ export class NoticeController {
 
   /**
    * 공지사항 전체 & 검색 결과 리스트 조회
-   * @Query : keyword
-   * @Return : 공지사항 리스트 조회 쿼리 전송
+   * @query : keyword
+   * @returns : 공지사항 리스트 조회 쿼리 전송
    */
   @Get()
   async getAllSearchNotice(
@@ -62,8 +62,8 @@ export class NoticeController {
 
   /**
    * 공지사항 상세 정보 조회
-   * @Param : notice_id
-   * @Return : 공지사항 상세 정보 조회 커맨드 전송
+   * @param : notice_id
+   * @returns : 공지사항 상세 정보 조회 커맨드 전송
    */
   @Get(':id')
   async getNoticeDetail(@Param('id') noticeId: number, @Body() getNoticeRoleDto: GetNoticeRoleDto) {
@@ -74,8 +74,8 @@ export class NoticeController {
 
   /**
    * 공지사항 상세 정보 수정
-   * @Param : notice_id
-   * @Return : 공지사항 상세 정보 수정 커맨드 전송
+   * @param : notice_id
+   * @returns : 공지사항 상세 정보 수정 커맨드 전송
    */
   @Patch(':id')
   @UseInterceptors(FilesInterceptor('files'))
@@ -100,8 +100,8 @@ export class NoticeController {
 
   /**
    * 공지사항 정보 삭제
-   * @Param : notice_id
-   * @Return : 공지사항 정보 삭제 커맨드 전송
+   * @param : notice_id
+   * @returns : 공지사항 정보 삭제 커맨드 전송
    */
   @Delete(':id')
   async deleteNotice(

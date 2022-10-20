@@ -3,14 +3,18 @@ import { GetQnaListQuery } from './get-qna-list.query';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Qna } from '../entities/qna';
 import { Repository } from 'typeorm';
-import { NotFoundException } from '@nestjs/common';
+import { Inject, NotFoundException } from '@nestjs/common';
+import { ConvertException } from '../../../../common/utils/convert-exception';
 
 /**
  * 1:1 문의 전체 리스트 조회용 쿼리 핸들러
  */
 @QueryHandler(GetQnaListQuery)
 export class GetQnaListHandler implements IQueryHandler<GetQnaListQuery> {
-  constructor(@InjectRepository(Qna) private qnaRepository: Repository<Qna>) {}
+  constructor(
+    @InjectRepository(Qna) private qnaRepository: Repository<Qna>,
+    @Inject(ConvertException) private convertException: ConvertException,
+  ) {}
 
   /**
    * 1:1 문의 전체 리스트 조회 메소드
@@ -20,6 +24,7 @@ export class GetQnaListHandler implements IQueryHandler<GetQnaListQuery> {
   async execute(query: GetQnaListQuery) {
     const { role, accountId } = query;
 
+    // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
     // role = 본사 관리자일 경우 전체 데이터 조회
     if (role === '본사 관리자') {
       const qna = await this.qnaRepository.find({
@@ -27,7 +32,7 @@ export class GetQnaListHandler implements IQueryHandler<GetQnaListQuery> {
       });
 
       if (qna.length === 0) {
-        throw new NotFoundException('작성된 문의 내역이 없습니다.');
+        return this.convertException.notFoundError('QnA', 404);
       }
 
       return qna;
@@ -42,7 +47,7 @@ export class GetQnaListHandler implements IQueryHandler<GetQnaListQuery> {
         .getMany();
 
       if (qna.length === 0) {
-        throw new NotFoundException('작성된 문의 내역이 없습니다.');
+        return this.convertException.notFoundError('QnA', 404);
       }
 
       return qna;

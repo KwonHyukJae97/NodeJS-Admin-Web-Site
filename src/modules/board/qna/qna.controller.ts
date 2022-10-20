@@ -30,7 +30,7 @@ export class QnaController {
 
   /**
    * 1:1 문의 등록
-   * @Return : 1:1 문의 등록 커맨드 전송
+   * @returns : 1:1 문의 등록 커맨드 전송
    */
   @Post()
   @UseInterceptors(FilesInterceptor('files'))
@@ -42,8 +42,8 @@ export class QnaController {
 
   /**
    * 1:1 문의 상세 정보 조회
-   * @Param : qna_id
-   * @Return : 1:1 문의 상세 정보 조회 커맨드 전송
+   * @param : qna_id
+   * @returns : 1:1 문의 상세 정보 조회 커맨드 전송
    */
   @Get('detail/:id')
   async getQnaDetail(@Param('id') qnaId: number, @Body() getQnaInfoDto: GetQnaInfoDto) {
@@ -54,8 +54,8 @@ export class QnaController {
 
   /**
    * 1:1 문의 전체 리스트 조회
-   * @Param : account_id
-   * @Return : 1:1 문의 리스트 조회 쿼리 전송
+   * @param : account_id
+   * @returns : 1:1 문의 리스트 조회 쿼리 전송
    */
   @Get(':accountId')
   async getAllQna(@Param('accountId') accountId: number, @Body() getQnaRoleDto: GetQnaRoleDto) {
@@ -66,8 +66,8 @@ export class QnaController {
 
   /**
    * 1:1 문의 상세 정보 수정
-   * @Param : qna_id
-   * @Return : 1:1 문의 상세 정보 수정 커맨드 전송
+   * @param : qna_id
+   * @returns : 1:1 문의 상세 정보 수정 커맨드 전송
    */
   @Patch(':id')
   @UseInterceptors(FilesInterceptor('files'))
@@ -83,9 +83,9 @@ export class QnaController {
 
   /**
    * 1:1 문의 정보 삭제
-   * @Param : qna_id
-   * @Param : account_id (삭제 권한 확인을 위해 임시로 사용)
-   * @Return : 1:1 문의 정보 삭제 커맨드 전송
+   * @param : qna_id
+   * @param : account_id (삭제 권한 확인을 위해 임시로 사용)
+   * @returns : 1:1 문의 정보 삭제 커맨드 전송
    */
   @Delete(':id/:accountId')
   async deleteQna(@Param('id') qnaId: number, @Param('accountId') accountId: number) {

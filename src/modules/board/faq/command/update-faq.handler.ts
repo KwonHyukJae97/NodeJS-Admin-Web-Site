@@ -9,6 +9,7 @@ import { FaqCategory } from '../entities/faq_category';
 import { FilesUpdateEvent } from '../../../file/event/files-update-event';
 import { BoardFileDb } from '../../board-file-db';
 import { FileType } from '../../../file/entities/file-type.enum';
+import { ConvertException } from '../../../../common/utils/convert-exception';
 
 /**
  * FAQ 정보 수정용 커맨드 핸들러
@@ -21,6 +22,7 @@ export class UpdateFaqHandler implements ICommandHandler<UpdateFaqCommand> {
     @InjectRepository(Board) private boardRepository: Repository<Board>,
     @InjectRepository(FaqCategory) private categoryRepository: Repository<FaqCategory>,
     @Inject('faqFile') private boardFileDb: BoardFileDb,
+    @Inject(ConvertException) private convertException: ConvertException,
     private eventBus: EventBus,
   ) {}
 
@@ -32,6 +34,7 @@ export class UpdateFaqHandler implements ICommandHandler<UpdateFaqCommand> {
   async execute(command: UpdateFaqCommand) {
     const { title, content, categoryName, role, accountId, faqId, files } = command;
 
+    // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
     if (role !== '본사 관리자') {
       throw new BadRequestException('본사 관리자만 접근 가능합니다.');
     }
@@ -39,14 +42,19 @@ export class UpdateFaqHandler implements ICommandHandler<UpdateFaqCommand> {
     const faq = await this.faqRepository.findOneBy({ faqId: faqId });
 
     if (!faq) {
-      throw new NotFoundException('존재하지 않는 FAQ입니다.');
+      return this.convertException.notFoundError('FAQ', 404);
     }
 
+    // TODO : 유저 정보 데코레이터 적용시 확인 후, 삭제 예정
     if (accountId != faq.boardId.accountId) {
       throw new BadRequestException('작성자만 수정이 가능합니다.');
     }
 
     const board = await this.boardRepository.findOneBy({ boardId: faq.boardId.boardId });
+
+    if (!board) {
+      return this.convertException.notFoundError('게시글', 404);
+    }
 
     board.title = title;
     board.content = content;
@@ -54,10 +62,14 @@ export class UpdateFaqHandler implements ICommandHandler<UpdateFaqCommand> {
     try {
       await this.boardRepository.save(board);
     } catch (err) {
-      console.log(err);
+      return this.convertException.badRequestError('게시글 정보에', 400);
     }
 
     const category = await this.categoryRepository.findOneBy({ categoryName: categoryName });
+
+    if (!category) {
+      return this.convertException.notFoundError('카테고리', 404);
+    }
 
     faq.boardId = board;
     faq.categoryId = category.categoryId;
@@ -65,7 +77,7 @@ export class UpdateFaqHandler implements ICommandHandler<UpdateFaqCommand> {
     try {
       await this.faqRepository.save(faq);
     } catch (err) {
-      console.log(err);
+      return this.convertException.badRequestError('FAQ 정보에', 400);
     }
 
     // 파일 업데이트 이벤트 처리
