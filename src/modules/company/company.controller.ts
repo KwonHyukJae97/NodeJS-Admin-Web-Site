@@ -15,7 +15,7 @@ export class CompanyController {
   /**
    * 회원사 상세 정보 조회
    * @Param : company_id
-   * @Return : 회원사 상세 정보 조회 쿼리 전송
+   * @return : 회원사 상세 정보 조회 쿼리 전송
    */
   @Get(':id')
   getCompanyInfo(@Param('id') companyId: number) {
@@ -26,11 +26,11 @@ export class CompanyController {
   /**
    * 회원사 상세 정보 수정
    * @Param : company_id
-   * @Return : 회원사 상세 정보 수정 커맨드 전송
+   * @return : 회원사 상세 정보 수정 커맨드 전송
    */
   @Patch(':id')
-  updateCompany(@Param('id') companyId: number, @Body() dto: UpdateCompanyDto) {
-    const { companyName, companyCode } = dto;
+  updateCompany(@Param('id') companyId: number, @Body() updateCompanyDto: UpdateCompanyDto) {
+    const { companyName, companyCode } = updateCompanyDto;
     const command = new UpdateCompanyCommand(companyName, companyCode, companyId);
     return this.commandBus.execute(command);
   }
@@ -38,11 +38,11 @@ export class CompanyController {
   /**
    * 회원사 정보 삭제
    * @Param : company_id
-   * @Return : 회원사 상세 정보 삭제 커맨드 전송
+   * @return : 회원사 상세 정보 삭제 커맨드 전송
    */
   @Delete(':id')
   deleteCompany(@Param('id') companyId: number, @Req() req) {
-    //권한정보 확인용 테스트 (admin이 소유한 role_id)
+    // TODO: 권한정보 확인용 테스트 (admin이 소유한 role_id)-> 권한 적용 후 삭제 해야함.
     const roleId = req.rawHeaders[1];
     const command = new DeleteCompanyCommand(companyId, roleId);
     return this.commandBus.execute(command);
