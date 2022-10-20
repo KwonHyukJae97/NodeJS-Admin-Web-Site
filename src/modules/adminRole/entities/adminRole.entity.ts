@@ -8,6 +8,9 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+/**
+ * 역할에 대한 엔티티 정의
+ */
 @Entity('admin_role')
 export class AdminRole extends BaseEntity {
   //역할 번호
