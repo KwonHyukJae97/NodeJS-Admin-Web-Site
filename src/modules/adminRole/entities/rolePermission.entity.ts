@@ -8,6 +8,9 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 
+/**
+ * 역할_권한 정보 에 대한 엔티티 정의
+ */
 @Entity('role_permission')
 export class RolePermission extends BaseEntity {
   //역할 번호
