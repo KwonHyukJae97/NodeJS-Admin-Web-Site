@@ -19,6 +19,7 @@ import { SignInAdminHandler } from './command/signin-admin.handler';
 import { SignInUserHandler } from './command/signin-user.handler';
 import { AccountFileDb } from '../account-file-db';
 import { AccountFile } from '../../file/entities/account-file';
+import { ConvertException } from '../../../common/utils/convert-exception';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { AccountFile } from '../../file/entities/account-file';
     AuthService,
     AccountService,
     JwtManageService,
+    ConvertException,
     { provide: 'accountFile', useClass: AccountFileDb },
   ],
 })

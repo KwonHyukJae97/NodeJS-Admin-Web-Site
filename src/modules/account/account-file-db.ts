@@ -1,7 +1,7 @@
 import { FileDbInterface } from '../file/file-db.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Account } from './entities/account';
 import { AccountFile } from '../file/entities/account-file';
 import { ConvertException } from '../../common/utils/convert-exception';
@@ -64,26 +64,6 @@ export class AccountFileDb implements FileDbInterface {
       }
       // S3 key값 반환
       return deleteFile;
-    }
-  }
-
-  // TODO : 단일 파일 업로드 로직 수정 후, 삭제 예정
-  // 회원가입 시, DB 기본 이미지 파일 정보 저장하는 메서드
-  async initSave(id: number) {
-    const accountFile = this.fileRepository.create({
-      accountId: id,
-      originalFileName: '기본 이미지',
-      fileName: 'account/basic-profile.png',
-      fileExt: '.png',
-      filePath: 'https://b2c-file-test.s3.ap-northeast-2.amazonaws.com/account/basic-profile.png',
-      fileSize: 14500,
-    });
-
-    try {
-      await this.fileRepository.save(accountFile);
-    } catch (err) {
-      console.log('DB 파일 저장 실패');
-      return this.convertException.badRequestError('계정 파일 정보에', 400);
     }
   }
 }

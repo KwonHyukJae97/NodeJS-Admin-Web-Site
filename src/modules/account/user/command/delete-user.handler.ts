@@ -8,6 +8,7 @@ import { User } from '../entities/user';
 import { DeleteUserCommand } from './delete-user.command';
 import { AccountFileDb } from '../../account-file-db';
 import { FileDeleteEvent } from '../../../file/event/file-delete-event';
+import { AccountFile } from '../../../file/entities/account-file';
 
 /**
  * 앱 사용자 정보 삭제용 커맨드 핸들러
@@ -18,6 +19,7 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand> {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(Account) private accountRepository: Repository<Account>,
+    @InjectRepository(AccountFile) private fileRepository: Repository<AccountFile>,
     @Inject(ConvertException) private convertException: ConvertException,
     @Inject('accountFile') private accountFileDb: AccountFileDb,
     private eventBus: EventBus,
@@ -47,8 +49,12 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand> {
     account.delDate = setDate;
     await this.accountRepository.save(account);
 
-    // 단일 파일 삭제 이벤트 처리
-    this.eventBus.publish(new FileDeleteEvent(account.accountId, this.accountFileDb));
+    const accountFile = await this.fileRepository.findOneBy({ accountId: accountId });
+
+    // 저장되어 있는 프로필 이미지가 있다면 '삭제' 이벤트 호출
+    if (accountFile) {
+      this.eventBus.publish(new FileDeleteEvent(accountId, this.accountFileDb));
+    }
 
     //탈퇴회원의 개인정보 유출가능한 데이터는 *표로 표시 (기준:휴면계정 데이터)
     try {

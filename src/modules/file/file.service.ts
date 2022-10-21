@@ -5,6 +5,7 @@ import { randomUUID } from 'crypto';
 import { getTime, getToday } from '../../common/utils/time-common-method';
 import { FileDbInterface } from './file-db.interface';
 import { ConvertException } from '../../common/utils/convert-exception';
+import { AccountFile } from './entities/account-file';
 
 /**
  * 파일 관련 서비스 로직
@@ -202,10 +203,51 @@ export class FileService {
   }
 
   /**
+   * 단일 파일 등록(업로드) 메소드
+   * @param id : account_id
+   * @param fileType : 파일 타입명
+   * @param file : 신규 파일
+   * @param fileDbInterface : 파일 관련 DB 처리용 인터페이스
+   * @returns : S3/DB처리 실패 시 에러 메시지 반환 / 등록(업로드) 성공 시 void 반환
+   */
+  async uploadFile(
+    id: number,
+    fileType: string,
+    file: Express.MulterS3.File,
+    fileDbInterface: FileDbInterface,
+  ) {
+    if (!file) {
+      return this.convertException.notFoundError('신규 파일', 404);
+    }
+
+    const today = getToday();
+    const time = getTime();
+
+    // S3 업로드
+    await putObjectS3(file, fileType, today, time);
+
+    // 업로드 된 파일 url 가져오기
+    const url = await getObjectUrlS3(fileType, today, time);
+
+    const ext = path.extname(file.originalname);
+
+    const fileInfo = {
+      originalFileName: path.basename(file.originalname, ext),
+      fileName: url.split('com/')[1], // 전체 url - 공통 url(https://b2c-file-test.s3.amazonaws.com/)
+      fileExt: ext,
+      filePath: url,
+      fileSize: file.size,
+    };
+
+    // 신규 파일 정보 DB 저장
+    await fileDbInterface.save(id, fileInfo);
+  }
+
+  /**
    * 단일 파일 수정(업로드/삭제) 메소드
    * @param id : account_id
    * @param fileType : 파일 타입명
-   * @param files : 신규 파일
+   * @param file : 신규 파일
    * @param fileDbInterface : 파일 관련 DB 처리용 인터페이스
    * @returns : S3/DB처리 실패 시 에러 메시지 반환 / 수정(업로드/삭제) 성공 시 void 반환
    */
@@ -218,10 +260,8 @@ export class FileService {
     // 기존 S3에 업로드된 파일 정보 조회
     const deleteFile = await fileDbInterface.delete(id);
 
-    // 기본 이미지가 아닌 이미지들만 S3 삭제 요청 (기본 이미지가 저장되어 있다면 S3 삭제 예외)
-    if (deleteFile !== 'account/basic-profile.png') {
-      await deleteObjectS3(deleteFile);
-    }
+    // S3에 저장되어 있는 기존 파일 객체 삭제
+    await deleteObjectS3(deleteFile);
 
     const today = getToday();
     const time = getTime();
@@ -256,9 +296,6 @@ export class FileService {
     // 기존 S3에 업로드된 파일 정보 조회
     const deleteFile = await fileDbInterface.delete(id);
 
-    // 기본 이미지가 아닌 이미지들만 S3 삭제 요청 (기본 이미지가 저장되어 있다면 S3 삭제 예외)
-    if (deleteFile !== 'account/basic-profile.png') {
-      await deleteObjectS3(deleteFile);
-    }
+    await deleteObjectS3(deleteFile);
   }
 }

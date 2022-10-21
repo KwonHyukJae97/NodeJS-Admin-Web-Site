@@ -8,6 +8,7 @@ import { BoardFileDb } from '../../board/board-file-db';
 import { AccountFileDb } from '../../account/account-file-db';
 import { FileUpdateEvent } from './file-update-event';
 import { FileDeleteEvent } from './file-delete-event';
+import { FileCreateEvent } from './file-create-event';
 
 /**
  * 파일 등록/수정/삭제용 이벤트 핸들러
@@ -16,13 +17,19 @@ import { FileDeleteEvent } from './file-delete-event';
   FilesCreateEvent,
   FilesUpdateEvent,
   FilesDeleteEvent,
+  FileCreateEvent,
   FileUpdateEvent,
   FileDeleteEvent,
 )
 export class FileEventsHandler
   implements
     IEventHandler<
-      FilesCreateEvent | FilesUpdateEvent | FilesDeleteEvent | FileUpdateEvent | FileDeleteEvent
+      | FilesCreateEvent
+      | FilesUpdateEvent
+      | FilesDeleteEvent
+      | FileCreateEvent
+      | FileUpdateEvent
+      | FileDeleteEvent
     >
 {
   constructor(
@@ -42,6 +49,7 @@ export class FileEventsHandler
       | FilesCreateEvent
       | FilesUpdateEvent
       | FilesDeleteEvent
+      | FileCreateEvent
       | FileUpdateEvent
       | FileDeleteEvent,
   ) {
@@ -65,6 +73,13 @@ export class FileEventsHandler
         console.log('파일 삭제 이벤트 발생!');
         const { id, fileDbInterface } = event as FilesDeleteEvent;
         await this.fileService.deleteFiles(id, fileDbInterface);
+        break;
+      }
+      // 단일 파일 업로드 이벤트
+      case FileCreateEvent.name: {
+        console.log('단일 파일 업로드 이벤트 발생!');
+        const { id, fileType, file, fileDbInterface } = event as FileCreateEvent;
+        await this.fileService.uploadFile(id, fileType, file, fileDbInterface);
         break;
       }
       // 단일 파일 업로드 및 삭제 이벤트 (업데이트)

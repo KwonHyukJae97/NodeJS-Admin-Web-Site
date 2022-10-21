@@ -17,12 +17,8 @@ export class SignUpUserHandler implements ICommandHandler<SignUpUserCommand> {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
-
-    @Inject('accountFile')
-    private accountFileDb: AccountFileDb,
   ) {}
 
   async execute(command: SignUpUserCommand) {
@@ -62,9 +58,6 @@ export class SignUpUserHandler implements ICommandHandler<SignUpUserCommand> {
       //Account 저장
       await this.accountRepository.save(accountUser);
     }
-
-    // 기본 이미지 파일 DB 저장
-    await this.accountFileDb.initSave(accountUser.accountId);
 
     const user = this.userRepository.create({
       accountId: accountUser,

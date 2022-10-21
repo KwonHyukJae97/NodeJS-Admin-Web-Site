@@ -10,6 +10,8 @@ import { AccountFileDb } from '../../account-file-db';
 import { FileType } from '../../../file/entities/file-type.enum';
 import { FileUpdateEvent } from '../../../file/event/file-update-event';
 import { ConvertException } from 'src/common/utils/convert-exception';
+import { AccountFile } from '../../../file/entities/account-file';
+import { FileCreateEvent } from '../../../file/event/file-create-event';
 
 /**
  * 앱 사용자 정보 수정용 커맨드 핸들러
@@ -20,6 +22,7 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(Account) private accountRepository: Repository<Account>,
+    @InjectRepository(AccountFile) private fileRepository: Repository<AccountFile>,
     @Inject('accountFile') private accountFileDb: AccountFileDb,
     private eventBus: EventBus,
     @Inject(ConvertException) private convertException: ConvertException,
@@ -61,10 +64,21 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
       return this.convertException.CommonError(500);
     }
 
-    // 단일 파일 업데이트 이벤트 처리
-    this.eventBus.publish(
-      new FileUpdateEvent(account.accountId, FileType.ACCOUNT, file, this.accountFileDb),
-    );
+    const accountFile = await this.fileRepository.findOneBy({ accountId: accountId });
+
+    if (file) {
+      // 저장되어 있는 프로필 이미지가 있다면 '수정' 이벤트 호출
+      if (accountFile) {
+        this.eventBus.publish(
+          new FileUpdateEvent(accountId, FileType.ACCOUNT, file, this.accountFileDb),
+        );
+        // 저장되어 있는 프로필 이미지가 없다면 '등록' 이벤트 호출
+      } else {
+        this.eventBus.publish(
+          new FileCreateEvent(accountId, FileType.ACCOUNT, file, this.accountFileDb),
+        );
+      }
+    }
 
     return account;
   }
