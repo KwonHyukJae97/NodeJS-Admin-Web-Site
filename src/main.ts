@@ -22,6 +22,6 @@ async function bootstrap() {
     credentials: true,
   });
   app.useGlobalFilters(new GlobalExceptionFilter());
-  await app.listen(3000);
+  await app.listen(3001);
 }
 bootstrap();

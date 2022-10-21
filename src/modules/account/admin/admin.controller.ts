@@ -7,6 +7,8 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UploadedFile,
+  UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -19,6 +21,7 @@ import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { GetAdminInfoQuery } from './query/get-admin-info.query';
 import { GetAllAdminQuery } from './query/get-all-admin.query';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('admin')
 export class AdminController {
@@ -83,10 +86,15 @@ export class AdminController {
 
   /**
    * 관리자 상세 정보 수정
-   * @Param : user_id
+   * @Param : admin_id
    */
   @Patch(':id')
-  updateAdmin(@Param('id') adminId: number, @Body() dto: UpdateAdminDto) {
+  @UseInterceptors(FileInterceptor('file'))
+  updateAdmin(
+    @Param('id') adminId: number,
+    @Body() dto: UpdateAdminDto,
+    @UploadedFile() file: Express.MulterS3.File,
+  ) {
     const { password, email, phone, nickname, roleId, isSuper } = dto;
     const command = new UpdateAdminCommand(
       password,
@@ -96,6 +104,7 @@ export class AdminController {
       roleId,
       isSuper,
       adminId,
+      file,
     );
 
     return this.commandBus.execute(command);
