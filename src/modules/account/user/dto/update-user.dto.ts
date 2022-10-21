@@ -1,5 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsEmail, IsNumber, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 /**
  * 유저 정보 수정 시 필요한 dto

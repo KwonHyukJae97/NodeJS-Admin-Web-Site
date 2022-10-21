@@ -1,5 +1,6 @@
 {
   "notFound": "${param} 정보를 찾을 수 없습니다.",
   "badInput": "${param}입력된 내용을 확인해주세요.",
+  "badRequestS3": "S3 파일 ${param} 처리에 실패하였습니다.",
   "commonError": "에러가 발생하였습니다. 관리자에게 문의해주세요."
 }

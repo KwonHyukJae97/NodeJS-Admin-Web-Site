@@ -1,11 +1,12 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account } from 'src/modules/account/entities/account';
 import { User } from 'src/modules/account/user/entities/user';
 import { Repository } from 'typeorm';
 import { SignUpUserCommand } from './signup-user.command';
 import * as bcrypt from 'bcryptjs';
+import { AccountFileDb } from '../../account-file-db';
 
 /**
  * 사용자 회원가입 Handler
@@ -16,7 +17,6 @@ export class SignUpUserHandler implements ICommandHandler<SignUpUserCommand> {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
   ) {}

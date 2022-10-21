@@ -5,7 +5,6 @@ import { FaqCategory } from './faq_category';
 /**
  * FAQ에 대한 엔티티 정의
  */
-
 @Entity('faq')
 export class Faq {
   // FAQ 번호
