@@ -21,6 +21,8 @@ import { ModuleTokenFactory } from '@nestjs/core/injector/module-token-factory';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { FindIdDto } from './dto/findid.dto';
 import { UserKakaoDto } from './dto/user.kakao.dto';
+import axios from 'axios';
+import { UserLoginResDto } from './dto/login-res.dto';
 
 /**
  * 로그인 관련 서비스
@@ -130,9 +132,47 @@ export class AuthService {
       },
     };
   }
+
+  public kakaoGetCookieWithJwtAccessToken(email: string) {
+    const payload = { email };
+    const token = this.jwtService.sign(payload, {
+      secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
+      expiresIn: `${this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}s`,
+    });
+
+    // 토큰과 토큰옵션을 리턴
+    return {
+      accessToken: token,
+      accessOption: {
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        maxAge: Number(this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')) * 1000,
+      },
+    };
+  }
   //RefreshToken 발급
   public getCookieWithJwtRefreshToken(id: string) {
     const payload = { id };
+    const token = this.jwtService.sign(payload, {
+      secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
+      expiresIn: `${this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')}s`,
+    });
+
+    //Refresh 토큰과 옵션을 리턴
+    return {
+      refreshToken: token,
+      refreshOption: {
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        maxAge: Number(this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')) * 1000,
+      },
+    };
+  }
+
+  public kakaoGetCookieWithJwtRefreshToken(email: string) {
+    const payload = { email };
     const token = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
       expiresIn: `${this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')}s`,
@@ -319,15 +359,16 @@ export class AuthService {
     return this.accountRepository.update({ accountId }, { currentHashedRefreshToken: null });
   }
 
-  //kakako 로그인 서비스
-  async kakaoLogin(userKakaoDto: UserKakaoDto): Promise<{ accessToken: string }> {
-    const { snsId, name, email } = userKakaoDto;
-    let user = await this.accountRepository.findOne({ where: { snsId } });
+  //kakako 로그인 서비스v1
+  async kakaoLogin(userKakaoDto: UserKakaoDto): Promise<any> {
+    const { name, email, birth, gender } = userKakaoDto;
+    let user = await this.accountRepository.findOne({ where: { email } });
     if (!user) {
       user = this.accountRepository.create({
-        snsId,
         name,
         email,
+        birth,
+        gender,
       });
       try {
         await this.accountRepository.save(user);
@@ -339,26 +380,184 @@ export class AuthService {
         }
       }
     }
-    const payload = { id: user.id, accessToken: userKakaoDto.snsToken };
+    const payload = { id: user.id, accessToken: userKakaoDto.accessToken };
     const accessToken = await this.jwtService.sign(payload);
-    return { accessToken };
+
+    return { accessToken, msg: '카카오 로그인 성공' };
   }
 
-  /**
-   * 휴면 계정처리를 위한 최근 로그인 일시(loginDate)를 체크하는 함수
-   * 24시간에 한번씩 체크하여 최근 로그인 시간이 365일을 넘어가는 사용자의 계정을
-   * 휴면계정 테이블 (Sleeper)로 넘긴다.
-   * 넘길 때 Account 테이블의 true였던 is_active 컬럼을 false로 업데이트 후 넘긴다.
-   * Account 테이블에 남겨야 하는 데이터 항목은(?, ?, ? ...)
-   *
-   */
+  //카카오 사용자 정보 및 토큰 발급
+  async kakaoUserInfo(code: string) {
+    const qs = require('qs');
+    const body = {
+      grant_type: 'authorization_code',
+      client_id: '214f882001474304a397de3fa79c9de0',
+      redirect_uri: 'http://localhost:3000/auth/kakao',
+      code: code,
+    };
+    const headers = {
+      'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+    };
+    try {
+      // 1- 인가코드와 그외 필요한 요청 값을 담아 카카오 서버 /oauth/token으로 토큰 요청
+      const response = await axios({
+        method: 'POST',
+        url: 'https://kauth.kakao.com/oauth/token',
+        timeout: 30000,
+        headers,
+        data: qs.stringify(body),
+      });
 
-  // public async refreshTokenChange2(id: string, refreshToken: string) {
-  //   if (this.jwtManageService.isNeedRefreshTokenChange(refreshToken)) {
-  //     const newRefreshToken = this.getCookieWithJwtRefreshToken2(id);
-  //     await this.accountService.setCurrentRefreshToken2(id, newRefreshToken.refreshToken);
+      const kakaoAccessToken: string = response.data.access_token;
 
-  //     return newRefreshToken;
-  //   }
-  // }
+      if (response.status === 200) {
+        const headerUserInfo = {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+          Authorization: 'Bearer ' + kakaoAccessToken,
+        };
+
+        // 2- 카카오로부터 받은 토큰 값 헤더에 담아 카카오 서버 /v2/user/me로 사용자 정보 요청
+        const responseUserInfo = await axios({
+          method: 'GET',
+          url: 'https://kapi.kakao.com/v2/user/me',
+          timeout: 30000,
+          headers: headerUserInfo,
+        });
+
+        // 3- 카카오로부터 받은 사용자 정보들 중에서 필요한 값만 담아 응답값 반환
+        if (responseUserInfo.status === 200) {
+          const kakaoUserInfo = {
+            email: responseUserInfo.data.kakao_account.email,
+            name: responseUserInfo.data.kakao_account.profile.nickname,
+            birth: responseUserInfo.data.kakao_account.birthday,
+            gender: responseUserInfo.data.kakao_account.gender,
+            kakaoAccessToken: kakaoAccessToken,
+            kakaoAccount: responseUserInfo.data.kakao_account,
+          };
+
+          const { name, email, birth, gender } = kakaoUserInfo;
+          const { accessToken, accessOption } = await this.kakaoGetCookieWithJwtAccessToken(email);
+
+          const { refreshToken, refreshOption } = await this.kakaoGetCookieWithJwtRefreshToken(
+            email,
+          );
+          await this.setCurrentRefreshToken(refreshToken, email);
+          let user = await this.accountRepository.findOneBy({ email });
+
+          // 카카오 로그인시 해당 이메일을 account 테이블에서 비교후 없을시 회원가입과 동시에 로그인 있으면 즉시 로그인
+          if (!user) {
+            user = this.accountRepository.create({
+              email,
+              name,
+              birth: '19971113',
+              gender: '0',
+              nickname: 'test12',
+              phone: '01010102939',
+              currentHashedRefreshToken: refreshToken,
+              snsType: '01',
+            });
+
+            try {
+              await this.accountRepository.save(user);
+            } catch (e) {
+              console.log('error', e);
+            }
+          }
+          //유저 정보와 토큰 정보를 리턴
+          return {
+            user,
+            accessToken,
+            accessOption,
+            refreshToken,
+            refreshOption,
+          };
+        } else {
+          throw new UnauthorizedException();
+        }
+      } else {
+        throw new UnauthorizedException();
+      }
+    } catch (e) {
+      // console.log(e)
+      throw new UnauthorizedException();
+    }
+  }
+
+  async kakaoSignIn(userKakaoDto: UserKakaoDto): Promise<UserLoginResDto> {
+    const { name, email, birth, gender } = userKakaoDto;
+
+    let user = await this.accountRepository.findOneBy({ email });
+
+    if (!user) {
+      user = this.accountRepository.create({
+        email,
+        name,
+        birth,
+        gender,
+      });
+
+      try {
+        await this.accountRepository.save(user);
+      } catch (e) {
+        console.log('error', e);
+      }
+    }
+    const payload = { email };
+    const accessToken = await this.jwtService.sign(payload);
+
+    const loginDto = {
+      loginSuccess: true,
+      accessToken: accessToken,
+    };
+    return loginDto;
+  }
+
+  //axios 로 kakaoUserInfo.email 넘겨주고 서비스단 처리 하기 디비값과 비교하여 존재하는지 조회 있으면 로그인 처리
+  async kakaoUserInfos(userKakaoDto: UserKakaoDto) {
+    // const { name, email, birth, snsId, snsType, gender } = userKakaoDto;
+
+    const email = userKakaoDto.email;
+
+    console.log('승인이 정보', userKakaoDto.email);
+
+    let user = await this.accountRepository.findOne({ where: { email } });
+
+    if (!user) {
+      console.log('유저정보없음', email);
+    } else {
+      console.log('사용자 이메일 있음', email);
+    }
+    //디비랑 이메일 비교까지 완료
+    const payload = { email };
+    const accessToken = await this.jwtService.sign(payload);
+    const loginDto = {
+      loginSuccess: true,
+      accessToken: accessToken,
+    };
+    return loginDto;
+
+    // console.log('kakao email', email);
+    // if (!user) {
+    //   return false;
+    // } else {
+    //   return true;
+  }
 }
+
+/**
+ * 휴면 계정처리를 위한 최근 로그인 일시(loginDate)를 체크하는 함수
+ * 24시간에 한번씩 체크하여 최근 로그인 시간이 365일을 넘어가는 사용자의 계정을
+ * 휴면계정 테이블 (Sleeper)로 넘긴다.
+ * 넘길 때 Account 테이블의 true였던 is_active 컬럼을 false로 업데이트 후 넘긴다.
+ * Account 테이블에 남겨야 하는 데이터 항목은(?, ?, ? ...)
+ *
+ */
+
+// public async refreshTokenChange2(id: string, refreshToken: string) {
+//   if (this.jwtManageService.isNeedRefreshTokenChange(refreshToken)) {
+//     const newRefreshToken = this.getCookieWithJwtRefreshToken2(id);
+//     await this.accountService.setCurrentRefreshToken2(id, newRefreshToken.refreshToken);
+
+//     return newRefreshToken;
+//   }
+// }

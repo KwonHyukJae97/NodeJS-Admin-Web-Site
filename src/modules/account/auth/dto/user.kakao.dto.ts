@@ -11,9 +11,21 @@ export class UserKakaoDto {
 
   @IsString()
   @IsNotEmpty()
+  birth: string | null;
+
+  @IsString()
+  @IsNotEmpty()
   snsId: string;
 
   @IsString()
   @IsNotEmpty()
-  snsToken: string;
+  snsType: string;
+
+  @IsString()
+  @IsNotEmpty()
+  gender: string;
+
+  @IsString()
+  @IsNotEmpty()
+  accessToken: string;
 }

@@ -31,6 +31,7 @@ import { UserKakaoDto } from './dto/user.kakao.dto';
 import { SignInAdminCommand } from './command/signin-admin.command';
 import { SignInUserCommand } from './command/signin-user.command';
 import { SignInUserHandler } from './command/signin-user.handler';
+import { UserLoginResDto } from './dto/login-res.dto';
 
 /**
  * 회원가입, 로그인 등 계정 관련 auth 컨트롤러
@@ -51,7 +52,6 @@ export class SignController {
   /**
    * 관리자 회원가입 컨트롤러
    */
-  @HttpCode(201)
   @Post('/register/admin')
   async signUpAdmin(@Body(ValidationPipe) SignUpAdminDto: SignUpAdminDto): Promise<string> {
     const {
@@ -89,7 +89,6 @@ export class SignController {
   /**
    * 사용자 회원가입 컨트롤러
    */
-  @HttpCode(201)
   @Post('/register/user')
   async signUpUser(@Body(ValidationPipe) SignUpUserDto: SignUpUserDto): Promise<string> {
     const { id, password, name, email, phone, nickname, birth, gender, grade } = SignUpUserDto;
@@ -115,7 +114,6 @@ export class SignController {
    * @param response
    * @returns SignInAdminCommand에 로그인 정보를 담아 SignInAdminHandler에 보낸후 절차를 걸쳐 통과되면 토큰을 발급하여 command를 리턴
    */
-  @HttpCode(201)
   @UseGuards(LocalAuthGuard)
   @Post('/login/admin')
   async loginAdmin(
@@ -148,7 +146,6 @@ export class SignController {
    * @param response
    * @returns SignInUserCommand에 로그인 정보를 담아 SignInUserHandler에 보낸후 절차를 걸쳐 통과되면 토큰을 발급하여 command를 리턴
    */
-  @HttpCode(201)
   @UseGuards(LocalAuthGuard)
   @Post('/login/user')
   async loginUser(
@@ -259,27 +256,62 @@ export class SignController {
     return findid;
   }
 
-  //kakao 로그인
-  @Get('/kakao')
-  @HttpCode(200)
-  @UseGuards(AuthGuard('kakao'))
-  async kakaoLogin() {
-    return HttpStatus.OK;
+  // @Get('/kakao')
+  // @UseGuards(AuthGuard('kakao'))
+  // async kakaoLogin() {
+  //   return HttpStatus.OK;
+  // }
+
+  // //kakako 로그인 v1
+  // @Get('/kakao/callback')
+  // @UseGuards(AuthGuard('kakao'))
+  // async kakaoLoginCallback(@Req() request): Promise<any> {
+  //   return this.authService.kakaoLogin(request.user as UserKakaoDto);
+  // }
+
+  //kakao 로그인 v1
+  // @Get('/kakao')
+  // @UseGuards(AuthGuard('kakao'))
+  // async kakaoLogin() {
+  //   return HttpStatus.OK;
+  // }
+
+  // //kakako 로그인 v1
+  // @Get('/kakao/callback')
+  // @UseGuards(AuthGuard('kakao'))
+  // async kakaoLoginCallback(@Req() request): Promise<{ accessToken: string }> {
+  //   const code = request.query.code;
+  //   return this.authService.kakaoUserInfo(code);
+  // }
+
+  // @Get('/kakao')
+  // // @UseGuards(AuthGuard('kakao'))
+  // async kakaoLogin(@Req() req) {
+  //   const code = req.query.code;
+  //   console.log('카카오 인가코드', code);
+  //   return this.authService.kakaoUserInfo(code);
+  // }
+
+  // FE에서 넘겨받을 정보들을 담을 DTO를 생성하여 받고, 현재 컨트롤러는 email을 서비스로 넘기고 서비스는 kakaoUserInfo로 받음. 통일시키기
+  @Post('/kakao')
+  async kakaoLoginUserInfo(@Req() req) {
+    const userKakaoDto: UserKakaoDto = req.body;
+    console.log('프론트에서 넘어오니~?', userKakaoDto);
+    return this.authService.kakaoUserInfos(userKakaoDto);
   }
 
-  @Get('/kakao/redirect')
-  @HttpCode(200)
-  @UseGuards(AuthGuard('kakao'))
-  async kakaoLoginCallback(@Req() request): Promise<{ accessToken: string }> {
-    return this.authService.kakaoLogin(request.user as UserKakaoDto);
+  @Post('/kakao/callback')
+  // @UseGuards(AuthGuard('kakao'))
+  async kakaoLoginCallback(@Req() req): Promise<UserLoginResDto> {
+    const userKakaoDto: UserKakaoDto = req.body;
+    return this.authService.kakaoSignIn(userKakaoDto);
   }
-
   //휴면계정 처리
-  @Get('/sleeper')
-  @HttpCode(200)
-  async sleeperCheck() {
-    return HttpStatus.OK;
-  }
+  // @Get('/sleeper')
+  // @HttpCode(200)
+  // async sleeperCheck() {
+  //   return HttpStatus.OK;
+  // }
 
   // @UseGuards(JwtRefreshAuthGuard)
   // @Post('/refresh')
