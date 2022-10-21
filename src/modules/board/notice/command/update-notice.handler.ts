@@ -9,6 +9,10 @@ import { FilesUpdateEvent } from '../../../file/event/files-update-event';
 import { BoardFileDb } from '../../board-file-db';
 import { FileType } from '../../../file/entities/file-type.enum';
 import { ConvertException } from '../../../../common/utils/convert-exception';
+import { FileCreateEvent } from '../../../file/event/file-create-event';
+import { FilesCreateEvent } from '../../../file/event/files-create-event';
+import { FilesDeleteEvent } from '../../../file/event/files-delete-event';
+import { BoardFile } from '../../../file/entities/board-file';
 
 /**
  * 공지사항 정보 수정용 커맨드 핸들러
@@ -19,6 +23,7 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
   constructor(
     @InjectRepository(Notice) private noticeRepository: Repository<Notice>,
     @InjectRepository(Board) private boardRepository: Repository<Board>,
+    @InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>,
     @Inject('noticeFile') private boardFileDb: BoardFileDb,
     @Inject(ConvertException) private convertException: ConvertException,
     private eventBus: EventBus,
@@ -73,10 +78,26 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
       return this.convertException.badRequestError('공지사항 정보에', 400);
     }
 
-    // 파일 업데이트 이벤트 처리
-    this.eventBus.publish(
-      new FilesUpdateEvent(board.boardId, FileType.NOTICE, files, this.boardFileDb),
-    );
+    const boardFiles = await this.fileRepository.findBy({ boardId: board.boardId });
+
+    if (files.length === 0) {
+      // 기존 파일만 존재하면 '삭제' 이벤트 처리
+      if (boardFiles.length !== 0) {
+        this.eventBus.publish(new FilesDeleteEvent(board.boardId, this.boardFileDb));
+      }
+    } else {
+      // 신규 파일만 존재하면 '등록' 이벤트 처리
+      if (boardFiles.length === 0) {
+        this.eventBus.publish(
+          new FilesCreateEvent(board.boardId, FileType.NOTICE, files, this.boardFileDb),
+        );
+        // 신규 파일 & 기존 파일 모두 존재하면 '수정' 이벤트 처리
+      } else {
+        this.eventBus.publish(
+          new FilesUpdateEvent(board.boardId, FileType.NOTICE, files, this.boardFileDb),
+        );
+      }
+    }
 
     return notice;
   }

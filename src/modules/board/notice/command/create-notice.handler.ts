@@ -65,10 +65,12 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
       return this.convertException.badRequestError('공지사항 정보에', 400);
     }
 
-    // 파일 업로드 이벤트 처리
-    this.eventBus.publish(
-      new FilesCreateEvent(board.boardId, FileType.NOTICE, files, this.boardFileDb),
-    );
+    if (files.length !== 0) {
+      // 파일 업로드 이벤트 처리
+      this.eventBus.publish(
+        new FilesCreateEvent(board.boardId, FileType.NOTICE, files, this.boardFileDb),
+      );
+    }
 
     return notice;
   }

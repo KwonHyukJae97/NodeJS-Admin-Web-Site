@@ -58,10 +58,12 @@ export class CreateQnaHandler implements ICommandHandler<CreateQnaCommand> {
       return this.convertException.badRequestError('QnA 정보에', 400);
     }
 
-    // 파일 업로드 이벤트 처리
-    this.eventBus.publish(
-      new FilesCreateEvent(board.boardId, FileType.QNA, files, this.boardFileDb),
-    );
+    if (files.length !== 0) {
+      // 파일 업로드 이벤트 처리
+      this.eventBus.publish(
+        new FilesCreateEvent(board.boardId, FileType.QNA, files, this.boardFileDb),
+      );
+    }
 
     return qna;
   }

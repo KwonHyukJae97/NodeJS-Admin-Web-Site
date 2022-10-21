@@ -55,8 +55,12 @@ export class DeleteFaqHandler implements ICommandHandler<DeleteFaqCommand> {
       return this.convertException.notFoundError('게시글', 404);
     }
 
-    // 파일 삭제 이벤트 처리
-    this.eventBus.publish(new FilesDeleteEvent(board.boardId, this.boardFileDb));
+    const boardFiles = await this.fileRepository.findBy({ boardId: board.boardId });
+
+    if (boardFiles.length !== 0) {
+      // 파일 삭제 이벤트 처리
+      this.eventBus.publish(new FilesDeleteEvent(board.boardId, this.boardFileDb));
+    }
 
     try {
       await this.faqRepository.delete(faq);
