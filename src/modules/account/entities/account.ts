@@ -12,6 +12,7 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
+import { AdminModule } from '../admin/admin.module';
 import { Admin } from '../admin/entities/admin';
 import { User } from '../user/entities/user';
 
@@ -180,6 +181,11 @@ export class Account extends BaseEntity {
 
   @OneToOne((type) => Temporary, (temporary) => temporary.accountId)
   temporaryId: number;
+
+  //admin 정보 가져오기
+  @OneToOne(() => Admin)
+  @JoinColumn({ name: 'account_id' })
+  admin: Admin;
 
   //user 정보 가져오기
   @OneToOne(() => User)

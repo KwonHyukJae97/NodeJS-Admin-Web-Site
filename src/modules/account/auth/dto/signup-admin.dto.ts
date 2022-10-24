@@ -1,5 +1,8 @@
 import { IsEmail, IsNotEmpty, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 
+/**
+ * 관리자 회원가입을 위한 DTO
+ */
 export class SignUpAdminDto {
   @IsNotEmpty()
   @IsString()

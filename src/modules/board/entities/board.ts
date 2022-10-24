@@ -15,7 +15,6 @@ import { Qna } from '../qna/entities/qna';
 /**
  * 게시글에 대한 엔티티 정의
  */
-
 @Entity('board')
 export class Board {
   // 게시글 번호

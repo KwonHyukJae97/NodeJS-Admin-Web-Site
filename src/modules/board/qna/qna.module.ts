@@ -8,19 +8,23 @@ import { CreateQnaHandler } from './command/create-qna.handler';
 import { GetQnaListHandler } from './query/get-qna-list.handler';
 import { UpdateQnaHandler } from './command/update-qna.handler';
 import { DeleteQnaHandler } from './command/delete-qna.handler';
-import { BoardFile } from '../../file/entities/board_file';
+import { BoardFile } from '../../file/entities/board-file';
 import { GetQnaDetailHandler } from './command/get-qna-detail.handler';
 import { Comment } from '../comment/entities/comment';
+import { BoardFileDb } from '../board-file-db';
+import { ConvertException } from '../../../common/utils/convert-exception';
+
+const CommandHandlers = [CreateQnaHandler, UpdateQnaHandler, DeleteQnaHandler, GetQnaDetailHandler];
+const QueryHandlers = [GetQnaListHandler];
 
 @Module({
   imports: [TypeOrmModule.forFeature([Board, Qna, BoardFile, Comment]), CqrsModule],
   controllers: [QnaController],
   providers: [
-    CreateQnaHandler,
-    GetQnaListHandler,
-    GetQnaDetailHandler,
-    UpdateQnaHandler,
-    DeleteQnaHandler,
+    ...CommandHandlers,
+    ...QueryHandlers,
+    ConvertException,
+    { provide: 'qnaFile', useClass: BoardFileDb },
   ],
 })
 export class QnaModule {}

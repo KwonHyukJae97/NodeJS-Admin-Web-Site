@@ -14,9 +14,7 @@ import { Connection, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { compare, hash } from 'bcrypt';
 import { Account } from '../account/entities/account';
-/**
- * Account.hp 확인ㅁ, LogOutx, refresh APIx, 사용자 로그인(RefreshToken) 기능 구현o
- */
+
 @Injectable()
 export class AccountService {
   constructor(

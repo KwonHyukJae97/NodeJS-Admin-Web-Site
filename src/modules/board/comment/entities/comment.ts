@@ -7,13 +7,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { IsNumber, IsString } from 'class-validator';
-import { Qna } from '../../qna/entities/qna';
 
 /**
  * 답변에 대한 엔티티 정의
  */
-
 @Entity('qna_comment')
 export class Comment {
   // 문의 번호

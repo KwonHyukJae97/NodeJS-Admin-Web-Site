@@ -1,9 +1,8 @@
 import { IQuery } from '@nestjs/cqrs';
 
 /**
- * FAQ 목록/카테고리별 검색어 조회 시, 사용되는 쿼리 클래스
+ * FAQ 전체 & 카테고리별 검색어에 해당하는 리스트 조회용 쿼리
  */
-
-export class GetFaqLisQuery implements IQuery {
+export class GetFaqListQuery implements IQuery {
   constructor(readonly categoryName: string, readonly keyword: string, readonly role: string) {}
 }

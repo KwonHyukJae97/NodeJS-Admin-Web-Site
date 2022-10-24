@@ -1,11 +1,10 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsString, MaxLength } from 'class-validator';
 import { Board } from '../../entities/board';
-import { BoardFile } from '../../../file/entities/board_file';
+import { BoardFile } from '../../../file/entities/board-file';
 
 /**
- * 공지사항 상세 조회 시, 필요한 필드로 구성한 응답 dto
+ * 공지사항 상세 조회에 필요한 응답 Dto 정의
  */
-
 export class GetNoticeDetailDto {
   @IsNotEmpty()
   @IsNumber()
