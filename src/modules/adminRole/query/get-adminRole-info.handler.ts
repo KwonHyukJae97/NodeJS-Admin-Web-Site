@@ -1,10 +1,9 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { Repository } from 'typeorm';
-import { AdminRole } from '../entities/adminrole.entity';
+import { RolePermission } from '../entities/rolePermission.entity';
 import { GetAdminRoleInfoQuery } from './get-adminRole-info.query';
 
 /**
@@ -13,7 +12,7 @@ import { GetAdminRoleInfoQuery } from './get-adminRole-info.query';
 @QueryHandler(GetAdminRoleInfoQuery)
 export class GetAdminRoleInfoQueryHandler implements IQueryHandler<GetAdminRoleInfoQuery> {
   constructor(
-    @InjectRepository(AdminRole) private adminroleRepository: Repository<AdminRole>,
+    @InjectRepository(RolePermission) private rolePermissionRepository: Repository<RolePermission>,
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
@@ -25,11 +24,22 @@ export class GetAdminRoleInfoQueryHandler implements IQueryHandler<GetAdminRoleI
   async execute(query: GetAdminRoleInfoQuery) {
     const { roleId } = query;
 
-    const adminrole = await this.adminroleRepository.findOneBy({ roleId: roleId });
+    // const adminrole = await this.adminroleRepository.findOneBy({ roleId: roleId });
 
-    if (!adminrole) {
-      return this.convertException.notFoundError('역할', 404);
+    // if (!adminrole) {
+    //   return this.convertException.notFoundError('역할', 404);
+    // }
+
+    const rolePermission = await this.rolePermissionRepository
+      .createQueryBuilder('RP')
+      .leftJoinAndSelect('RP.permission', 'P')
+      .where('RP.roleId = :roleId', { roleId: roleId })
+      .getRawOne();
+
+    if (!rolePermission) {
+      return this.convertException.notFoundError('사용자', 404);
     }
-    return adminrole;
+
+    return rolePermission;
   }
 }

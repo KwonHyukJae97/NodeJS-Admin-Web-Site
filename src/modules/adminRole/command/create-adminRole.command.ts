@@ -6,6 +6,7 @@ import { ICommand } from '@nestjs/cqrs';
 export class CreateAdminRoleCommand implements ICommand {
   constructor(
     readonly roleName: string,
+    readonly grantType: string,
     readonly companyId: number,
     readonly permissionId: number,
   ) {}

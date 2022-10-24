@@ -25,7 +25,7 @@ export class CreateAdminRoleHandler implements ICommandHandler<CreateAdminRoleCo
    * @returns : DB처리 실패 시 에러 메시지 반환 / 등록 성공 시 완료 메시지 반환
    */
   async execute(command: CreateAdminRoleCommand) {
-    const { roleName, companyId, permissionId } = command;
+    const { roleName, grantType, companyId, permissionId } = command;
 
     const adminrole = this.adminroleRepository.create({
       roleName,
@@ -40,9 +40,10 @@ export class CreateAdminRoleHandler implements ICommandHandler<CreateAdminRoleCo
 
     const rolePermission = this.rolePermissionRepository.create({
       roleId: adminrole.roleId,
-      permissionId,
+      grantType: grantType,
+      permissionId: permissionId,
     });
-    //역할_권한 정보 DB저장
+    // 역할_권한 정보 DB저장
     try {
       await this.rolePermissionRepository.save(rolePermission);
     } catch (err) {
