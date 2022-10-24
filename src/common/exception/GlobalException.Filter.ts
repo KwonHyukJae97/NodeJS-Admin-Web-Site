@@ -41,17 +41,31 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const timeStamp = new Date().toISOString();
     const res: any = (exception as HttpException).getResponse();
 
-    console.log('요청 url: ', url);
-    console.log('error 정보: ', res.error);
-    console.log('message:', errorMessage);
-    console.log('발생 시간: ', timeStamp);
-
     // 에러 정보 클라이언트에게 반환
-    response.status(status).json({
-      success: false,
-      statusCode: status,
-      message: errorMessage,
-      path: url,
-    });
+    if (res.error) {
+      console.log('요청 url: ', url);
+      console.log('error 정보: ', res.error);
+      console.log('message:', res.message);
+      console.log('발생 시간: ', timeStamp);
+
+      return response.status(status).json({
+        success: false,
+        statusCode: res.statusCode,
+        message: res.message,
+        path: url,
+      });
+    } else {
+      console.log('요청 url: ', url);
+      console.log('error 정보: ', res.error);
+      console.log('message:', errorMessage);
+      console.log('발생 시간: ', timeStamp);
+
+      return response.status(status).json({
+        success: false,
+        statusCode: status,
+        message: errorMessage,
+        path: url,
+      });
+    }
   }
 }
