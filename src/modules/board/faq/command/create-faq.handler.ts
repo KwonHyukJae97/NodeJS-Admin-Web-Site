@@ -32,17 +32,15 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
    * @returns : DB처리 실패 시 에러 메시지 반환 / 등록 완료 시 FAQ 정보 반환
    */
   async execute(command: CreateFaqCommand) {
-    const { title, content, categoryName, role, files } = command;
+    const { title, content, categoryName, role, account, files } = command;
 
     // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
     if (role !== '본사 관리자') {
       throw new BadRequestException('본사 관리자만 접근 가능합니다.');
     }
 
-    // TODO : 유저 정보 데코레이터 적용시 accountId 연결 후, 삭제 예정
     const board = this.boardRepository.create({
-      // 임시 accountId 부여
-      accountId: 1,
+      accountId: account.accountId,
       fileTypeCode: '1',
       title,
       content,

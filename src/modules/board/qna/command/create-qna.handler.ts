@@ -30,12 +30,10 @@ export class CreateQnaHandler implements ICommandHandler<CreateQnaCommand> {
    * @returns : DB처리 실패 시 에러 메시지 반환 / 등록 완료 시 1:1 문의 정보 반환
    */
   async execute(command: CreateQnaCommand) {
-    const { title, content, files } = command;
+    const { title, content, account, files } = command;
 
-    // TODO : 유저 정보 데코레이터 적용시 accountId 연결 후, 삭제 예정
     const board = this.boardRepository.create({
-      // 임시 accountId 부여
-      accountId: 3,
+      accountId: account.accountId,
       fileTypeCode: '2',
       title,
       content,

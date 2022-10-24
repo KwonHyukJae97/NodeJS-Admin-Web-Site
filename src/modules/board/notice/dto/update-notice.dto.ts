@@ -24,12 +24,6 @@ export class UpdateNoticeDto {
   @MaxLength(10)
   noticeGrant: string;
 
-  // 수정 권한 확인을 위해 임시 사용
-  @IsNotEmpty()
-  //@Type(() => Number)
-  //@IsNumber()
-  accountId: number;
-
   // 작성자 본인 확인을 위해 임시 사용
   @IsNotEmpty()
   @IsString()

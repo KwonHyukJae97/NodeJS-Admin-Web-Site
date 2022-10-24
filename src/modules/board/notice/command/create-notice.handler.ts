@@ -30,17 +30,15 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
    * @returns : DB처리 실패 시 에러 메시지 반환 / 등록 완료 시 공지사항 정보 반환
    */
   async execute(command: CreateNoticeCommand) {
-    const { title, content, isTop, noticeGrant, role, files } = command;
+    const { title, content, isTop, noticeGrant, role, account, files } = command;
 
     // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
     if (role !== '본사 관리자' && role !== '회원사 관리자') {
       throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
     }
 
-    // TODO : 유저 정보 데코레이터 적용시 accountId 연결 후, 삭제 예정
     const board = this.boardRepository.create({
-      // 임시 accountId 부여
-      accountId: 2,
+      accountId: account.accountId,
       fileTypeCode: '0',
       title,
       content,

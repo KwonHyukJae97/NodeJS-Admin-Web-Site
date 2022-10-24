@@ -8,6 +8,7 @@ import {
   Post,
   Query,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { CreateNoticeDto } from './dto/create-notice.dto';
@@ -22,6 +23,10 @@ import { GetNoticeListQuery } from './query/get-notice-list.query';
 import { GetNoticeInfoDto } from './dto/get-notice-info.dto';
 import { DeleteNoticeInfoDto } from './dto/delete-notice-info.dto';
 import { GetNoticeRoleDto } from './dto/get-notice-role.dto';
+import { GetUser } from '../../account/decorator/account.decorator';
+import { Account } from '../../account/entities/account';
+import { LocalAuthGuard } from '../../../guard/local/local-auth.guard';
+import JwtAuthGuard2 from '../../../guard/jwt/jwt-auth.guard';
 
 /**
  * 공지사항 API controller
@@ -35,13 +40,24 @@ export class NoticeController {
    * @returns : 공지사항 등록 커맨드 전송
    */
   @Post()
+  @UseGuards(JwtAuthGuard2)
   @UseInterceptors(FilesInterceptor('files'))
   createNotice(
     @Body() createNoticeDto: CreateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
+    @GetUser() account: Account,
   ) {
+    console.log('요청 정보', account.accountId);
     const { title, content, isTop, noticeGrant, role } = createNoticeDto;
-    const command = new CreateNoticeCommand(title, content, isTop, noticeGrant, role, files);
+    const command = new CreateNoticeCommand(
+      title,
+      content,
+      isTop,
+      noticeGrant,
+      role,
+      account,
+      files,
+    );
     return this.commandBus.execute(command);
   }
 
@@ -51,6 +67,7 @@ export class NoticeController {
    * @returns : 공지사항 리스트 조회 쿼리 전송
    */
   @Get()
+  @UseGuards(JwtAuthGuard2)
   async getAllSearchNotice(
     @Query('keyword') keyword: string,
     @Body() getNoticeInfoDto: GetNoticeInfoDto,
@@ -66,6 +83,7 @@ export class NoticeController {
    * @returns : 공지사항 상세 정보 조회 커맨드 전송
    */
   @Get(':id')
+  @UseGuards(JwtAuthGuard2)
   async getNoticeDetail(@Param('id') noticeId: number, @Body() getNoticeRoleDto: GetNoticeRoleDto) {
     const { role } = getNoticeRoleDto;
     const command = new GetNoticeDetailCommand(noticeId, role);
@@ -78,13 +96,15 @@ export class NoticeController {
    * @returns : 공지사항 상세 정보 수정 커맨드 전송
    */
   @Patch(':id')
+  @UseGuards(JwtAuthGuard2)
   @UseInterceptors(FilesInterceptor('files'))
   async updateNotice(
     @Param('id') noticeId: number,
     @Body() updateNoticeDto: UpdateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
+    @GetUser() account: Account,
   ) {
-    const { title, content, isTop, noticeGrant, role, accountId } = updateNoticeDto;
+    const { title, content, isTop, noticeGrant, role } = updateNoticeDto;
     const command = new UpdateNoticeCommand(
       title,
       content,
@@ -92,7 +112,7 @@ export class NoticeController {
       noticeGrant,
       noticeId,
       role,
-      accountId,
+      account,
       files,
     );
     return this.commandBus.execute(command);
@@ -104,12 +124,14 @@ export class NoticeController {
    * @returns : 공지사항 정보 삭제 커맨드 전송
    */
   @Delete(':id')
+  @UseGuards(JwtAuthGuard2)
   async deleteNotice(
     @Param('id') noticeId: number,
     @Body() deleteNoticeInfoDto: DeleteNoticeInfoDto,
+    @GetUser() account: Account,
   ) {
-    const { role, accountId } = deleteNoticeInfoDto;
-    const command = new DeleteNoticeCommand(noticeId, role, accountId);
+    const { role } = deleteNoticeInfoDto;
+    const command = new DeleteNoticeCommand(noticeId, role, account);
     return this.commandBus.execute(command);
   }
 }

@@ -33,7 +33,7 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
    * @returns : DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 완료 메시지 반환
    */
   async execute(command: DeleteQnaCommand) {
-    const { qnaId, accountId } = command;
+    const { qnaId, account } = command;
 
     const qna = await this.qnaRepository.findOneBy({ qnaId: qnaId });
 
@@ -41,9 +41,8 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
       return this.convertException.notFoundError('QnA', 404);
     }
 
-    // TODO : 유저 정보 데코레이터 적용시 확인 후, 삭제 예정
-    if (accountId != qna.boardId.accountId) {
-      throw new BadRequestException('작성자만 삭제가 가능합니다.');
+    if (account.accountId != qna.boardId.accountId) {
+      return this.convertException.badRequestAccountError('작성자', 400);
     }
 
     const board = await this.boardRepository.findOneBy({ boardId: qna.boardId.boardId });

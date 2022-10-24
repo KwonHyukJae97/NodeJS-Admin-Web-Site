@@ -9,7 +9,6 @@ import { FilesUpdateEvent } from '../../../file/event/files-update-event';
 import { BoardFileDb } from '../../board-file-db';
 import { FileType } from '../../../file/entities/file-type.enum';
 import { ConvertException } from '../../../../common/utils/convert-exception';
-import { FileCreateEvent } from '../../../file/event/file-create-event';
 import { FilesCreateEvent } from '../../../file/event/files-create-event';
 import { FilesDeleteEvent } from '../../../file/event/files-delete-event';
 import { BoardFile } from '../../../file/entities/board-file';
@@ -35,7 +34,7 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
    * @returns : DB처리 실패 시 에러 메시지 반환 / 수정 성공 시 공지사항 정보 반환
    */
   async execute(command: UpdateNoticeCommand) {
-    const { title, content, isTop, noticeGrant, noticeId, role, accountId, files } = command;
+    const { title, content, isTop, noticeGrant, noticeId, role, account, files } = command;
 
     // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
     if (role !== '본사 관리자' && role !== '회원사 관리자') {
@@ -48,9 +47,8 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
       return this.convertException.notFoundError('공지사항', 404);
     }
 
-    // TODO : 유저 정보 데코레이터 적용시 확인 후, 삭제 예정
-    if (accountId !== notice.boardId.accountId) {
-      throw new BadRequestException('작성자만 수정이 가능합니다.');
+    if (account.accountId !== notice.boardId.accountId) {
+      return this.convertException.badRequestAccountError('작성자', 400);
     }
 
     const board = await this.boardRepository.findOneBy({ boardId: notice.boardId.boardId });

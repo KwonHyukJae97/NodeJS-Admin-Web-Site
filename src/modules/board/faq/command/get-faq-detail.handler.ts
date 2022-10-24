@@ -8,6 +8,7 @@ import { Board } from '../../entities/board';
 import { BoardFile } from '../../../file/entities/board-file';
 import { FaqCategory } from '../entities/faq_category';
 import { ConvertException } from '../../../../common/utils/convert-exception';
+import { Account } from '../../../account/entities/account';
 
 /**
  * FAQ 상세 정보 조회용 커맨드 핸들러
@@ -20,6 +21,7 @@ export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand>
     @InjectRepository(Board) private boardRepository: Repository<Board>,
     @InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>,
     @InjectRepository(FaqCategory) private categoryRepository: Repository<FaqCategory>,
+    @InjectRepository(Account) private accountRepository: Repository<Account>,
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
@@ -70,12 +72,19 @@ export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand>
       return this.convertException.badRequestError('FAQ', 400);
     }
 
+    const account = await this.accountRepository.findOneBy({ accountId: board.accountId });
+
+    if (!account) {
+      return this.convertException.badRequestAccountError('작성자', 400);
+    }
+
     const files = await this.fileRepository.findBy({ boardId: board.boardId });
 
     const getFaqDetailDto = {
       faqId: faqId,
       boardId: board,
       categoryId: faq.categoryId,
+      writer: account.name + '(' + account.nickname + ')',
       fileList: files,
     };
 

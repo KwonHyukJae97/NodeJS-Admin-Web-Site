@@ -36,7 +36,7 @@ export class UpdateFaqHandler implements ICommandHandler<UpdateFaqCommand> {
    * @returns : DB처리 실패 시 에러 메시지 반환 / 수정 성공 시 FAQ 정보 반환
    */
   async execute(command: UpdateFaqCommand) {
-    const { title, content, categoryName, role, accountId, faqId, files } = command;
+    const { title, content, categoryName, role, account, faqId, files } = command;
 
     // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
     if (role !== '본사 관리자') {
@@ -49,9 +49,8 @@ export class UpdateFaqHandler implements ICommandHandler<UpdateFaqCommand> {
       return this.convertException.notFoundError('FAQ', 404);
     }
 
-    // TODO : 유저 정보 데코레이터 적용시 확인 후, 삭제 예정
-    if (accountId != faq.boardId.accountId) {
-      throw new BadRequestException('작성자만 수정이 가능합니다.');
+    if (account.accountId != faq.boardId.accountId) {
+      return this.convertException.badRequestAccountError('작성자', 400);
     }
 
     const board = await this.boardRepository.findOneBy({ boardId: faq.boardId.boardId });

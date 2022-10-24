@@ -40,9 +40,9 @@ export class Admin extends BaseEntity {
   accountId: Account;
 
   //account 정보 가져오기
-  @OneToOne(() => Account)
-  @JoinColumn({ name: 'account_id' })
-  account: Account;
+  // @OneToOne(() => Account)
+  // @JoinColumn({ name: 'account_id' })
+  // account: Account;
 
   //역할_권한 정보 가져오기
   @OneToOne(() => RolePermission)

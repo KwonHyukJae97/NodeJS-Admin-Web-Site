@@ -183,9 +183,9 @@ export class Account extends BaseEntity {
   temporaryId: number;
 
   //admin 정보 가져오기
-  @OneToOne(() => Admin)
-  @JoinColumn({ name: 'account_id' })
-  admin: Admin;
+  // @OneToOne(() => Admin, (admin) => admin.accountId)
+  // @JoinColumn({ name: 'account_id' })
+  // admin: Admin;
 
   //user 정보 가져오기
   @OneToOne(() => User)
