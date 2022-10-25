@@ -17,12 +17,16 @@ export class UpdateAdminRoleHandler implements ICommandHandler<UpdateAdminRoleCo
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
+  /**
+   * 역할 정보 수정 메소드
+   * @param command : 역할 정보 수정에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 수정 성공 시 수정된 정보 반환
+   */
   async execute(command: UpdateAdminRoleCommand) {
     const { roleName, roleId } = command;
     const adminrole = await this.adminroleRepository.findOneBy({ roleId: roleId });
     if (!adminrole) {
-      //정보 찾을 수 없을 경우 에러메시지 반환
-      return this.convertException.throwError('notFound', '역할', 404);
+      return this.convertException.notFoundError('역할', 404);
     }
 
     adminrole.roleName = roleName;
@@ -31,12 +35,9 @@ export class UpdateAdminRoleHandler implements ICommandHandler<UpdateAdminRoleCo
     try {
       await this.adminroleRepository.save(adminrole);
     } catch (err) {
-      console.log(err);
-      //저장 실패 에러메시지 반환
-      return this.convertException.throwError('badInput', '역할정보에 ', 400);
+      return this.convertException.badRequestError('역할정보에 ', 400);
     }
 
-    //수정된 내용 반환
     return adminrole;
   }
 }

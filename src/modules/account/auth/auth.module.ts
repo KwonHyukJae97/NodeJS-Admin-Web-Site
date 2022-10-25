@@ -17,12 +17,14 @@ import { Account3 } from 'src/modules/account-bak/entities/account.entity';
 import { KakaoStrategy } from 'src/guard/jwt/kakao.strategy';
 import { SignInAdminHandler } from './command/signin-admin.handler';
 import { SignInUserHandler } from './command/signin-user.handler';
-import { ConvertException } from 'src/common/utils/convert-exception';
+import { AccountFileDb } from '../account-file-db';
+import { AccountFile } from '../../file/entities/account-file';
+import { ConvertException } from '../../../common/utils/convert-exception';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forFeature([User, Admin, Account3, Account]),
+    TypeOrmModule.forFeature([User, Admin, Account3, Account, AccountFile]),
     CqrsModule,
     PassportModule.register({
       defaultStrategy: 'jwt',
@@ -46,6 +48,7 @@ import { ConvertException } from 'src/common/utils/convert-exception';
     AccountService,
     JwtManageService,
     ConvertException,
+    { provide: 'accountFile', useClass: AccountFileDb },
   ],
 })
 export class SecondAuthModule {}

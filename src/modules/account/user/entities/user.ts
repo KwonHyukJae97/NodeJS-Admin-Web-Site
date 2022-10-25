@@ -1,6 +1,9 @@
 import { Account } from '../../entities/account';
 import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
+/**
+ * 앱 사용자에 대한 엔티티 정의
+ */
 @Entity('user')
 export class User extends BaseEntity {
   //회원 번호

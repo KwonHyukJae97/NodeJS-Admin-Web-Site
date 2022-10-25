@@ -1,9 +1,8 @@
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 /**
- * 답변 수정 시, 필요한 필드로 구성한 dto
+ * 답변 수정에 필요한 요청 Dto 정의
  */
-
 export class UpdateCommentDto {
   @IsNotEmpty()
   @IsString()

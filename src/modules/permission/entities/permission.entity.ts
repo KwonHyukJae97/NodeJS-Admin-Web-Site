@@ -8,6 +8,9 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+/**
+ * 권한에 대한 엔티티 정의
+ */
 @Entity('permission')
 export class Permission extends BaseEntity {
   //권한 번호

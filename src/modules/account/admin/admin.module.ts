@@ -10,7 +10,9 @@ import { UpdateAdminHandler } from './command/update-admin.handler';
 import { Admin } from './entities/admin';
 import { GetAdminInfoQueryHandler } from './query/get-admin-info.handler';
 import { GetAllAdminQueryHandler } from './query/get-all-admin.handler';
-import { ConvertException } from 'src/common/utils/convert-exception';
+import { AccountFileDb } from '../account-file-db';
+import { AccountFile } from '../../file/entities/account-file';
+import { ConvertException } from '../../../common/utils/convert-exception';
 
 const CommandHandler = [
   SignUpAdminHandler,
@@ -21,8 +23,14 @@ const CommandHandler = [
 const QueryHandler = [GetAdminInfoQueryHandler, GetAllAdminQueryHandler];
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Account, Admin]), CqrsModule],
+  imports: [TypeOrmModule.forFeature([Account, Admin, AccountFile]), CqrsModule],
   controllers: [AdminController],
-  providers: [...CommandHandler, ...QueryHandler, ConvertException],
+
+  providers: [
+    ...CommandHandler,
+    ...QueryHandler,
+    ConvertException,
+    { provide: 'accountFile', useClass: AccountFileDb },
+  ],
 })
 export class AdminModule {}

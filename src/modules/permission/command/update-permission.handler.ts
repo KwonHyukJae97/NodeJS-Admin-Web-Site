@@ -17,14 +17,19 @@ export class UpdatePermissionHandler implements ICommandHandler<UpdatePermission
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
+  /**
+   *
+   * @param command : 권한 수정에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 수정 성공 시 수정된 정보 반환
+   */
+
   async execute(command: UpdatePermissionCommand) {
     const { menuName, grantType, permissionId } = command;
 
     const permission = await this.permissionRepository.findOneBy({ permissionId: permissionId });
 
     if (!permission) {
-      //정보를 찾을 수 없는 경우 에러 메시지 반환
-      return this.convertException.throwError('notFound', '권한', 404);
+      return this.convertException.notFoundError('권한', 404);
     }
 
     permission.menuName = menuName;
@@ -34,12 +39,9 @@ export class UpdatePermissionHandler implements ICommandHandler<UpdatePermission
     try {
       await this.permissionRepository.save(permission);
     } catch (err) {
-      console.log(err);
-      //저장 실패할 경우 에러 메시지 반환
-      return this.convertException.throwError('badInput', '권한 정보에 ', 400);
+      return this.convertException.badRequestError('권한 정보에 ', 400);
     }
 
-    //수정된 내용 반환
     return permission;
   }
 }

@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+  ValidationPipe,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { SignUpUserCommand } from '../auth/command/signup-user.command';
 import { SignUpUserDto } from '../auth/dto/signup-user.dto';
@@ -7,6 +18,7 @@ import { UpdateUserCommand } from './command/update-user.command';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { GetAllUserQuery } from './query/get-all-user.query';
 import { GetUserInfoQuery } from './query/get-user-info.query';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 /**
  * 앱사용자 가입/로그인 처리 컨트롤러
@@ -16,7 +28,9 @@ export class UserController {
   constructor(private commandBus: CommandBus, private queryBus: QueryBus) {}
 
   /**
-   * 앱사용자 회원가입 컨트롤러
+   * 앱사용자 회원가입 메소드
+   * @param signUpUserdto : 앱사용자 회원가입에 필요한 dto
+   * @return : 앱사용자 회원 가입 커맨드 전송
    */
   @Post()
   async secondSignupUser(@Body(ValidationPipe) signUpUserdto: SignUpUserDto): Promise<void> {
@@ -36,8 +50,10 @@ export class UserController {
 
     return this.commandBus.execute(command);
   }
+
   /**
-   * 앱사용자 전체 리스트 조회
+   * 앱 사용자 전체 리스트 조회
+   * @return : 앱 사용자 리스트 조회 커맨드 전송
    */
   @Get()
   getAllUser() {
@@ -48,6 +64,7 @@ export class UserController {
   /**
    * 앱사용자 상세 정보 조회
    * @Param : user_id
+   * @return : 앱사용자 상세 정보 조회 쿼리 전송
    */
   @Get(':id')
   getUserInfo(@Param('id') userId: number) {
@@ -58,18 +75,25 @@ export class UserController {
   /**
    * 앱사용자 상세 정보 수정
    * @Param : user_id
+   * @return : 앱 사용자 정보 수정 커맨드 전송
    */
   @Patch(':id')
-  updateUser(@Param('id') userId: number, @Body() dto: UpdateUserDto) {
+  @UseInterceptors(FileInterceptor('file'))
+  updateUser(
+    @Param('id') userId: number,
+    @Body() dto: UpdateUserDto,
+    @UploadedFile() file: Express.MulterS3.File,
+  ) {
     const { password, email, phone, nickname, grade } = dto;
-    const command = new UpdateUserCommand(password, email, phone, nickname, grade, userId);
+    const command = new UpdateUserCommand(password, email, phone, nickname, grade, userId, file);
 
     return this.commandBus.execute(command);
   }
 
   /**
    * 앱 사용자 정보 삭제
-   * @ param : user_id
+   * @Param : user_id
+   * @return : 앱 사용자 정보 삭제 커맨드 전송
    */
   @Delete(':id')
   deleteUser(@Param('id') userId: number, delDate: Date) {

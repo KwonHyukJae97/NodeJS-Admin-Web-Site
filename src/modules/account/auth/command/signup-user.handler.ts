@@ -1,5 +1,5 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account } from 'src/modules/account/entities/account';
 import { User } from 'src/modules/account/user/entities/user';
@@ -17,7 +17,6 @@ export class SignUpUserHandler implements ICommandHandler<SignUpUserCommand> {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
 
@@ -63,7 +62,7 @@ export class SignUpUserHandler implements ICommandHandler<SignUpUserCommand> {
         await this.accountRepository.save(accountUser);
       } catch (err) {
         console.log(err);
-        return this.convertException.throwError('badInput', '사용자 회원가입에 ', 400);
+        return this.convertException.badRequestError('사용자 회원가입에 ', 400);
       }
     }
 
@@ -74,7 +73,7 @@ export class SignUpUserHandler implements ICommandHandler<SignUpUserCommand> {
     try {
       await this.userRepository.save(user);
     } catch (err) {
-      return this.convertException.throwError('badInput', '', 500);
+      return this.convertException.CommonError(500);
     }
 
     return '회원가입 완료 (사용자)';

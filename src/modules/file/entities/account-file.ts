@@ -8,24 +8,23 @@ import {
 } from 'typeorm';
 
 /**
- * 게시글 파일에 대한 엔티티 정의
+ * 계정 파일에 대한 엔티티 정의
  */
-
-@Entity('board_file')
-export class BoardFile {
+@Entity('account_file')
+export class AccountFile {
   // 파일 번호
   @PrimaryGeneratedColumn({
-    name: 'board_file_id',
+    name: 'account_file_id',
     type: 'bigint',
   })
-  boardFileId: number;
+  accountFileId: number;
 
-  // 게시글 번호
+  // 계정 번호
   @Column({
-    name: 'board_id',
+    name: 'account_id',
     type: 'bigint',
   })
-  boardId!: number;
+  accountId!: number;
 
   // 원본 파일명
   @Column({
@@ -73,7 +72,7 @@ export class BoardFile {
   })
   regDate: Date;
 
-  // 수정일시
+  // 변경일시
   @UpdateDateColumn({
     name: 'update_date',
     type: 'datetime',
@@ -88,4 +87,9 @@ export class BoardFile {
     nullable: true,
   })
   delDate: Date;
+
+  //계정 번호 가져오기
+  // @OneToOne(() => Account)
+  // @JoinColumn({ name: 'account_id' })
+  // account: Account;
 }

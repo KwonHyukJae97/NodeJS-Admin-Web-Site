@@ -15,17 +15,20 @@ export class AdminRoleController {
   constructor(private commandBus: CommandBus, private queryBus: QueryBus) {}
 
   /**
-   * 역할 등록
+   * 역할 등록 메소드
+   * @param createAdminRoleDto : 역할 등록에 필요한 dto
+   * @return : 역할 등록 커맨드 전송
    */
   @Post()
-  async createAdminRole(@Body() dto: CreateAdminRoleDto): Promise<void> {
-    const { roleName, companyId, permissionId } = dto;
+  async createAdminRole(@Body() createAdminRoleDto: CreateAdminRoleDto): Promise<void> {
+    const { roleName, companyId, permissionId } = createAdminRoleDto;
     const command = new CreateAdminRoleCommand(roleName, companyId, permissionId);
     return this.commandBus.execute(command);
   }
 
   /**
    * 역할 전체 리스트 조회
+   * @return : 역할 리스트 조회 쿼리 전송
    */
   @Get()
   getAllAdminRole() {
@@ -36,6 +39,7 @@ export class AdminRoleController {
   /**
    * 역할 상세 정보 조회
    * @Param : role_id
+   * @return : 역할 상세 정보 조회 쿼리 전송
    */
   @Get(':id')
   getAdminRoleInfo(@Param('id') roleId: number) {
@@ -46,17 +50,19 @@ export class AdminRoleController {
   /**
    * 역할 상세 정보 수정
    * @Param : role_id
+   * @return : 역할 정보 수정 커맨드 전송
    */
   @Patch(':id')
-  updateAdminRole(@Param('id') roleId: number, @Body() dto: UpdateAdminRoleDto) {
-    const { roleName } = dto;
+  updateAdminRole(@Param('id') roleId: number, @Body() updateAdminDto: UpdateAdminRoleDto) {
+    const { roleName } = updateAdminDto;
     const command = new UpdateAdminRoleCommand(roleName, roleId);
     return this.commandBus.execute(command);
   }
 
   /**
    * 역할 정보 삭제
-   * @param : role_id
+   * @Param : role_id
+   * @return : 역할 정보 삭제 커맨드 전송
    */
   @Delete(':id')
   deleteAdminRole(@Param('id') roleId: number) {

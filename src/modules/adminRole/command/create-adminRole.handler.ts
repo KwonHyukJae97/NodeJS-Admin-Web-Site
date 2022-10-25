@@ -19,6 +19,11 @@ export class CreateAdminRoleHandler implements ICommandHandler<CreateAdminRoleCo
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
+  /**
+   * 역할 등록 메소드
+   * @param command : 역할 등록에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 등록 성공 시 완료 메시지 반환
+   */
   async execute(command: CreateAdminRoleCommand) {
     const { roleName, companyId, permissionId } = command;
 
@@ -30,9 +35,7 @@ export class CreateAdminRoleHandler implements ICommandHandler<CreateAdminRoleCo
     try {
       await this.adminroleRepository.save(adminrole);
     } catch (err) {
-      console.log(err);
-      //저장 실패 에러메시지 반환
-      return this.convertException.throwError('badInput', '역할정보에 ', 400);
+      return this.convertException.badRequestError('역할정보에 ', 400);
     }
 
     const rolePermission = this.rolePermissionRepository.create({
@@ -43,11 +46,9 @@ export class CreateAdminRoleHandler implements ICommandHandler<CreateAdminRoleCo
     try {
       await this.rolePermissionRepository.save(rolePermission);
     } catch (err) {
-      //저장 실패 에러메시지 반환
-      return this.convertException.throwError('badInput', '', 500);
+      return this.convertException.CommonError(500);
     }
 
-    //등록완료 메시지 반환
     return '등록이 완료 되었습니다.';
   }
 }

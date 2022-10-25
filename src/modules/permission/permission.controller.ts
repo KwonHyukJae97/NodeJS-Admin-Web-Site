@@ -15,17 +15,20 @@ export class PermissionController {
   constructor(private commandBus: CommandBus, private queryBus: QueryBus) {}
 
   /**
-   * 권한 등록
+   * 권한 등록 메소드
+   * @param createPermissionDto : 권한 등록에 필요한 dto
+   * @return : 권한 등록 커맨드 전송
    */
   @Post()
-  async createPermission(@Body() dto: CreatePermissionDto): Promise<void> {
-    const { menuName, grantType } = dto;
+  async createPermission(@Body() createPermissionDto: CreatePermissionDto): Promise<void> {
+    const { menuName, grantType } = createPermissionDto;
     const command = new CreatePermissionCommand(menuName, grantType);
     return this.commandBus.execute(command);
   }
 
   /**
    * 권한 전체 리스트 조회
+   * @return : 권한 리스트 조회 쿼리 전송
    */
   @Get()
   getAllPermission() {
@@ -36,6 +39,7 @@ export class PermissionController {
   /**
    * 권한 상세 정보 조회
    * @Param : permission_id
+   * @return : 권한 상세 정보 조회 쿼리 전송
    */
   @Get(':id')
   getPermissionInfo(@Param('id') permissionId: number) {
@@ -46,17 +50,22 @@ export class PermissionController {
   /**
    * 권한 상세 정보 수정
    * @Param : permission_id
+   * @return : 권한 상세 정보 수정 커맨드 전송
    */
   @Patch(':id')
-  updatePermission(@Param('id') permissionId: number, @Body() dto: UpdatePermissionDto) {
-    const { menuName, grantType } = dto;
+  updatePermission(
+    @Param('id') permissionId: number,
+    @Body() updatePermissionDto: UpdatePermissionDto,
+  ) {
+    const { menuName, grantType } = updatePermissionDto;
     const command = new UpdatePermissionCommand(menuName, grantType, permissionId);
     return this.commandBus.execute(command);
   }
 
   /**
    * 권한 정보 삭제
-   * @param : permission_id
+   * @Param : permission_id
+   * @Return : 권한 정보 삭제 커맨드 전송
    */
   @Delete(':id')
   deletePermission(@Param('id') permissionId: number) {

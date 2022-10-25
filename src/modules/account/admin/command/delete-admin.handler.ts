@@ -6,6 +6,9 @@ import { Account } from '../../entities/account';
 import { Admin } from '../entities/admin';
 import { DeleteAdminCommand } from './delete-admin.command';
 import { ConvertException } from 'src/common/utils/convert-exception';
+import { FileDeleteEvent } from '../../../file/event/file-delete-event';
+import { AccountFileDb } from '../../account-file-db';
+import { AccountFile } from '../../../file/entities/account-file';
 
 /**
  * 관리자 정보 삭제용 커맨드 핸들러
@@ -17,6 +20,8 @@ export class DeleteAdminHandler implements ICommandHandler<DeleteAdminCommand> {
     @InjectRepository(Admin) private adminRepository: Repository<Admin>,
     @InjectRepository(Account) private accountRepository: Repository<Account>,
     @Inject(ConvertException) private convertException: ConvertException,
+    @InjectRepository(AccountFile) private fileRepository: Repository<AccountFile>,
+    @Inject('accountFile') private accountFileDb: AccountFileDb,
     private eventBus: EventBus,
   ) {}
   async execute(command: DeleteAdminCommand) {
@@ -28,7 +33,7 @@ export class DeleteAdminHandler implements ICommandHandler<DeleteAdminCommand> {
     const account = await this.accountRepository.findOneBy({ accountId: accountId, delDate });
 
     if (!account) {
-      return this.convertException.throwError('notFound', '관리자', 404);
+      return this.convertException.notFoundError('관리자', 404);
     }
 
     // new Date()에서 반환하는 UTC시간을 KST시간으로 변경
@@ -39,6 +44,13 @@ export class DeleteAdminHandler implements ICommandHandler<DeleteAdminCommand> {
     //탈퇴회원의 이용내역 조회를 위해 delete하지 않고 삭제일시를 별도로 저장하여 데이터 보존
     account.delDate = setDate;
     await this.accountRepository.save(account);
+
+    const accountFile = await this.fileRepository.findOneBy({ accountId: accountId });
+
+    // 저장되어 있는 프로필 이미지가 있다면 '삭제' 이벤트 호출
+    if (accountFile) {
+      this.eventBus.publish(new FileDeleteEvent(accountId, this.accountFileDb));
+    }
 
     //탈퇴회원의 개인정보 유출가능한 데이터는 *표로 표시 (기준:휴면계정 데이터)
     await this.accountRepository
