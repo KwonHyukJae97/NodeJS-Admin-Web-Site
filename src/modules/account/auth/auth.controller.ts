@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-import JwtAuthGuard2 from 'src/guard/jwt/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/guard/jwt/jwt-auth.guard';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { LocalAuthGuard } from 'src/guard/local/local-auth.guard';
 import { AccountService } from 'src/modules/account-bak/account.service';
@@ -32,6 +32,7 @@ import { SignInAdminCommand } from './command/signin-admin.command';
 import { SignInUserCommand } from './command/signin-user.command';
 import { SignInUserHandler } from './command/signin-user.handler';
 import { UserLoginResDto } from './dto/login-res.dto';
+import { response } from 'express';
 
 /**
  * 회원가입, 로그인 등 계정 관련 auth 컨트롤러
@@ -125,8 +126,14 @@ export class SignController {
     console.log('cqrs 방식 관리자 로그인 테스트', signInAdminDto);
 
     const command = new SignInAdminCommand(id, password);
-    const { accessToken, accessOption } = await this.authService.getCookieWithJwtAccessToken(id);
-    const { refreshToken, refreshOption } = await this.authService.getCookieWithJwtRefreshToken(id);
+    const { accessToken, accessOption } = await this.authService.getCookieWithJwtAccessToken(
+      id,
+      null,
+    );
+    const { refreshToken, refreshOption } = await this.authService.getCookieWithJwtRefreshToken(
+      id,
+      null,
+    );
 
     await this.authService.setCurrentRefreshToken(refreshToken, id);
 
@@ -158,8 +165,14 @@ export class SignController {
 
     const command = new SignInUserCommand(id, password);
 
-    const { accessToken, accessOption } = await this.authService.getCookieWithJwtAccessToken(id);
-    const { refreshToken, refreshOption } = await this.authService.getCookieWithJwtRefreshToken(id);
+    const { accessToken, accessOption } = await this.authService.getCookieWithJwtAccessToken(
+      id,
+      null,
+    );
+    const { refreshToken, refreshOption } = await this.authService.getCookieWithJwtRefreshToken(
+      id,
+      null,
+    );
 
     await this.authService.setCurrentRefreshToken(refreshToken, id);
 
@@ -216,7 +229,7 @@ export class SignController {
    * @param response
    * @returns 로그아웃시 엑세스, 리프래쉬 토큰 옵션을 초기화 시키고 상태 값 리턴
    */
-  @UseGuards(JwtAuthGuard2)
+  @UseGuards(JwtAuthGuard)
   @Post('/logout/admin')
   async logoutAdmin(@Req() request, @Res() response) {
     const { accessOption, refreshOption } = this.authService.getCookiesForLogOut2();
@@ -233,7 +246,7 @@ export class SignController {
    * @param response
    * @returns 로그아웃시 엑세스, 리프래쉬 토큰 옵션을 초기화 시키고 상태 값 리턴
    */
-  @UseGuards(JwtAuthGuard2)
+  @UseGuards(JwtAuthGuard)
   @Post('/logout/user')
   async logoutUser(@Req() request, @Res() response) {
     const { accessOption, refreshOption } = this.authService.getCookiesForLogOut2();
@@ -292,11 +305,40 @@ export class SignController {
   //   return this.authService.kakaoUserInfo(code);
   // }
 
-  // FE에서 넘겨받을 정보들을 담을 DTO를 생성하여 받고, 현재 컨트롤러는 email을 서비스로 넘기고 서비스는 kakaoUserInfo로 받음. 통일시키기
+  /**
+   * 사용자 정보 조회
+   * @returns : account 정보 반환
+   */
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async getAuthInfo(@Req() req) {
+    const authInfo = req.user;
+    console.log('request', authInfo);
+    return authInfo;
+  }
+
   @Post('/kakao')
-  async kakaoLoginUserInfo(@Req() req) {
+  async kakaoLoginUserInfo(@Req() req, @Res({ passthrough: true }) response) {
     const userKakaoDto: UserKakaoDto = req.body;
-    console.log('프론트에서 넘어오니~?', userKakaoDto);
+    console.log('프론트에서 넘어오는 카카오 유저데이터', userKakaoDto);
+
+    const id = userKakaoDto.snsId;
+    const snsType = '01';
+
+    const { accessToken, accessOption } = await this.authService.getCookieWithJwtAccessToken(
+      id,
+      snsType,
+    );
+    const { refreshToken, refreshOption } = await this.authService.getCookieWithJwtRefreshToken(
+      id,
+      snsType,
+    );
+
+    await this.authService.setCurrentRefreshToken(refreshToken, id);
+
+    response.cookie('authentication', accessToken, accessOption);
+    response.cookie('Refresh', refreshToken, refreshOption);
+
     return this.authService.kakaoUserInfos(userKakaoDto);
   }
 
@@ -385,7 +427,7 @@ export class SignController {
   //   );
 
   //   if (newRefreshToken) {
-  //     response.cookie('refresh', newRefreshToken.refreshToken, newRefreshToken.refreshOption);
+  //     response.cookie('Refresh', newRefreshToken.refreshToken, newRefreshToken.refreshOption);
   //   }
   // }
   // }

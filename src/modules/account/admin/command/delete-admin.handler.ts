@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConvertException } from 'src/common/utils/convert-exception';
 import { Repository } from 'typeorm';
 import { Account } from '../../entities/account';
 import { Admin } from '../entities/admin';
@@ -15,6 +16,7 @@ export class DeleteAdminHandler implements ICommandHandler<DeleteAdminCommand> {
   constructor(
     @InjectRepository(Admin) private adminRepository: Repository<Admin>,
     @InjectRepository(Account) private accountRepository: Repository<Account>,
+    @Inject(ConvertException) private convertException: ConvertException,
     private eventBus: EventBus,
   ) {}
   async execute(command: DeleteAdminCommand) {
@@ -24,6 +26,10 @@ export class DeleteAdminHandler implements ICommandHandler<DeleteAdminCommand> {
     const accountId = admin.accountId.accountId;
 
     const account = await this.accountRepository.findOneBy({ accountId: accountId, delDate });
+
+    if (!account) {
+      return this.convertException.throwError('notFound', '관리자', 404);
+    }
 
     // new Date()에서 반환하는 UTC시간을 KST시간으로 변경
     const getDate = new Date();

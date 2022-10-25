@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Admin } from 'src/modules/account/admin/entities/admin';
@@ -6,6 +6,7 @@ import { Account } from 'src/modules/account/entities/account';
 import { Repository } from 'typeorm';
 import { SignUpAdminCommand } from './signup-admin.command';
 import * as bcrypt from 'bcryptjs';
+import { ConvertException } from 'src/common/utils/convert-exception';
 
 /**
  * 관리자 회원가입 Handler
@@ -19,6 +20,7 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
 
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
+    @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
   async execute(command: SignUpAdminCommand) {
@@ -70,7 +72,12 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
       throw new UnauthorizedException('이미 존재하는 닉네임입니다.');
     } else {
       //Account 저장
-      await this.accountRepository.save(accountAdmin);
+      try {
+        await this.accountRepository.save(accountAdmin);
+      } catch (err) {
+        console.log(err);
+        return this.convertException.throwError('badInput', '관리자 회원가입에 ', 400);
+      }
     }
 
     const admin = this.adminRepository.create({
@@ -79,8 +86,12 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
       roleId,
       isSuper,
     });
-    console.log('isSuper값 확인', admin);
-    await this.adminRepository.save(admin);
+    try {
+      await this.adminRepository.save(admin);
+    } catch (err) {
+      return this.convertException.throwError('badInput', '', 500);
+    }
+
     return '회원가입 완료(관리자)';
   }
 }

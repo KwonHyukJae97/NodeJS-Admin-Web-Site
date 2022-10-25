@@ -87,6 +87,20 @@ export class AuthService {
     }
   }
 
+  //snsType 을  포함한 getBySnsType 생성
+  async getBySnsType(snsType: string, showCurrentHashedRefreshToken: boolean) {
+    const account = await this.accountRepository.findOne({ where: { snsType } });
+    console.log('accountService- Id--------', snsType);
+    if (account) {
+      delete account.password;
+      if (!showCurrentHashedRefreshToken) {
+        delete account.currentHashedRefreshToken;
+      }
+
+      return account;
+    }
+  }
+
   async getAccountRefreshTokenMatches(
     refreshToken: string,
     id: string,
@@ -102,7 +116,7 @@ export class AuthService {
     if (isRefreshTokenMatching) {
       return { result: true };
     } else {
-      throw new UnauthorizedException('여기에서 접근에러입니다111');
+      throw new UnauthorizedException('여기에서 접근에러입니다.');
     }
   }
 
@@ -114,8 +128,8 @@ export class AuthService {
   }
 
   //AccessToken 발급
-  public getCookieWithJwtAccessToken(id: string) {
-    const payload = { id };
+  public getCookieWithJwtAccessToken(id: string, snsType: string) {
+    const payload = { id, snsType };
     const token = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
       expiresIn: `${this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}s`,
@@ -152,8 +166,8 @@ export class AuthService {
     };
   }
   //RefreshToken 발급
-  public getCookieWithJwtRefreshToken(id: string) {
-    const payload = { id };
+  public getCookieWithJwtRefreshToken(id: string, snsType: string) {
+    const payload = { id, snsType };
     const token = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
       expiresIn: `${this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')}s`,
@@ -207,9 +221,9 @@ export class AuthService {
     if (account.division === false) {
       throw new UnauthorizedException('로그인 정보를 확인해주세요.');
     }
-    const { accessToken, accessOption } = await this.getCookieWithJwtAccessToken(id);
+    const { accessToken, accessOption } = await this.getCookieWithJwtAccessToken(id, null);
 
-    const { refreshToken, refreshOption } = await this.getCookieWithJwtRefreshToken(id);
+    const { refreshToken, refreshOption } = await this.getCookieWithJwtRefreshToken(id, null);
     await this.setCurrentRefreshToken(refreshToken, id);
 
     // const lastLoginDate = new Date(account.loginDate).getTime() / 1000;
@@ -266,9 +280,9 @@ export class AuthService {
     if (account.division === true) {
       throw new UnauthorizedException('로그인 정보를 확인해주세요.');
     }
-    const { accessToken, accessOption } = await this.getCookieWithJwtAccessToken(id);
+    const { accessToken, accessOption } = await this.getCookieWithJwtAccessToken(id, null);
 
-    const { refreshToken, refreshOption } = await this.getCookieWithJwtRefreshToken(id);
+    const { refreshToken, refreshOption } = await this.getCookieWithJwtRefreshToken(id, null);
     await this.setCurrentRefreshToken(refreshToken, id);
 
     const returnUser = await this.accountRepository
@@ -516,25 +530,33 @@ export class AuthService {
   async kakaoUserInfos(userKakaoDto: UserKakaoDto) {
     // const { name, email, birth, snsId, snsType, gender } = userKakaoDto;
 
-    const email = userKakaoDto.email;
+    const snsId = userKakaoDto.snsId;
 
-    console.log('승인이 정보', userKakaoDto.email);
+    console.log('카카오 정보', userKakaoDto.snsId);
 
-    let user = await this.accountRepository.findOne({ where: { email } });
+    const user = await this.accountRepository.findOne({ where: { snsId } });
 
-    if (!user) {
-      console.log('유저정보없음', email);
+    if (user) {
+      console.log('사용자 가입 기록 있음', snsId);
+      console.log('사용자 가입 기록 있음22', user);
+
+      const payload = { snsId };
+      const accessToken = await this.jwtService.sign(payload);
+      const loginDto = {
+        loginSuccess: true,
+        accessToken: accessToken,
+      };
+      console.log('!!!!!!loginDto@@@@@', loginDto);
+      return loginDto;
     } else {
-      console.log('사용자 이메일 있음', email);
+      console.log('사용자 가입 기록 없음', snsId);
+      const sencondDataDto = {
+        loginSuccess: false,
+      };
+      console.log('2차 가입 정보 필요', sencondDataDto);
+      return sencondDataDto;
     }
     //디비랑 이메일 비교까지 완료
-    const payload = { email };
-    const accessToken = await this.jwtService.sign(payload);
-    const loginDto = {
-      loginSuccess: true,
-      accessToken: accessToken,
-    };
-    return loginDto;
 
     // console.log('kakao email', email);
     // if (!user) {

@@ -101,7 +101,7 @@ export class Account extends BaseEntity {
   @Column({
     name: 'current_hashed_refresh_token',
     type: 'varchar',
-    length: '100',
+    length: '200',
     nullable: true,
   })
   currentHashedRefreshToken: string;
@@ -134,7 +134,7 @@ export class Account extends BaseEntity {
   @Column({
     name: 'sns_token',
     type: 'varchar',
-    length: '150',
+    length: '200',
   })
   snsToken: string;
 

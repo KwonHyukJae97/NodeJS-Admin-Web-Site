@@ -17,6 +17,7 @@ import { Account3 } from 'src/modules/account-bak/entities/account.entity';
 import { KakaoStrategy } from 'src/guard/jwt/kakao.strategy';
 import { SignInAdminHandler } from './command/signin-admin.handler';
 import { SignInUserHandler } from './command/signin-user.handler';
+import { ConvertException } from 'src/common/utils/convert-exception';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { SignInUserHandler } from './command/signin-user.handler';
     AuthService,
     AccountService,
     JwtManageService,
+    ConvertException,
   ],
 })
 export class SecondAuthModule {}

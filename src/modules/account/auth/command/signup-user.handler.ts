@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account } from 'src/modules/account/entities/account';
@@ -6,6 +6,7 @@ import { User } from 'src/modules/account/user/entities/user';
 import { Repository } from 'typeorm';
 import { SignUpUserCommand } from './signup-user.command';
 import * as bcrypt from 'bcryptjs';
+import { ConvertException } from 'src/common/utils/convert-exception';
 
 /**
  * 사용자 회원가입 Handler
@@ -19,6 +20,8 @@ export class SignUpUserHandler implements ICommandHandler<SignUpUserCommand> {
 
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
+
+    @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
   async execute(command: SignUpUserCommand) {
@@ -56,15 +59,24 @@ export class SignUpUserHandler implements ICommandHandler<SignUpUserCommand> {
       throw new UnauthorizedException('이미 존재하는 닉네임입니다.');
     } else {
       //Account 저장
-      await this.accountRepository.save(accountUser);
+      try {
+        await this.accountRepository.save(accountUser);
+      } catch (err) {
+        console.log(err);
+        return this.convertException.throwError('badInput', '사용자 회원가입에 ', 400);
+      }
     }
 
     const user = this.userRepository.create({
       accountId: accountUser,
       grade,
     });
-    console.log('grade result!', user);
-    await this.userRepository.save(user);
+    try {
+      await this.userRepository.save(user);
+    } catch (err) {
+      return this.convertException.throwError('badInput', '', 500);
+    }
+
     return '회원가입 완료 (사용자)';
   }
 }

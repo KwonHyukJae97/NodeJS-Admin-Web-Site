@@ -1,6 +1,7 @@
-import { NotFoundException } from '@nestjs/common';
+import { Inject, NotFoundException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConvertException } from 'src/common/utils/convert-exception';
 import { Repository } from 'typeorm';
 import { Admin } from '../entities/admin';
 import { GetAdminInfoQuery } from './get-admin-info.query';
@@ -10,7 +11,10 @@ import { GetAdminInfoQuery } from './get-admin-info.query';
  */
 @QueryHandler(GetAdminInfoQuery)
 export class GetAdminInfoQueryHandler implements IQueryHandler<GetAdminInfoQuery> {
-  constructor(@InjectRepository(Admin) private adminRepository: Repository<Admin>) {}
+  constructor(
+    @InjectRepository(Admin) private adminRepository: Repository<Admin>,
+    @Inject(ConvertException) private convertException: ConvertException,
+  ) {}
 
   async execute(query: GetAdminInfoQuery) {
     const { adminId } = query;
@@ -23,7 +27,7 @@ export class GetAdminInfoQueryHandler implements IQueryHandler<GetAdminInfoQuery
       .getOne();
 
     if (!admin) {
-      throw new NotFoundException('Admin does not exist');
+      return this.convertException.throwError('notFound', '관리자', 404);
     }
     //관리자 상세 정보 반환
     return admin;
