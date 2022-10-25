@@ -24,6 +24,12 @@ export class DeleteAdminHandler implements ICommandHandler<DeleteAdminCommand> {
     @Inject('accountFile') private accountFileDb: AccountFileDb,
     private eventBus: EventBus,
   ) {}
+
+  /**
+   * 관리자 삭제 메소드
+   * @param command  : 관리자 삭제에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 완료 메시지 반환
+   */
   async execute(command: DeleteAdminCommand) {
     const { adminId, delDate } = command;
 

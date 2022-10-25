@@ -25,7 +25,7 @@ import axios from 'axios';
 import { UserLoginResDto } from './dto/login-res.dto';
 
 /**
- * 로그인 관련 서비스
+ * Auth 관련 토큰, 검증, 카카오 서비스
  */
 @Injectable()
 export class AuthService {
@@ -40,11 +40,20 @@ export class AuthService {
     private readonly jwtManageService: JwtManageService,
   ) {}
 
-  //아이디 존재 유무
+  /**
+   * account(id) 조회하는 메소드
+   * @param id
+   * @returns
+   */
   public async find(id: string): Promise<Account | undefined> {
     return this.accountRepository.findOne({ where: { id } });
   }
 
+  /**
+   * id 조회하는 메소드
+   * @param id : DB에 조회시 입력한 id
+   * @returns : DB에 조회한 id
+   */
   async getById(id: string) {
     const account = await this.accountRepository.findOneBy({
       id: id,
@@ -53,7 +62,12 @@ export class AuthService {
     return account;
   }
 
-  //회원가입 유무
+  /**
+   * 회원가입의 유무를 검증하는 메소드
+   * @param id
+   * @param plainTextPassword
+   * @returns : 검증후 결과를 리턴
+   */
   public async validateUser(id: string, plainTextPassword: string): Promise<any> {
     try {
       const account = await this.getById(id);
@@ -64,7 +78,12 @@ export class AuthService {
       throw new HttpException('잘못된 인2121증 정보입니다.', HttpStatus.BAD_REQUEST);
     }
   }
-  //비밀번호 체크
+
+  /**
+   * 비밀번호 체크하는 메소드
+   * @param plainTextPassword
+   * @param hashedPassword
+   */
   private async verifyPassword(plainTextPassword: string, hashedPassword: string) {
     const isPasswordMatching = await bcrypt.compare(plainTextPassword, hashedPassword);
 
@@ -73,6 +92,12 @@ export class AuthService {
     }
   }
 
+  /**
+   * 아이디를 조회하는 메소드
+   * @param id
+   * @param showCurrentHashedRefreshToken
+   * @returns : 조회한 아이디를 리턴
+   */
   async getByAccountId(id: string, showCurrentHashedRefreshToken: boolean) {
     const account = await this.accountRepository.findOne({ where: { id } });
     console.log('accountService- Id--------', id);
@@ -88,6 +113,12 @@ export class AuthService {
   }
 
   //snsType 을  포함한 getBySnsType 생성
+  /**
+   * snsType을 조회하는 메소드
+   * @param snsType
+   * @param showCurrentHashedRefreshToken
+   * @returns : 조회한 snsType을 리턴
+   */
   async getBySnsType(snsType: string, showCurrentHashedRefreshToken: boolean) {
     const account = await this.accountRepository.findOne({ where: { snsType } });
     console.log('accountService- Id--------', snsType);
@@ -101,6 +132,12 @@ export class AuthService {
     }
   }
 
+  /**
+   * 리프레쉬 토큰이 유효한지 검증하는 메소드
+   * @param refreshToken
+   * @param id
+   * @returns : 검증 후 결과값을 리턴
+   */
   async getAccountRefreshTokenMatches(
     refreshToken: string,
     id: string,
@@ -120,14 +157,23 @@ export class AuthService {
     }
   }
 
+  /**
+   * 리프레쉬 토큰을 생성하는 메소드
+   * @param refreshToken
+   * @param id
+   */
   async setCurrentRefreshToken(refreshToken: string, id: string) {
     if (refreshToken) {
       refreshToken = await bcrypt.hash(refreshToken, 10);
     }
     await this.accountRepository.update({ id }, { currentHashedRefreshToken: refreshToken });
   }
-
-  //AccessToken 발급
+  /**
+   * AccessToken 을 발급하는 메소드
+   * @param id
+   * @param snsType
+   * @returns : 토큰과 토큰 옵션을 리턴
+   */
   public getCookieWithJwtAccessToken(id: string, snsType: string) {
     const payload = { id, snsType };
     const token = this.jwtService.sign(payload, {
@@ -147,6 +193,12 @@ export class AuthService {
     };
   }
 
+  /**
+   * 카카오 AccessToken 을 발급하는 메소드
+   * @param id
+   * @param snsType
+   * @returns : 토큰과 토큰 옵션을 리턴
+   */
   public kakaoGetCookieWithJwtAccessToken(email: string) {
     const payload = { email };
     const token = this.jwtService.sign(payload, {
@@ -165,7 +217,13 @@ export class AuthService {
       },
     };
   }
-  //RefreshToken 발급
+
+  /**
+   * 리프레쉬토큰을 발급하는 메소드
+   * @param id
+   * @param snsType
+   * @returns : 리프레쉬 토큰과 리프레쉬 토큰 옵션을 리턴
+   */
   public getCookieWithJwtRefreshToken(id: string, snsType: string) {
     const payload = { id, snsType };
     const token = this.jwtService.sign(payload, {
@@ -185,6 +243,12 @@ export class AuthService {
     };
   }
 
+  /**
+   * 카카오 리프레쉬토큰을 발급하는 메소드
+   * @param id
+   * @param snsType
+   * @returns : 카카오 리프레쉬 토큰과 카카오 리프레쉬 토큰 옵션을 리턴
+   */
   public kakaoGetCookieWithJwtRefreshToken(email: string) {
     const payload = { email };
     const token = this.jwtService.sign(payload, {
@@ -205,7 +269,9 @@ export class AuthService {
   }
 
   /**
-   * 관리자 로그인 RefreshToken 발급
+   *  관리자 로그인 메소드
+   * @param param0
+   * @returns : 토큰과 관리자 정보를 리턴
    */
   async loginAdmin({ id, password }: SignInAdminDto) {
     const account = await this.accountRepository.findOne({ where: { id } });
@@ -264,7 +330,9 @@ export class AuthService {
   }
 
   /**
-   * 사용자 로그인 RefreshToken 발급
+   *  관리자 로그인 메소드
+   * @param param0
+   * @returns : 토큰과 관리자 정보를 리턴
    */
   async loginUser({ id, password }: SignInUserDto) {
     const account = await this.accountRepository.findOne({ where: { id } });
@@ -336,6 +404,9 @@ export class AuthService {
     };
   }
 
+  // TODO: 리프레쉬토큰 갱신
+  // jwt refresh token 갱신이 필요한지 확인하여 갱신 처리 후
+  // * 신규 발급받은 token 정보 가져오기
   public async refreshTokenChange(id: string, payload: TokenPayload, refreshToken: string) {
     if (this.jwtManageService.isNeedRefreshTokenChange(refreshToken)) {
       const newRefreshToken = this.jwtManageService.getCookieWithJwtRefreshToken(payload);
@@ -345,7 +416,11 @@ export class AuthService {
     }
   }
 
-  // 이름과 연락처로 해당 아이디 조회
+  /**
+   * 아이디 찾기 메소드
+   * @param param0
+   * @returns : DB에서 조회한 아이디 값을 리턴
+   */
   async findId({ name, phone }: FindIdDto) {
     console.log('아이디 찾기 테스트', name);
     console.log('아이디 찾기 테스트', phone);
@@ -365,7 +440,7 @@ export class AuthService {
   }
 
   /**
-   *
+   * 리프레쉬 토큰 삭제 메소드
    * @param accountId
    * @returns accountId 값으로 해당 사용자의 리프래쉬 토큰을 null처리
    */
@@ -373,7 +448,7 @@ export class AuthService {
     return this.accountRepository.update({ accountId }, { currentHashedRefreshToken: null });
   }
 
-  //kakako 로그인 서비스v1
+  // TODO: 카카오 로그인
   async kakaoLogin(userKakaoDto: UserKakaoDto): Promise<any> {
     const { name, email, birth, gender } = userKakaoDto;
     let user = await this.accountRepository.findOne({ where: { email } });
@@ -400,7 +475,7 @@ export class AuthService {
     return { accessToken, msg: '카카오 로그인 성공' };
   }
 
-  //카카오 사용자 정보 및 토큰 발급
+  // TODO: 카카오 사용자 정보 및 토큰 발급
   async kakaoUserInfo(code: string) {
     const qs = require('qs');
     const body = {
@@ -497,6 +572,7 @@ export class AuthService {
     }
   }
 
+  // TODO: 카카오 로그인 처리 메소드
   async kakaoSignIn(userKakaoDto: UserKakaoDto): Promise<UserLoginResDto> {
     const { name, email, birth, gender } = userKakaoDto;
 
@@ -526,7 +602,11 @@ export class AuthService {
     return loginDto;
   }
 
-  //axios 로 kakaoUserInfo.email 넘겨주고 서비스단 처리 하기 디비값과 비교하여 존재하는지 조회 있으면 로그인 처리
+  /**
+   * 카카오 유저정보 확인 후 FE에 결과값 알려주는 메소드
+   * @param userKakaoDto
+   * @returns : DB에서 snsId 조회 후 결과 값을 리턴
+   */
   async kakaoUserInfos(userKakaoDto: UserKakaoDto) {
     // const { name, email, birth, snsId, snsType, gender } = userKakaoDto;
 
@@ -556,30 +636,5 @@ export class AuthService {
       console.log('2차 가입 정보 필요', sencondDataDto);
       return sencondDataDto;
     }
-    //디비랑 이메일 비교까지 완료
-
-    // console.log('kakao email', email);
-    // if (!user) {
-    //   return false;
-    // } else {
-    //   return true;
   }
 }
-
-/**
- * 휴면 계정처리를 위한 최근 로그인 일시(loginDate)를 체크하는 함수
- * 24시간에 한번씩 체크하여 최근 로그인 시간이 365일을 넘어가는 사용자의 계정을
- * 휴면계정 테이블 (Sleeper)로 넘긴다.
- * 넘길 때 Account 테이블의 true였던 is_active 컬럼을 false로 업데이트 후 넘긴다.
- * Account 테이블에 남겨야 하는 데이터 항목은(?, ?, ? ...)
- *
- */
-
-// public async refreshTokenChange2(id: string, refreshToken: string) {
-//   if (this.jwtManageService.isNeedRefreshTokenChange(refreshToken)) {
-//     const newRefreshToken = this.getCookieWithJwtRefreshToken2(id);
-//     await this.accountService.setCurrentRefreshToken2(id, newRefreshToken.refreshToken);
-
-//     return newRefreshToken;
-//   }
-// }

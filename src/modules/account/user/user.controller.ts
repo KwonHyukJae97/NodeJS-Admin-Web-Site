@@ -21,7 +21,7 @@ import { GetUserInfoQuery } from './query/get-user-info.query';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 /**
- * 앱사용자 가입/로그인 처리 컨트롤러
+ * 앱사용자 정보 조회, 수정, 삭제 처리 API Controller
  */
 @Controller('user')
 export class UserController {

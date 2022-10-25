@@ -18,6 +18,11 @@ export class GetAllAdminQueryHandler implements IQueryHandler<GetAllAdminQuery> 
     @InjectRepository(AccountFile) private fileRepository: Repository<AccountFile>,
   ) {}
 
+  /**
+   * 관리자 리스트 조회 메소드
+   * @param query : 관리자 리스트 조회 쿼리
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 관리자 리스트 반환
+   */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async execute(query: GetAllAdminQuery) {
     const admin = await this.adminRepository.find({});

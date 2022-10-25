@@ -18,6 +18,11 @@ export class GetAdminInfoQueryHandler implements IQueryHandler<GetAdminInfoQuery
     @InjectRepository(AccountFile) private fileRepository: Repository<AccountFile>,
   ) {}
 
+  /**
+   * 관리자 상세 정보 조회 메소드
+   * @param query : 관리자 정보 조회 쿼리
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 관리자 정보 반환
+   */
   async execute(query: GetAdminInfoQuery) {
     const { adminId } = query;
 

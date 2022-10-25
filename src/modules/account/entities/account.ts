@@ -12,7 +12,6 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
-import { AdminModule } from '../admin/admin.module';
 import { Admin } from '../admin/entities/admin';
 import { User } from '../user/entities/user';
 

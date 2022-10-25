@@ -28,6 +28,11 @@ export class UpdateAdminHandler implements ICommandHandler<UpdateAdminCommand> {
     private eventBus: EventBus,
   ) {}
 
+  /**
+   * 관리자 정보 수정 메소드
+   * @param command : 관리자 정보 수정에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 수정 성공 시 수정된 정보 반환
+   */
   async execute(command: UpdateAdminCommand) {
     const { password, email, phone, nickname, roleId, isSuper, adminId, file } = command;
 

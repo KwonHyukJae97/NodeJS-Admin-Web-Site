@@ -9,7 +9,7 @@ import { ConvertException } from 'src/common/utils/convert-exception';
 import * as bcrypt from 'bcryptjs';
 
 /**
- * 사용자 회원가입 Handler
+ * 사용자 회원가입 핸들러
  */
 @Injectable()
 @CommandHandler(SignUpUserCommand)
