@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ConvertException } from 'src/common/utils/convert-exception';
 import { Repository } from 'typeorm';
 import { Account } from '../../entities/account';
 import { Admin } from '../entities/admin';
 import { DeleteAdminCommand } from './delete-admin.command';
+import { ConvertException } from 'src/common/utils/convert-exception';
 
 /**
  * 관리자 정보 삭제용 커맨드 핸들러

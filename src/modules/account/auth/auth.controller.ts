@@ -305,18 +305,6 @@ export class SignController {
   //   return this.authService.kakaoUserInfo(code);
   // }
 
-  /**
-   * 사용자 정보 조회
-   * @returns : account 정보 반환
-   */
-  @Get('me')
-  @UseGuards(JwtAuthGuard)
-  async getAuthInfo(@Req() req) {
-    const authInfo = req.user;
-    console.log('request', authInfo);
-    return authInfo;
-  }
-
   @Post('/kakao')
   async kakaoLoginUserInfo(@Req() req, @Res({ passthrough: true }) response) {
     const userKakaoDto: UserKakaoDto = req.body;

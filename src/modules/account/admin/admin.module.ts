@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConvertException } from 'src/common/utils/convert-exception';
 import { SignUpAdminHandler } from '../auth/command/signup-admin.handler';
 import { Account } from '../entities/account';
 import { AdminController } from './admin.controller';
@@ -11,6 +10,7 @@ import { UpdateAdminHandler } from './command/update-admin.handler';
 import { Admin } from './entities/admin';
 import { GetAdminInfoQueryHandler } from './query/get-admin-info.handler';
 import { GetAllAdminQueryHandler } from './query/get-all-admin.handler';
+import { ConvertException } from 'src/common/utils/convert-exception';
 
 const CommandHandler = [
   SignUpAdminHandler,

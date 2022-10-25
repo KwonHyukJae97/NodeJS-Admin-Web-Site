@@ -1,10 +1,10 @@
 import { Inject, NotFoundException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ConvertException } from 'src/common/utils/convert-exception';
 import { Repository } from 'typeorm';
 import { Admin } from '../entities/admin';
 import { GetAllAdminQuery } from './get-all-admin.query';
+import { ConvertException } from 'src/common/utils/convert-exception';
 
 /**
  * 관리자 전체 조회용 쿼리 핸들러

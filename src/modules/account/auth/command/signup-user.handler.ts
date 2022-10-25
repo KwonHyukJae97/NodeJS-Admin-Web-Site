@@ -5,8 +5,8 @@ import { Account } from 'src/modules/account/entities/account';
 import { User } from 'src/modules/account/user/entities/user';
 import { Repository } from 'typeorm';
 import { SignUpUserCommand } from './signup-user.command';
-import * as bcrypt from 'bcryptjs';
 import { ConvertException } from 'src/common/utils/convert-exception';
+import * as bcrypt from 'bcryptjs';
 
 /**
  * 사용자 회원가입 Handler
