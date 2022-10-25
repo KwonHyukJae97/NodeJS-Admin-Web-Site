@@ -23,6 +23,9 @@ import { GetAdminInfoQuery } from './query/get-admin-info.query';
 import { GetAllAdminQuery } from './query/get-all-admin.query';
 import { FileInterceptor } from '@nestjs/platform-express';
 
+/**
+ * 관리자 정보 조회, 수정, 삭제 처리 API Controller
+ */
 @Controller('admin')
 export class AdminController {
   constructor(private commandBus: CommandBus, private queryBus: QueryBus) {}
@@ -67,6 +70,7 @@ export class AdminController {
 
   /**
    * 관리자 전체 리스트 조회
+   * @returns : 관리자 리스트 조회 커맨드 전송
    */
   @Get()
   getAllAdmin() {
@@ -76,7 +80,8 @@ export class AdminController {
 
   /**
    * 관리자 상세 정보 조회
-   * @Param : user_id
+   * @param : adminId
+   * @returns : 관리자 상세 정보 조회 쿼리 전송
    */
   @Get(':id')
   getAdminInfo(@Param('id') adminId: number) {
@@ -86,7 +91,8 @@ export class AdminController {
 
   /**
    * 관리자 상세 정보 수정
-   * @Param : admin_id
+   * @param : adminId
+   * @returns : 관리자 정보 수정 커맨드 전송
    */
   @Patch(':id')
   @UseInterceptors(FileInterceptor('file'))
@@ -112,7 +118,8 @@ export class AdminController {
 
   /**
    * 관리자 정보 등록
-   * @param dto
+   * @param : dto
+   * @returns : 관리자 정보 등록 커맨드 전송
    */
   @Post()
   async createAdmin(@Body(ValidationPipe) dto: CreateAdminDto): Promise<string> {
@@ -150,7 +157,8 @@ export class AdminController {
 
   /**
    * 관리자 정보 삭제
-   * @ param : user_id
+   * @Param : admin_id
+   * @return : 관리자 정보 삭제 커맨드 전송
    */
   @Delete(':id')
   deleteAdmin(@Param('id') adminId: number, delDate: Date) {

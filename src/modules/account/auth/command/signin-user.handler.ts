@@ -8,6 +8,9 @@ import * as bcrypt from 'bcrypt';
 import { SignInUserCommand } from './signin-user.command';
 import { AuthService } from '../auth.service';
 
+/**
+ * 사용자 로그인 핸들러
+ */
 @Injectable()
 @CommandHandler(SignInUserCommand)
 export class SignInUserHandler implements ICommandHandler<SignInUserCommand> {

@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { AuthService3 } from './auth.service';
 import { LocalAuthGuard } from '../../guard/local/local-auth.guard';
-import JwtAuthGuard2 from '../../guard/jwt/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/guard/jwt/jwt-auth.guard';
 import { response } from 'express';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import JwtRefreshAuthGuard from 'src/guard/jwt/jwt-refresh-auth.guard';

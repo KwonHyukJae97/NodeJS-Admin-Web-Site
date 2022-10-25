@@ -1,6 +1,6 @@
 import { IsEmail, IsNotEmpty, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 /**
- * 관리자 등록을 위한 DTO
+ * 관리자 등록을 위한 dto 정의
  */
 export class CreateAdminDto {
   @IsNotEmpty()
@@ -20,7 +20,7 @@ export class CreateAdminDto {
   @MaxLength(80)
   readonly name: string;
 
-  @IsNotEmpty()
+  // @IsNotEmpty()
   @IsEmail()
   @Matches(/^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i, {
     message: '이메일 양식에 맞게 입력해주세요.',

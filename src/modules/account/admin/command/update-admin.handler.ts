@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConvertException } from 'src/common/utils/convert-exception';
 import { Repository } from 'typeorm';
 import { Account } from '../../entities/account';
 import { Admin } from '../entities/admin';
@@ -21,11 +22,17 @@ export class UpdateAdminHandler implements ICommandHandler<UpdateAdminCommand> {
   constructor(
     @InjectRepository(Admin) private adminRepository: Repository<Admin>,
     @InjectRepository(Account) private accountRepository: Repository<Account>,
+    @Inject(ConvertException) private convertException: ConvertException,
     @InjectRepository(AccountFile) private fileRepository: Repository<AccountFile>,
     @Inject('accountFile') private accountFileDb: AccountFileDb,
     private eventBus: EventBus,
   ) {}
 
+  /**
+   * 관리자 정보 수정 메소드
+   * @param command : 관리자 정보 수정에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 수정 성공 시 수정된 정보 반환
+   */
   async execute(command: UpdateAdminCommand) {
     const { password, email, phone, nickname, roleId, isSuper, adminId, file } = command;
 
@@ -33,19 +40,40 @@ export class UpdateAdminHandler implements ICommandHandler<UpdateAdminCommand> {
     const accountId = admin.accountId.accountId;
     const account = await this.accountRepository.findOneBy({ accountId: accountId });
 
-    admin.roleId = roleId;
-    admin.isSuper = isSuper;
-    await this.adminRepository.save(admin);
+    //역할번호 수정
+    try {
+      admin.roleId = roleId;
+      // admin.isSuper = isSuper;
+      await this.adminRepository.save(admin);
+    } catch (err) {
+      console.log(err);
+      return this.convertException.badRequestError('역할번호에', 400);
+    }
+
+    //관리자타입 수정
+    try {
+      admin.isSuper = isSuper;
+      await this.adminRepository.save(admin);
+    } catch (err) {
+      console.log(err);
+      return this.convertException.badRequestError('관리자타입에', 400);
+    }
 
     // 비밀번호 암호화 저장 (bcrypt)
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    account.password = hashedPassword;
-    account.email = email;
-    account.phone = phone;
-    account.nickname = nickname;
-    await this.accountRepository.save(account);
+    try {
+      account.password = hashedPassword;
+      account.email = email;
+      account.phone = phone;
+      account.nickname = nickname;
+      await this.accountRepository.save(account);
+    } catch (err) {
+      console.log(err);
+      //저장 실패 에러 메시지 반환
+      return this.convertException.CommonError(500);
+    }
 
     const accountFile = await this.fileRepository.findOneBy({ accountId: accountId });
 

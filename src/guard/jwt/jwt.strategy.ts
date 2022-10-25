@@ -32,8 +32,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
   //Account 엔티티와 연동 here
   async validate(payload: TokenPayload) {
-    console.log('----payload----', payload);
-    console.log('--------idididi-------------', payload.id);
-    return await this.authService.getByAccountId(payload.id, false);
+    //snsType 의 값이 null이면 일반 로그인 사용자, null이 아니면 소셜로그인 사용자
+    if (payload.snsType == null) {
+      return await this.authService.getByAccountId(payload.id, false);
+    } else {
+      return await this.authService.getBySnsType(payload.snsType, false);
+    }
   }
 }

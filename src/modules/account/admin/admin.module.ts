@@ -25,6 +25,7 @@ const QueryHandler = [GetAdminInfoQueryHandler, GetAllAdminQueryHandler];
 @Module({
   imports: [TypeOrmModule.forFeature([Account, Admin, AccountFile]), CqrsModule],
   controllers: [AdminController],
+
   providers: [
     ...CommandHandler,
     ...QueryHandler,
