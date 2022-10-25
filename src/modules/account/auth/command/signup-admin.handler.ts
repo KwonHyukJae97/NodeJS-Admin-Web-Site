@@ -76,7 +76,7 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
         await this.accountRepository.save(accountAdmin);
       } catch (err) {
         console.log(err);
-        return this.convertException.throwError('badInput', '관리자 회원가입에 ', 400);
+        return this.convertException.badRequestError('관리자 회원가입에 ', 400);
       }
     }
 
@@ -89,7 +89,7 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
     try {
       await this.adminRepository.save(admin);
     } catch (err) {
-      return this.convertException.throwError('badInput', '', 500);
+      return this.convertException.CommonError(500);
     }
 
     return '회원가입 완료(관리자)';
