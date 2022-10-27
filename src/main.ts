@@ -8,10 +8,10 @@ import { GlobalExceptionFilter } from './common/exception/GlobalException.Filter
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     //CORS 허용
-    cors: {
-      origin: 'http://localhost:3002',
-      credentials: true,
-    },
+    // cors: {
+    //   origin: 'http://localhost:3002',
+    //   credentials: true,
+    // },
   });
   app.useGlobalPipes(
     new ValidationPipe({
@@ -29,6 +29,6 @@ async function bootstrap() {
     credentials: true,
   });
   app.useGlobalFilters(new GlobalExceptionFilter());
-  await app.listen(3000);
+  await app.listen(process.env.SERVER_PORT || 3000);
 }
 bootstrap();
