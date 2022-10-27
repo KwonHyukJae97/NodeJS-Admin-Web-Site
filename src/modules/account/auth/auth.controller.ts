@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-import JwtAuthGuard2 from 'src/guard/jwt/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/guard/jwt/jwt-auth.guard';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { LocalAuthGuard } from 'src/guard/local/local-auth.guard';
 import { AccountService } from 'src/modules/account-bak/account.service';
@@ -32,9 +32,10 @@ import { SignInAdminCommand } from './command/signin-admin.command';
 import { SignInUserCommand } from './command/signin-user.command';
 import { SignInUserHandler } from './command/signin-user.handler';
 import { UserLoginResDto } from './dto/login-res.dto';
+import JwtRefreshAuthGuard from 'src/guard/jwt/jwt-refresh-auth.guard';
 
 /**
- * 회원가입, 로그인 등 계정 관련 auth 컨트롤러
+ * 회원가입, 로그인 등 계정 관련 auth API controller
  */
 @Controller('auth')
 export class SignController {
@@ -61,7 +62,9 @@ export class SignController {
   }
 
   /**
-   * 관리자 회원가입 컨트롤러
+   * 관리자 회원가입 메소드
+   * @param SignUpAdminDto : 관리자 회원가입에 필요한 dto
+   * @returns : 관리자 회원가입 커맨드 전송
    */
   @Post('/register/admin')
   async signUpAdmin(@Body(ValidationPipe) SignUpAdminDto: SignUpAdminDto): Promise<string> {
@@ -98,7 +101,9 @@ export class SignController {
   }
 
   /**
-   * 사용자 회원가입 컨트롤러
+   * 사용자 회원가입 메소드
+   * @param SignUpUserDto : 사용자 회원가입에 필요한 dto
+   * @returns : 사용자 회원가입 커맨드 전송
    */
   @Post('/register/user')
   async signUpUser(@Body(ValidationPipe) SignUpUserDto: SignUpUserDto): Promise<string> {
@@ -120,10 +125,9 @@ export class SignController {
   }
 
   /**
-   *
-   * @param signInAdminDto
-   * @param response
-   * @returns SignInAdminCommand에 로그인 정보를 담아 SignInAdminHandler에 보낸후 절차를 걸쳐 통과되면 토큰을 발급하여 command를 리턴
+   * 관리자 로그인 메소드
+   * @param signInAdminDto : 관리자 로그인에 필요한 dto
+   * @returns : 관리자 로그인 커맨드 전송
    */
   @UseGuards(LocalAuthGuard)
   @Post('/login/admin')
@@ -136,8 +140,14 @@ export class SignController {
     console.log('cqrs 방식 관리자 로그인 테스트', signInAdminDto);
 
     const command = new SignInAdminCommand(id, password);
-    const { accessToken, accessOption } = await this.authService.getCookieWithJwtAccessToken(id);
-    const { refreshToken, refreshOption } = await this.authService.getCookieWithJwtRefreshToken(id);
+    const { accessToken, accessOption } = await this.authService.getCookieWithJwtAccessToken(
+      id,
+      null,
+    );
+    const { refreshToken, refreshOption } = await this.authService.getCookieWithJwtRefreshToken(
+      id,
+      null,
+    );
 
     await this.authService.setCurrentRefreshToken(refreshToken, id);
 
@@ -152,10 +162,9 @@ export class SignController {
   }
 
   /**
-   *
-   * @param signInUserDto
-   * @param response
-   * @returns SignInUserCommand에 로그인 정보를 담아 SignInUserHandler에 보낸후 절차를 걸쳐 통과되면 토큰을 발급하여 command를 리턴
+   * 사용자 로그인 메소드
+   * @param signInAdminDto :사용자 로그인에 필요한 dto
+   * @returns : 사용자 로그인 커맨드 전송
    */
   @UseGuards(LocalAuthGuard)
   @Post('/login/user')
@@ -169,8 +178,14 @@ export class SignController {
 
     const command = new SignInUserCommand(id, password);
 
-    const { accessToken, accessOption } = await this.authService.getCookieWithJwtAccessToken(id);
-    const { refreshToken, refreshOption } = await this.authService.getCookieWithJwtRefreshToken(id);
+    const { accessToken, accessOption } = await this.authService.getCookieWithJwtAccessToken(
+      id,
+      null,
+    );
+    const { refreshToken, refreshOption } = await this.authService.getCookieWithJwtRefreshToken(
+      id,
+      null,
+    );
 
     await this.authService.setCurrentRefreshToken(refreshToken, id);
 
@@ -183,7 +198,7 @@ export class SignController {
     return this.commandBus.execute(command);
   }
 
-  //관리자 로그인 테스트
+  // TODO : 관리자 로그인 테스트
   @HttpCode(200)
   @UseGuards(LocalAuthGuard)
   @Post('/login/admin/test')
@@ -202,7 +217,7 @@ export class SignController {
     return { account };
   }
 
-  //사용자 로그인 테스트
+  // TODO : 사용자 로그인 테스트
   @HttpCode(200)
   @UseGuards(LocalAuthGuard)
   @Post('/login/user/test')
@@ -222,12 +237,12 @@ export class SignController {
   }
 
   /**
-   *
+   * 관리자 로그아웃 메소드
    * @param request
    * @param response
    * @returns 로그아웃시 엑세스, 리프래쉬 토큰 옵션을 초기화 시키고 상태 값 리턴
    */
-  @UseGuards(JwtAuthGuard2)
+  @UseGuards(JwtAuthGuard)
   @Post('/logout/admin')
   async logoutAdmin(@Req() request, @Res() response) {
     const { accessOption, refreshOption } = this.authService.getCookiesForLogOut2();
@@ -239,12 +254,12 @@ export class SignController {
   }
 
   /**
-   *
-   * @param request
-   * @param response
-   * @returns 로그아웃시 엑세스, 리프래쉬 토큰 옵션을 초기화 시키고 상태 값 리턴
+   * 사용자 로그아웃 메소드
+   * @param : request
+   * @param : response
+   * @returns : 로그아웃시 엑세스, 리프래쉬 토큰 옵션을 초기화 시키고 상태 값 리턴
    */
-  @UseGuards(JwtAuthGuard2)
+  @UseGuards(JwtAuthGuard)
   @Post('/logout/user')
   async logoutUser(@Req() request, @Res() response) {
     const { accessOption, refreshOption } = this.authService.getCookiesForLogOut2();
@@ -256,9 +271,9 @@ export class SignController {
   }
 
   /**
-   *
-   * @param findIdDto
-   * @returns findIdDto(name, phone)을 findId라는 변수에 담아 리턴
+   * 아이디 찾기 메소드
+   * @param  findIdDto : 아이디 찾기에 필요한 dto
+   * @returns : findIdDto(name, phone)을 findId라는 변수에 담아 리턴
    */
   @Post('/find_id')
   async findId(@Body(ValidationPipe) findIdDto: FindIdDto) {
@@ -267,137 +282,72 @@ export class SignController {
     return findid;
   }
 
-  // @Get('/kakao')
-  // @UseGuards(AuthGuard('kakao'))
-  // async kakaoLogin() {
-  //   return HttpStatus.OK;
-  // }
-
-  // //kakako 로그인 v1
-  // @Get('/kakao/callback')
-  // @UseGuards(AuthGuard('kakao'))
-  // async kakaoLoginCallback(@Req() request): Promise<any> {
-  //   return this.authService.kakaoLogin(request.user as UserKakaoDto);
-  // }
-
-  //kakao 로그인 v1
-  // @Get('/kakao')
-  // @UseGuards(AuthGuard('kakao'))
-  // async kakaoLogin() {
-  //   return HttpStatus.OK;
-  // }
-
-  // //kakako 로그인 v1
-  // @Get('/kakao/callback')
-  // @UseGuards(AuthGuard('kakao'))
-  // async kakaoLoginCallback(@Req() request): Promise<{ accessToken: string }> {
-  //   const code = request.query.code;
-  //   return this.authService.kakaoUserInfo(code);
-  // }
-
-  // @Get('/kakao')
-  // // @UseGuards(AuthGuard('kakao'))
-  // async kakaoLogin(@Req() req) {
-  //   const code = req.query.code;
-  //   console.log('카카오 인가코드', code);
-  //   return this.authService.kakaoUserInfo(code);
-  // }
-
-  // FE에서 넘겨받을 정보들을 담을 DTO를 생성하여 받고, 현재 컨트롤러는 email을 서비스로 넘기고 서비스는 kakaoUserInfo로 받음. 통일시키기
+  /**
+   * 카카오 로그인 메소드
+   * @param req : FE에서 넘어오는 카카오 유저 정보
+   * @returns : 카카오 유저정보를 담은 dto를 카카오 로그인 서비스에 전송
+   */
   @Post('/kakao')
-  async kakaoLoginUserInfo(@Req() req) {
+  async kakaoLoginUserInfo(@Req() req, @Res({ passthrough: true }) response) {
     const userKakaoDto: UserKakaoDto = req.body;
-    console.log('프론트에서 넘어오니~?', userKakaoDto);
+    console.log('프론트에서 넘어오는 카카오 유저데이터', userKakaoDto);
+
+    const id = userKakaoDto.snsId;
+    const snsType = '01';
+
+    const { accessToken, accessOption } = await this.authService.getCookieWithJwtAccessToken(
+      id,
+      snsType,
+    );
+    const { refreshToken, refreshOption } = await this.authService.getCookieWithJwtRefreshToken(
+      id,
+      snsType,
+    );
+
+    await this.authService.setCurrentRefreshToken(refreshToken, id);
+
+    response.cookie('authentication', accessToken, accessOption);
+    response.cookie('Refresh', refreshToken, refreshOption);
+
     return this.authService.kakaoUserInfos(userKakaoDto);
   }
 
+  // TODO: 카카오 로그인 콜백
   @Post('/kakao/callback')
   // @UseGuards(AuthGuard('kakao'))
   async kakaoLoginCallback(@Req() req): Promise<UserLoginResDto> {
     const userKakaoDto: UserKakaoDto = req.body;
     return this.authService.kakaoSignIn(userKakaoDto);
   }
-  //휴면계정 처리
-  // @Get('/sleeper')
-  // @HttpCode(200)
-  // async sleeperCheck() {
-  //   return HttpStatus.OK;
-  // }
 
-  // @UseGuards(JwtRefreshAuthGuard)
-  // @Post('/refresh')
-  // async refresh(@Req() request, @Res() response) {
-  //   const account: Account = request.user;
+  // TODO: 리프레쉬 토큰
+  @UseGuards(JwtRefreshAuthGuard)
+  @Post('/refresh')
+  async refresh(@Req() request, @Res() response) {
+    const account: Account = request.user;
 
-  //   if (account) {
-  //     const payload: TokenPayload2 = {
-  //       accountId: account.accountId,
-  //       id: account.id,
-  //     };
-  //     const { accessToken, accessOption } =
-  //       this.jwtManageService.getCookieWithJwtAccessToken(payload);
-  //     response.cookie('authentication', accessToken, accessOption);
+    if (account) {
+      const payload: TokenPayload = {
+        accountId: account.accountId,
+        id: account.id,
+        snsType: account.snsType,
+      };
+      const { accessToken, accessOption } =
+        this.jwtManageService.getCookieWithJwtAccessToken(payload);
+      response.cookie('authentication', accessToken, accessOption);
 
-  //     const refreshToken = request?.cookies?.refresh;
-  //     const newRefreshToken = await this.authService.refreshTokenChange(
-  //       account.accountId,
-  //       payload,
-  //       refreshToken,
-  //     );
-  //     if (newRefreshToken) {
-  //       response.cookie('refresh', newRefreshToken.refreshToken, newRefreshToken.refreshOption);
-  //     }
-  //   }
-  //   return response.send({
-  //     userData: request.user,
-  //   });
-  // }
-
-  // @UseGuards(JwtRefreshAuthGuard)
-  // @Post('/refresh')
-  // refresh(@Req() request, @Res({ passthrough: true }) response) {
-  //   const user = request.user;
-  //   const { accessToken, ...accessOption } = this.authService.getCookieWithJwtAccessToken2(
-  //     request.user.id,
-  //   );
-  //   response.cookie('authentication', accessToken, accessOption);
-  //   return user;
-  // }
-
-  // RefreshToken 유효한지 확인 후 AccessToken 발급
-  // @UseGuards(JwtRefreshAuthGuard)
-  // @Post('/refresh2')
-  // async refresh2(@Req() request, @Res() response) {
-  //   const account: Account = request.user;
-  //   if (account) {
-  //     const { accessToken, accessOption } = await this.authService.getCookieWithJwtAccessToken2(
-  //       account.id,
-  //     );
-  //     response.cookie('authentication', accessToken, accessOption);
-  //     return { account };
-  //   }
-  // }
-
-  // const account: Account = request.user;
-
-  // if (account) {
-  //   const payload: TokenPayload2 = {
-  //     accountId: account.accountId,
-  //     id: account.id,
-  //   };
-  //   const { accessToken, accessOption } = this.authService.getCookieWithJwtAccessToken2(payload);
-  //   response.cookie('Authoriztion', accessToken, accessOption);
-
-  //   const refreshToken = request?.cookies?.refresh;
-  //   const newRefreshToken = await this.authService.refreshTokenChange2(
-  //     account.accountId,
-  //     payload,
-  //     refreshToken,
-  //   );
-
-  //   if (newRefreshToken) {
-  //     response.cookie('refresh', newRefreshToken.refreshToken, newRefreshToken.refreshOption);
-  //   }
-  // }
-  // }
+      const refreshToken = request?.cookies?.refresh;
+      const newRefreshToken = await this.authService.refreshTokenChange(
+        account.id,
+        payload,
+        refreshToken,
+      );
+      if (newRefreshToken) {
+        response.cookie('refresh', newRefreshToken.refreshToken, newRefreshToken.refreshOption);
+      }
+    }
+    return response.send({
+      userData: request.user,
+    });
+  }
 }

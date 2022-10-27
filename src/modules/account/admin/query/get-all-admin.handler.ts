@@ -1,9 +1,10 @@
-import { NotFoundException } from '@nestjs/common';
+import { Inject, NotFoundException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Admin } from '../entities/admin';
 import { GetAllAdminQuery } from './get-all-admin.query';
+import { ConvertException } from 'src/common/utils/convert-exception';
 import { AccountFile } from '../../../file/entities/account-file';
 
 /**
@@ -13,14 +14,20 @@ import { AccountFile } from '../../../file/entities/account-file';
 export class GetAllAdminQueryHandler implements IQueryHandler<GetAllAdminQuery> {
   constructor(
     @InjectRepository(Admin) private adminRepository: Repository<Admin>,
+    @Inject(ConvertException) private convertException: ConvertException,
     @InjectRepository(AccountFile) private fileRepository: Repository<AccountFile>,
   ) {}
 
+  /**
+   * 관리자 리스트 조회 메소드
+   * @param query : 관리자 리스트 조회 쿼리
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 관리자 리스트 반환
+   */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async execute(query: GetAllAdminQuery) {
     const admin = await this.adminRepository.find({});
     if (!admin) {
-      throw new NotFoundException('Admin does not exist');
+      return this.convertException.notFoundError('관리자', 404);
     }
     // 관리자 전체 리스트 반환
     // console.log('adminList', admin);
