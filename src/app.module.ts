@@ -19,13 +19,14 @@ import { FaqModule } from './modules/board/faq/faq.module';
 import { SecondAuthModule } from './modules/account/auth/auth.module';
 import { FileModule } from './modules/file/file.module';
 import { TemporaryModule } from './modules/temporary/temporary.module';
-import { UserModule } from './modules/account/user/user.module';
-import { AdminModule } from './modules/account/admin/admin.module';
+
 import { AccountModule } from './modules/account/account.module';
 import { TranslatorModule } from 'nestjs-translator';
 import { ExceptionModule } from './common/exception/Exception.module';
 import { APP_FILTER } from '@nestjs/core';
 import { TranslatorFilter } from 'nestjs-translator';
+import { UserModule } from './modules/account/user/user.module';
+import { AdminModule } from './modules/account/admin/admin.module';
 
 @Module({
   imports: [

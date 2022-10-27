@@ -20,6 +20,8 @@ import { SignInUserHandler } from './command/signin-user.handler';
 import { AccountFileDb } from '../account-file-db';
 import { AccountFile } from '../../file/entities/account-file';
 import { ConvertException } from '../../../common/utils/convert-exception';
+import { JwtStrategy } from 'src/guard/jwt/jwt.strategy';
+import { LocalStrategy } from 'src/guard/local/local.strategy';
 
 @Module({
   imports: [
@@ -48,6 +50,8 @@ import { ConvertException } from '../../../common/utils/convert-exception';
     AccountService,
     JwtManageService,
     ConvertException,
+    JwtStrategy,
+    LocalStrategy,
     { provide: 'accountFile', useClass: AccountFileDb },
   ],
 })

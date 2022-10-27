@@ -55,9 +55,11 @@ export class SignController {
    * @returns : account 정보 반환
    */
   @Get('me')
-  @UseGuards(AuthGuard())
+  @UseGuards(JwtAuthGuard)
   async getAuthInfo(@Req() req) {
     const authInfo = req.user;
+    console.log('kakao test');
+    console.log('카카오 정보', req.user);
     return authInfo;
   }
 
@@ -292,19 +294,18 @@ export class SignController {
     const userKakaoDto: UserKakaoDto = req.body;
     console.log('프론트에서 넘어오는 카카오 유저데이터', userKakaoDto);
 
-    const id = userKakaoDto.snsId;
+    const snsId = userKakaoDto.snsId;
+    console.log('controller snsId??', snsId);
     const snsType = '01';
 
-    const { accessToken, accessOption } = await this.authService.getCookieWithJwtAccessToken(
-      id,
+    const { accessToken, accessOption } = await this.authService.kakaoGetCookieWithJwtAccessToken(
+      snsId,
       snsType,
     );
-    const { refreshToken, refreshOption } = await this.authService.getCookieWithJwtRefreshToken(
-      id,
-      snsType,
-    );
+    const { refreshToken, refreshOption } =
+      await this.authService.kakaoGetCookieWithJwtRefreshToken(snsId, snsType);
 
-    await this.authService.setCurrentRefreshToken(refreshToken, id);
+    await this.authService.setCurrentRefreshToken2(refreshToken, snsId);
 
     response.cookie('authentication', accessToken, accessOption);
     response.cookie('Refresh', refreshToken, refreshOption);
@@ -331,6 +332,7 @@ export class SignController {
         accountId: account.accountId,
         id: account.id,
         snsType: account.snsType,
+        snsId: account.snsId,
       };
       const { accessToken, accessOption } =
         this.jwtManageService.getCookieWithJwtAccessToken(payload);

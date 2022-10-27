@@ -7,11 +7,11 @@ import { GlobalExceptionFilter } from './common/exception/GlobalException.Filter
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    //CORS 허용
-    cors: {
-      origin: 'http://localhost:3002',
-      credentials: true,
-    },
+    //CORS 허용 (추후에 삭제)
+    // cors: {
+    //   origin: 'http://localhost:3002',
+    //   credentials: true,
+    // },
   });
   app.useGlobalPipes(
     new ValidationPipe({

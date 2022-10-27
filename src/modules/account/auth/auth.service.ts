@@ -68,14 +68,14 @@ export class AuthService {
    * @param plainTextPassword
    * @returns : 검증후 결과를 리턴
    */
-  public async validateUser(id: string, plainTextPassword: string): Promise<any> {
+  public async validate(id: string, plainTextPassword: string): Promise<any> {
     try {
       const account = await this.getById(id);
       await this.verifyPassword(plainTextPassword, account.password);
       const { password, ...result } = account;
       return result;
     } catch (error) {
-      throw new HttpException('잘못된 인2121증 정보입니다.', HttpStatus.BAD_REQUEST);
+      throw new HttpException('잘못된 인증 정보입니다.', HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -98,8 +98,8 @@ export class AuthService {
    * @param showCurrentHashedRefreshToken
    * @returns : 조회한 아이디를 리턴
    */
-  async getByAccountId(id: string, showCurrentHashedRefreshToken: boolean) {
-    const account = await this.accountRepository.findOne({ where: { id } });
+  async getByAccountId(id: string, snsType: string, showCurrentHashedRefreshToken: boolean) {
+    const account = await this.accountRepository.findOne({ where: { id, snsType } });
     console.log('accountService- Id--------', id);
     console.log('accountService- account--------', account);
     if (account) {
@@ -119,9 +119,10 @@ export class AuthService {
    * @param showCurrentHashedRefreshToken
    * @returns : 조회한 snsType을 리턴
    */
-  async getBySnsType(snsType: string, showCurrentHashedRefreshToken: boolean) {
-    const account = await this.accountRepository.findOne({ where: { snsType } });
-    console.log('accountService- Id--------', snsType);
+  async getBySnsType(snsType: string, snsId: string, showCurrentHashedRefreshToken: boolean) {
+    const account = await this.accountRepository.findOne({ where: { snsType, snsId } });
+    console.log('snsType--------', snsType);
+    console.log('snsId--------', snsId);
     if (account) {
       delete account.password;
       if (!showCurrentHashedRefreshToken) {
@@ -168,6 +169,13 @@ export class AuthService {
     }
     await this.accountRepository.update({ id }, { currentHashedRefreshToken: refreshToken });
   }
+
+  async setCurrentRefreshToken2(refreshToken: string, snsId: string) {
+    if (refreshToken) {
+      refreshToken = await bcrypt.hash(refreshToken, 10);
+    }
+    await this.accountRepository.update({ snsId }, { currentHashedRefreshToken: refreshToken });
+  }
   /**
    * AccessToken 을 발급하는 메소드
    * @param id
@@ -199,8 +207,8 @@ export class AuthService {
    * @param snsType
    * @returns : 토큰과 토큰 옵션을 리턴
    */
-  public kakaoGetCookieWithJwtAccessToken(email: string) {
-    const payload = { email };
+  public kakaoGetCookieWithJwtAccessToken(snsId: string, snsType: string) {
+    const payload = { snsId, snsType };
     const token = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
       expiresIn: `${this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}s`,
@@ -249,8 +257,8 @@ export class AuthService {
    * @param snsType
    * @returns : 카카오 리프레쉬 토큰과 카카오 리프레쉬 토큰 옵션을 리턴
    */
-  public kakaoGetCookieWithJwtRefreshToken(email: string) {
-    const payload = { email };
+  public kakaoGetCookieWithJwtRefreshToken(snsId: string, snsType: string) {
+    const payload = { snsId, snsType };
     const token = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
       expiresIn: `${this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')}s`,
@@ -330,7 +338,7 @@ export class AuthService {
   }
 
   /**
-   *  관리자 로그인 메소드
+   *  사용자 로그인 메소드
    * @param param0
    * @returns : 토큰과 관리자 정보를 리턴
    */
@@ -449,128 +457,128 @@ export class AuthService {
   }
 
   // TODO: 카카오 로그인
-  async kakaoLogin(userKakaoDto: UserKakaoDto): Promise<any> {
-    const { name, email, birth, gender } = userKakaoDto;
-    let user = await this.accountRepository.findOne({ where: { email } });
-    if (!user) {
-      user = this.accountRepository.create({
-        name,
-        email,
-        birth,
-        gender,
-      });
-      try {
-        await this.accountRepository.save(user);
-      } catch (error) {
-        if (error.code === '23505') {
-          throw new ConflictException('Existing User');
-        } else {
-          throw new InternalServerErrorException();
-        }
-      }
-    }
-    const payload = { id: user.id, accessToken: userKakaoDto.accessToken };
-    const accessToken = await this.jwtService.sign(payload);
+  // async kakaoLogin(userKakaoDto: UserKakaoDto): Promise<any> {
+  //   const { name, email, birth, gender } = userKakaoDto;
+  //   let user = await this.accountRepository.findOne({ where: { email } });
+  //   if (!user) {
+  //     user = this.accountRepository.create({
+  //       name,
+  //       email,
+  //       birth,
+  //       gender,
+  //     });
+  //     try {
+  //       await this.accountRepository.save(user);
+  //     } catch (error) {
+  //       if (error.code === '23505') {
+  //         throw new ConflictException('Existing User');
+  //       } else {
+  //         throw new InternalServerErrorException();
+  //       }
+  //     }
+  //   }
+  //   const payload = { id: user.id, accessToken: userKakaoDto.accessToken };
+  //   const accessToken = await this.jwtService.sign(payload);
 
-    return { accessToken, msg: '카카오 로그인 성공' };
-  }
+  //   return { accessToken, msg: '카카오 로그인 성공' };
+  // }
 
-  // TODO: 카카오 사용자 정보 및 토큰 발급
-  async kakaoUserInfo(code: string) {
-    const qs = require('qs');
-    const body = {
-      grant_type: 'authorization_code',
-      client_id: '214f882001474304a397de3fa79c9de0',
-      redirect_uri: 'http://localhost:3000/auth/kakao',
-      code: code,
-    };
-    const headers = {
-      'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
-    };
-    try {
-      // 1- 인가코드와 그외 필요한 요청 값을 담아 카카오 서버 /oauth/token으로 토큰 요청
-      const response = await axios({
-        method: 'POST',
-        url: 'https://kauth.kakao.com/oauth/token',
-        timeout: 30000,
-        headers,
-        data: qs.stringify(body),
-      });
+  // // TODO: 카카오 사용자 정보 및 토큰 발급
+  // async kakaoUserInfo(code: string) {
+  //   const qs = require('qs');
+  //   const body = {
+  //     grant_type: 'authorization_code',
+  //     client_id: '214f882001474304a397de3fa79c9de0',
+  //     redirect_uri: 'http://localhost:3000/auth/kakao',
+  //     code: code,
+  //   };
+  //   const headers = {
+  //     'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+  //   };
+  //   try {
+  //     // 1- 인가코드와 그외 필요한 요청 값을 담아 카카오 서버 /oauth/token으로 토큰 요청
+  //     const response = await axios({
+  //       method: 'POST',
+  //       url: 'https://kauth.kakao.com/oauth/token',
+  //       timeout: 30000,
+  //       headers,
+  //       data: qs.stringify(body),
+  //     });
 
-      const kakaoAccessToken: string = response.data.access_token;
+  //     const kakaoAccessToken: string = response.data.access_token;
 
-      if (response.status === 200) {
-        const headerUserInfo = {
-          'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
-          Authorization: 'Bearer ' + kakaoAccessToken,
-        };
+  //     if (response.status === 200) {
+  //       const headerUserInfo = {
+  //         'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+  //         Authorization: 'Bearer ' + kakaoAccessToken,
+  //       };
 
-        // 2- 카카오로부터 받은 토큰 값 헤더에 담아 카카오 서버 /v2/user/me로 사용자 정보 요청
-        const responseUserInfo = await axios({
-          method: 'GET',
-          url: 'https://kapi.kakao.com/v2/user/me',
-          timeout: 30000,
-          headers: headerUserInfo,
-        });
+  //       // 2- 카카오로부터 받은 토큰 값 헤더에 담아 카카오 서버 /v2/user/me로 사용자 정보 요청
+  //       const responseUserInfo = await axios({
+  //         method: 'GET',
+  //         url: 'https://kapi.kakao.com/v2/user/me',
+  //         timeout: 30000,
+  //         headers: headerUserInfo,
+  //       });
 
-        // 3- 카카오로부터 받은 사용자 정보들 중에서 필요한 값만 담아 응답값 반환
-        if (responseUserInfo.status === 200) {
-          const kakaoUserInfo = {
-            email: responseUserInfo.data.kakao_account.email,
-            name: responseUserInfo.data.kakao_account.profile.nickname,
-            birth: responseUserInfo.data.kakao_account.birthday,
-            gender: responseUserInfo.data.kakao_account.gender,
-            kakaoAccessToken: kakaoAccessToken,
-            kakaoAccount: responseUserInfo.data.kakao_account,
-          };
+  //       // 3- 카카오로부터 받은 사용자 정보들 중에서 필요한 값만 담아 응답값 반환
+  //       if (responseUserInfo.status === 200) {
+  //         const kakaoUserInfo = {
+  //           email: responseUserInfo.data.kakao_account.email,
+  //           name: responseUserInfo.data.kakao_account.profile.nickname,
+  //           birth: responseUserInfo.data.kakao_account.birthday,
+  //           gender: responseUserInfo.data.kakao_account.gender,
+  //           kakaoAccessToken: kakaoAccessToken,
+  //           kakaoAccount: responseUserInfo.data.kakao_account,
+  //         };
 
-          const { name, email, birth, gender } = kakaoUserInfo;
-          const { accessToken, accessOption } = await this.kakaoGetCookieWithJwtAccessToken(email);
+  //         const { name, email, birth, gender } = kakaoUserInfo;
+  //         const { accessToken, accessOption } = await this.kakaoGetCookieWithJwtAccessToken();
 
-          const { refreshToken, refreshOption } = await this.kakaoGetCookieWithJwtRefreshToken(
-            email,
-          );
-          await this.setCurrentRefreshToken(refreshToken, email);
-          let user = await this.accountRepository.findOneBy({ email });
+  //         const { refreshToken, refreshOption } = await this.kakaoGetCookieWithJwtRefreshToken(
+  //           email,
+  //         );
+  //         await this.setCurrentRefreshToken(refreshToken, email);
+  //         let user = await this.accountRepository.findOneBy({ email });
 
-          // 카카오 로그인시 해당 이메일을 account 테이블에서 비교후 없을시 회원가입과 동시에 로그인 있으면 즉시 로그인
-          if (!user) {
-            user = this.accountRepository.create({
-              email,
-              name,
-              birth: '19971113',
-              gender: '0',
-              nickname: 'test12',
-              phone: '01010102939',
-              currentHashedRefreshToken: refreshToken,
-              snsType: '01',
-            });
+  //         // 카카오 로그인시 해당 이메일을 account 테이블에서 비교후 없을시 회원가입과 동시에 로그인 있으면 즉시 로그인
+  //         if (!user) {
+  //           user = this.accountRepository.create({
+  //             email,
+  //             name,
+  //             birth: '19971113',
+  //             gender: '0',
+  //             nickname: 'test12',
+  //             phone: '01010102939',
+  //             currentHashedRefreshToken: refreshToken,
+  //             snsType: '01',
+  //           });
 
-            try {
-              await this.accountRepository.save(user);
-            } catch (e) {
-              console.log('error', e);
-            }
-          }
-          //유저 정보와 토큰 정보를 리턴
-          return {
-            user,
-            accessToken,
-            accessOption,
-            refreshToken,
-            refreshOption,
-          };
-        } else {
-          throw new UnauthorizedException();
-        }
-      } else {
-        throw new UnauthorizedException();
-      }
-    } catch (e) {
-      // console.log(e)
-      throw new UnauthorizedException();
-    }
-  }
+  //           try {
+  //             await this.accountRepository.save(user);
+  //           } catch (e) {
+  //             console.log('error', e);
+  //           }
+  //         }
+  //         //유저 정보와 토큰 정보를 리턴
+  //         return {
+  //           user,
+  //           accessToken,
+  //           accessOption,
+  //           refreshToken,
+  //           refreshOption,
+  //         };
+  //       } else {
+  //         throw new UnauthorizedException();
+  //       }
+  //     } else {
+  //       throw new UnauthorizedException();
+  //     }
+  //   } catch (e) {
+  //     // console.log(e)
+  //     throw new UnauthorizedException();
+  //   }
+  // }
 
   // TODO: 카카오 로그인 처리 메소드
   async kakaoSignIn(userKakaoDto: UserKakaoDto): Promise<UserLoginResDto> {
@@ -612,19 +620,19 @@ export class AuthService {
 
     const snsId = userKakaoDto.snsId;
 
-    console.log('카카오 정보', userKakaoDto.snsId);
+    console.log('카카오 정보', snsId);
 
     const user = await this.accountRepository.findOne({ where: { snsId } });
 
     if (user) {
-      console.log('사용자 가입 기록 있음', snsId);
-      console.log('사용자 가입 기록 있음22', user);
+      console.log('사용자 가입 기록 있음1', snsId);
+      console.log('사용자 가입 기록 있음2', user);
 
-      const payload = { snsId };
-      const accessToken = await this.jwtService.sign(payload);
+      // const payload = { snsId };
+      // const accessToken = await this.jwtService.sign(payload);
       const loginDto = {
         loginSuccess: true,
-        accessToken: accessToken,
+        // accessToken: accessToken,
       };
       console.log('!!!!!!loginDto@@@@@', loginDto);
       return loginDto;
