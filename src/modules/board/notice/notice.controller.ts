@@ -21,12 +21,10 @@ import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/f
 import { GetNoticeDetailCommand } from './command/get-notice-detail.command';
 import { GetNoticeListQuery } from './query/get-notice-list.query';
 import { GetNoticeInfoDto } from './dto/get-notice-info.dto';
-import { DeleteNoticeInfoDto } from './dto/delete-notice-info.dto';
 import { GetNoticeRoleDto } from './dto/get-notice-role.dto';
 import { GetUser } from '../../account/decorator/account.decorator';
 import { Account } from '../../account/entities/account';
-import { LocalAuthGuard } from '../../../guard/local/local-auth.guard';
-import JwtAuthGuard2 from '../../../guard/jwt/jwt-auth.guard';
+import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
 
 /**
  * 공지사항 API controller
@@ -40,7 +38,7 @@ export class NoticeController {
    * @returns : 공지사항 등록 커맨드 전송
    */
   @Post()
-  @UseGuards(JwtAuthGuard2)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   createNotice(
     @Body() createNoticeDto: CreateNoticeDto,
@@ -67,7 +65,7 @@ export class NoticeController {
    * @returns : 공지사항 리스트 조회 쿼리 전송
    */
   @Get()
-  @UseGuards(JwtAuthGuard2)
+  @UseGuards(JwtAuthGuard)
   async getAllSearchNotice(
     @Query('keyword') keyword: string,
     @Body() getNoticeInfoDto: GetNoticeInfoDto,
@@ -83,7 +81,7 @@ export class NoticeController {
    * @returns : 공지사항 상세 정보 조회 커맨드 전송
    */
   @Get(':id')
-  @UseGuards(JwtAuthGuard2)
+  @UseGuards(JwtAuthGuard)
   async getNoticeDetail(@Param('id') noticeId: number, @Body() getNoticeRoleDto: GetNoticeRoleDto) {
     const { role } = getNoticeRoleDto;
     const command = new GetNoticeDetailCommand(noticeId, role);
@@ -96,7 +94,7 @@ export class NoticeController {
    * @returns : 공지사항 상세 정보 수정 커맨드 전송
    */
   @Patch(':id')
-  @UseGuards(JwtAuthGuard2)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   async updateNotice(
     @Param('id') noticeId: number,
@@ -124,10 +122,10 @@ export class NoticeController {
    * @returns : 공지사항 정보 삭제 커맨드 전송
    */
   @Delete(':id')
-  @UseGuards(JwtAuthGuard2)
+  @UseGuards(JwtAuthGuard)
   async deleteNotice(
     @Param('id') noticeId: number,
-    @Body() deleteNoticeInfoDto: DeleteNoticeInfoDto,
+    @Body() deleteNoticeInfoDto: GetNoticeRoleDto,
     @GetUser() account: Account,
   ) {
     const { role } = deleteNoticeInfoDto;

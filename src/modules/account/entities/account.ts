@@ -172,24 +172,19 @@ export class Account extends BaseEntity {
   })
   division: boolean;
 
-  @OneToOne((type) => User, (user) => user.accountId)
-  userId: number;
-
-  @OneToOne((type) => Admin, (admin) => admin.accountId)
-  adminId: number;
-
   @OneToOne((type) => Temporary, (temporary) => temporary.accountId)
   temporaryId: number;
 
   //admin 정보 가져오기
-  // @OneToOne(() => Admin, (admin) => admin.accountId)
-  // @JoinColumn({ name: 'account_id' })
-  // admin: Admin;
+  @OneToOne(() => Admin)
+  @JoinColumn({ name: 'account_id' })
+  admin: Admin;
 
   //user 정보 가져오기
   @OneToOne(() => User)
   @JoinColumn({ name: 'account_id' })
   user: User;
+
   // @OneToOne((type) => Sleeper, (sleeper) => sleeper.sleeperAccountId)
   // sleeperAccountId: number;
 }

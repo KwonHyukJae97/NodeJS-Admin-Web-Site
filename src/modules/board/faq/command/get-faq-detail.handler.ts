@@ -33,10 +33,10 @@ export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand>
   async execute(command: GetFaqDetailCommand) {
     const { faqId, role } = command;
 
-    const faq = await this.faqRepository.findOneBy({ faqId: faqId });
+    const faq = await this.faqRepository.findOneBy({ faqId });
 
     const category = await this.categoryRepository.findOneBy({
-      categoryId: faq.categoryId['categoryId'],
+      categoryId: faq.categoryId,
     });
 
     // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
@@ -48,7 +48,7 @@ export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand>
       return this.convertException.notFoundError('FAQ', 404);
     }
 
-    const board = await this.boardRepository.findOneBy({ boardId: faq.boardId.boardId });
+    const board = await this.boardRepository.findOneBy({ boardId: faq.boardId });
 
     if (!board) {
       return this.convertException.notFoundError('게시글', 404);
@@ -64,7 +64,7 @@ export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand>
       return this.convertException.badRequestError('게시글 정보에', 400);
     }
 
-    faq.boardId = board;
+    faq.board = board;
 
     try {
       await this.faqRepository.save(faq);
@@ -75,15 +75,13 @@ export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand>
     const account = await this.accountRepository.findOneBy({ accountId: board.accountId });
 
     if (!account) {
-      return this.convertException.badRequestAccountError('작성자', 400);
+      return this.convertException.notFoundError('작성자', 404);
     }
 
     const files = await this.fileRepository.findBy({ boardId: board.boardId });
 
     const getFaqDetailDto = {
-      faqId: faqId,
-      boardId: board,
-      categoryId: faq.categoryId,
+      faq,
       writer: account.name + '(' + account.nickname + ')',
       fileList: files,
     };

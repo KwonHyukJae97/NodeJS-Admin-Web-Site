@@ -23,9 +23,9 @@ import { GetFaqInfoDto } from './dto/get-faq-info.dto';
 import { GetCategoryListQuery } from './query/get-category-list.query';
 import { DeleteFaqInfoDto } from './dto/delete-faq-info.dto';
 import { GetFaqListQuery } from './query/get-faq-list.query';
-import JwtAuthGuard2 from '../../../guard/jwt/jwt-auth.guard';
 import { Account } from '../../account/entities/account';
 import { GetUser } from '../../account/decorator/account.decorator';
+import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
 
 /**
  * FAQ API controller
@@ -39,7 +39,7 @@ export class FaqController {
    * @returns : FAQ 등록 커맨드 전송
    */
   @Post()
-  @UseGuards(JwtAuthGuard2)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   createFaq(
     @Body() createFaqDto: CreateFaqDto,
@@ -58,13 +58,12 @@ export class FaqController {
    * @returns : FAQ 리스트 조회 쿼리 전송
    */
   @Get()
-  @UseGuards(JwtAuthGuard2)
+  @UseGuards(JwtAuthGuard)
   async getFaqSearch(
     @Query('categoryName') categoryName: string,
     @Query('keyword') keyword: string,
-    @Param('role') role: string,
+    @Query('role') role: string,
   ) {
-    //const { role } = getFaqInfoDto;
     const getFaqListSearchQuery = new GetFaqListQuery(categoryName, keyword, role);
     return this.queryBus.execute(getFaqListSearchQuery);
   }
@@ -74,9 +73,8 @@ export class FaqController {
    * @returns : FAQ 카테고리 리스트 조회 쿼리 전송
    */
   @Get('category')
-  @UseGuards(JwtAuthGuard2)
-  async getAllCategory(@Param('role') role: string) {
-    //const { role } = getFaqInfoDto;
+  @UseGuards(JwtAuthGuard)
+  async getAllCategory(@Query('role') role: string) {
     const getCategoryListQuery = new GetCategoryListQuery(role);
     return this.queryBus.execute(getCategoryListQuery);
   }
@@ -87,7 +85,7 @@ export class FaqController {
    * @returns : FAQ 상세 정보 조회 커맨드 전송
    */
   @Get(':id')
-  @UseGuards(JwtAuthGuard2)
+  @UseGuards(JwtAuthGuard)
   async getFaqDetail(@Param('id') faqId: number, @Body() getFaqInfoDto: GetFaqInfoDto) {
     const { role } = getFaqInfoDto;
     const command = new GetFaqDetailCommand(faqId, role);
@@ -100,7 +98,7 @@ export class FaqController {
    * @returns : FAQ 상세 정보 수정 커맨드 전송
    */
   @Patch(':id')
-  @UseGuards(JwtAuthGuard2)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   async updateFaq(
     @Param('id') faqId: number,
@@ -119,7 +117,7 @@ export class FaqController {
    * @returns : FAQ 정보 삭제 커맨드 전송
    */
   @Delete(':id')
-  @UseGuards(JwtAuthGuard2)
+  @UseGuards(JwtAuthGuard)
   async deleteFaq(
     @Param('id') faqId: number,
     @Body() deleteFaqInfoDto: DeleteFaqInfoDto,

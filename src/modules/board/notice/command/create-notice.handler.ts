@@ -54,7 +54,8 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
     const notice = this.noticeRepository.create({
       noticeGrant,
       isTop,
-      boardId: board,
+      boardId: board.boardId,
+      board: board,
     });
 
     try {

@@ -37,20 +37,19 @@ export class UpdateCommentHandler implements ICommandHandler<UpdateCommentComman
     //   throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
     // }
 
-    const commentDetail = await this.commentRepository.findOneBy({ commentId: commentId });
+    const commentDetail = await this.commentRepository.findOneBy({ commentId });
 
     if (!commentDetail) {
       return this.convertException.notFoundError('답변', 404);
     }
 
-    // const admin = await this.adminRepository.findOneBy({ adminId: commentDetail.adminId });
-    const admin = await this.adminRepository.findOneBy({ accountId: account.accountId });
+    const admin = await this.adminRepository.findOneBy({ adminId: commentDetail.adminId });
 
     if (!admin) {
-      return this.convertException.badRequestAccountError('관리자 계정', 400);
+      return this.convertException.notFoundError('관리자 계정', 404);
     }
 
-    if (admin.adminId !== commentDetail.adminId) {
+    if (account.accountId != admin.accountId) {
       return this.convertException.badRequestAccountError('작성자', 400);
     }
 

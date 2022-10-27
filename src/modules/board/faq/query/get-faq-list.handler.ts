@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Faq } from '../entities/faq';
 import { Repository } from 'typeorm';
 import { GetFaqListQuery } from './get-faq-list.query';
-import { Inject, NotFoundException } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 
 /**
@@ -35,8 +35,8 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqListQuery> {
       if (!categoryName && keyword) {
         const faq = await this.faqRepository
           .createQueryBuilder('faq')
-          .leftJoinAndSelect('faq.boardId', 'board')
-          .leftJoinAndSelect('faq.categoryId', 'category')
+          .leftJoinAndSelect('faq.board', 'board')
+          .leftJoinAndSelect('faq.category', 'category')
           .where('board.title like :title', { title: `%${keyword}%` })
           .orderBy({ 'faq.faqId': 'DESC' })
           .getMany();
@@ -52,8 +52,8 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqListQuery> {
       else if (categoryName && keyword) {
         const faq = await this.faqRepository
           .createQueryBuilder('faq')
-          .leftJoinAndSelect('faq.boardId', 'board')
-          .leftJoinAndSelect('faq.categoryId', 'category')
+          .leftJoinAndSelect('faq.board', 'board')
+          .leftJoinAndSelect('faq.category', 'category')
           .where('category.categoryName like :categoryName', { categoryName: `%${categoryName}%` })
           .andWhere('board.title like :title', { title: `%${keyword}%` })
           .orderBy({ 'faq.faqId': 'DESC' })
@@ -70,8 +70,8 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqListQuery> {
       else if (categoryName && !keyword) {
         const faq = await this.faqRepository
           .createQueryBuilder('faq')
-          .leftJoinAndSelect('faq.boardId', 'board')
-          .leftJoinAndSelect('faq.categoryId', 'category')
+          .leftJoinAndSelect('faq.board', 'board')
+          .leftJoinAndSelect('faq.category', 'category')
           .where('category.categoryName like :categoryName', { categoryName: `%${categoryName}%` })
           .orderBy({ 'faq.faqId': 'DESC' })
           .getMany();
@@ -102,8 +102,8 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqListQuery> {
       if (!categoryName && keyword) {
         const faq = await this.faqRepository
           .createQueryBuilder('faq')
-          .leftJoinAndSelect('faq.boardId', 'board')
-          .leftJoinAndSelect('faq.categoryId', 'category')
+          .leftJoinAndSelect('faq.board', 'board')
+          .leftJoinAndSelect('faq.category', 'category')
           .where('board.title like :title', { title: `%${keyword}%` })
           .andWhere('category.isUse = :isUse', { isUse: true })
           .orderBy({ 'faq.faqId': 'DESC' })
@@ -120,8 +120,8 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqListQuery> {
       else if (categoryName && keyword) {
         const faq = await this.faqRepository
           .createQueryBuilder('faq')
-          .leftJoinAndSelect('faq.boardId', 'board')
-          .leftJoinAndSelect('faq.categoryId', 'category')
+          .leftJoinAndSelect('faq.board', 'board')
+          .leftJoinAndSelect('faq.category', 'category')
           .where('category.categoryName like :categoryName', { categoryName: `%${categoryName}%` })
           .andWhere('board.title like :title', { title: `%${keyword}%` })
           .andWhere('category.isUse = :isUse', { isUse: true })
@@ -139,8 +139,8 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqListQuery> {
       else if (categoryName && !keyword) {
         const faq = await this.faqRepository
           .createQueryBuilder('faq')
-          .leftJoinAndSelect('faq.boardId', 'board')
-          .leftJoinAndSelect('faq.categoryId', 'category')
+          .leftJoinAndSelect('faq.board', 'board')
+          .leftJoinAndSelect('faq.category', 'category')
           .where('category.categoryName like :categoryName', { categoryName: `%${categoryName}%` })
           .andWhere('category.isUse = :isUse', { isUse: true })
           .orderBy({ 'faq.faqId': 'DESC' })
@@ -157,8 +157,8 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqListQuery> {
       else {
         const faq = await this.faqRepository
           .createQueryBuilder('faq')
-          .leftJoinAndSelect('faq.categoryId', 'categoryId')
-          .leftJoinAndSelect('faq.boardId', 'board')
+          .leftJoinAndSelect('faq.category', 'categoryId')
+          .leftJoinAndSelect('faq.board', 'board')
           .where('categoryId.isUse = :isUse', { isUse: true })
           .orderBy({ 'faq.faqId': 'DESC' })
           .getMany();

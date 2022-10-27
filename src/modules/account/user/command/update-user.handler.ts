@@ -37,7 +37,7 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
     const { password, email, phone, nickname, grade, userId, file } = command;
 
     const user = await this.userRepository.findOneBy({ userId: userId });
-    const accountId = user.accountId.accountId;
+    const accountId = user.accountId;
     const account = await this.accountRepository.findOneBy({ accountId: accountId });
 
     //학년정보 수정

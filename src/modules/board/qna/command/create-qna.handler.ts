@@ -47,7 +47,8 @@ export class CreateQnaHandler implements ICommandHandler<CreateQnaCommand> {
     }
 
     const qna = this.qnaRepository.create({
-      boardId: board,
+      boardId: board.boardId,
+      board: board,
     });
 
     try {

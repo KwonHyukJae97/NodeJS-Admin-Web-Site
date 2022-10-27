@@ -2,7 +2,7 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Notice } from '../entities/notice';
 import { Repository } from 'typeorm';
-import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject } from '@nestjs/common';
 import { GetNoticeListQuery } from './get-notice-list.query';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 
@@ -43,7 +43,7 @@ export class GetNoticeListHandler implements IQueryHandler<GetNoticeListQuery> {
     if (keyword) {
       const notice = await this.noticeRepository
         .createQueryBuilder('notice')
-        .leftJoinAndSelect('notice.boardId', 'board')
+        .leftJoinAndSelect('notice.board', 'board')
         .where('notice.noticeGrant = :noticeGrant', { noticeGrant: noticeGrant })
         .andWhere('board.title like :title', { title: `%${keyword}%` })
         .orderBy('notice.noticeId', 'DESC')
@@ -59,7 +59,7 @@ export class GetNoticeListHandler implements IQueryHandler<GetNoticeListQuery> {
     } else {
       const notice = await this.noticeRepository
         .createQueryBuilder('notice')
-        .leftJoinAndSelect('notice.boardId', 'board')
+        .leftJoinAndSelect('notice.board', 'board')
         .where('notice.noticeGrant = :noticeGrant', { noticeGrant: noticeGrant })
         .orderBy({ 'notice.noticeId': 'DESC' })
         .getMany();

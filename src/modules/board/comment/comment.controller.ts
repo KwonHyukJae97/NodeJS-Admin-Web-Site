@@ -9,7 +9,7 @@ import { GetCommentDetailCommand } from './command/get-comment-detail.command';
 import { GetCommentInfoDto } from './dto/get-comment-info.dto';
 import { Account } from '../../account/entities/account';
 import { GetUser } from '../../account/decorator/account.decorator';
-import JwtAuthGuard2 from '../../../guard/jwt/jwt-auth.guard';
+import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
 
 /**
  * 답변 API controller
@@ -24,7 +24,7 @@ export class CommentController {
    * @returns : 답변 등록 커맨드 전송
    */
   @Post(':id')
-  @UseGuards(JwtAuthGuard2)
+  @UseGuards(JwtAuthGuard)
   createComment(
     @Param('id') qnaId: number,
     @Body() createCommentDto: CreateCommentDto,
@@ -40,7 +40,7 @@ export class CommentController {
    * @returns : 답변 리스트 조회 쿼리 전송
    */
   @Get()
-  @UseGuards(JwtAuthGuard2)
+  @UseGuards(JwtAuthGuard)
   async getAllComment(@Body() getCommentInfoDto: GetCommentInfoDto) {
     const { role } = getCommentInfoDto;
     const getCommentListQuery = new GetCommentListQuery(role);
@@ -53,7 +53,7 @@ export class CommentController {
    * @returns : 답변 상세 정보 조회 커맨드 전송
    */
   @Get(':id')
-  @UseGuards(JwtAuthGuard2)
+  @UseGuards(JwtAuthGuard)
   async getCommentDetail(@Param('id') qnaId: number, @Body() getCommentInfoDto: GetCommentInfoDto) {
     const { role } = getCommentInfoDto;
     const command = new GetCommentDetailCommand(qnaId, role);
@@ -66,7 +66,7 @@ export class CommentController {
    * @returns : 답변 상세 정보 수정 커맨드 전송
    */
   @Patch(':id')
-  @UseGuards(JwtAuthGuard2)
+  @UseGuards(JwtAuthGuard)
   async updateComment(
     @Param('id') commentId: number,
     @Body() updateCommentDto: UpdateCommentDto,

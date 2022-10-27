@@ -36,20 +36,20 @@ export class UpdateQnaHandler implements ICommandHandler<UpdateQnaCommand> {
   async execute(command: UpdateQnaCommand) {
     const { title, content, qnaId, files, account } = command;
 
-    const qna = await this.qnaRepository.findOneBy({ qnaId: qnaId });
+    const qna = await this.qnaRepository.findOneBy({ qnaId });
 
     if (!qna) {
       return this.convertException.notFoundError('QnA', 404);
     }
 
-    if (account.accountId != qna.boardId.accountId) {
-      return this.convertException.badRequestAccountError('작성자', 400);
-    }
-
-    const board = await this.boardRepository.findOneBy({ boardId: qna.boardId.boardId });
+    const board = await this.boardRepository.findOneBy({ boardId: qna.boardId });
 
     if (!board) {
       return this.convertException.notFoundError('게시글', 404);
+    }
+
+    if (account.accountId != board.accountId) {
+      return this.convertException.badRequestAccountError('작성자', 400);
     }
 
     board.title = title;
@@ -61,7 +61,7 @@ export class UpdateQnaHandler implements ICommandHandler<UpdateQnaCommand> {
       return this.convertException.badRequestError('게시글 정보에', 400);
     }
 
-    qna.boardId = board;
+    qna.board = board;
 
     try {
       await this.qnaRepository.save(qna);

@@ -43,20 +43,20 @@ export class UpdateFaqHandler implements ICommandHandler<UpdateFaqCommand> {
       throw new BadRequestException('본사 관리자만 접근 가능합니다.');
     }
 
-    const faq = await this.faqRepository.findOneBy({ faqId: faqId });
+    const faq = await this.faqRepository.findOneBy({ faqId });
 
     if (!faq) {
       return this.convertException.notFoundError('FAQ', 404);
     }
 
-    if (account.accountId != faq.boardId.accountId) {
-      return this.convertException.badRequestAccountError('작성자', 400);
-    }
-
-    const board = await this.boardRepository.findOneBy({ boardId: faq.boardId.boardId });
+    const board = await this.boardRepository.findOneBy({ boardId: faq.boardId });
 
     if (!board) {
       return this.convertException.notFoundError('게시글', 404);
+    }
+
+    if (account.accountId != board.accountId) {
+      return this.convertException.badRequestAccountError('작성자', 400);
     }
 
     board.title = title;
@@ -68,13 +68,13 @@ export class UpdateFaqHandler implements ICommandHandler<UpdateFaqCommand> {
       return this.convertException.badRequestError('게시글 정보에', 400);
     }
 
-    const category = await this.categoryRepository.findOneBy({ categoryName: categoryName });
+    const category = await this.categoryRepository.findOneBy({ categoryName });
 
     if (!category) {
       return this.convertException.notFoundError('카테고리', 404);
     }
 
-    faq.boardId = board;
+    faq.board = board;
     faq.categoryId = category.categoryId;
 
     try {

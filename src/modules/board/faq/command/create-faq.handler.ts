@@ -60,8 +60,9 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
     }
 
     const faq = this.faqRepository.create({
-      boardId: board,
+      boardId: board.boardId,
       categoryId: category.categoryId,
+      board: board,
     });
 
     try {

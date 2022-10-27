@@ -42,13 +42,13 @@ export class GetCommentDetailHandler implements ICommandHandler<GetCommentDetail
       throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
     }
 
-    const qna = await this.qnaRepository.findOneBy({ qnaId: qnaId });
+    const qna = await this.qnaRepository.findOneBy({ qnaId });
 
     if (!qna) {
       return this.convertException.notFoundError('QnA', 404);
     }
 
-    const board = await this.boardRepository.findOneBy({ boardId: qna.boardId.boardId });
+    const board = await this.boardRepository.findOneBy({ boardId: qna.boardId });
 
     if (!board) {
       return this.convertException.notFoundError('게시글', 404);
@@ -64,7 +64,7 @@ export class GetCommentDetailHandler implements ICommandHandler<GetCommentDetail
       return this.convertException.badRequestError('게시글 정보에', 400);
     }
 
-    qna.boardId = board;
+    qna.board = board;
 
     try {
       await this.qnaRepository.save(qna);
@@ -93,9 +93,8 @@ export class GetCommentDetailHandler implements ICommandHandler<GetCommentDetail
         // TODO: 본사 관리자 기준으로 작성자 정보 넣어주는 테스트용 코드 > 회원사 정보 테이블 연결 시, 확인 후 삭제 예정
         const admin = await this.adminRepository.findOneBy({ adminId: comment.adminId });
 
-        // @ts-ignore
         const accountAdmin = await this.accountRepository.findOneBy({
-          accountId: admin.accountId.accountId,
+          accountId: admin.accountId,
         });
 
         commentInfo = {

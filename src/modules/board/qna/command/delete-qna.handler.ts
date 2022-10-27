@@ -35,20 +35,20 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
   async execute(command: DeleteQnaCommand) {
     const { qnaId, account } = command;
 
-    const qna = await this.qnaRepository.findOneBy({ qnaId: qnaId });
+    const qna = await this.qnaRepository.findOneBy({ qnaId });
 
     if (!qna) {
       return this.convertException.notFoundError('QnA', 404);
     }
 
-    if (account.accountId != qna.boardId.accountId) {
-      return this.convertException.badRequestAccountError('작성자', 400);
-    }
-
-    const board = await this.boardRepository.findOneBy({ boardId: qna.boardId.boardId });
+    const board = await this.boardRepository.findOneBy({ boardId: qna.boardId });
 
     if (!board) {
       return this.convertException.notFoundError('게시글', 404);
+    }
+
+    if (account.accountId != board.accountId) {
+      return this.convertException.badRequestAccountError('작성자', 400);
     }
 
     const boardFiles = await this.fileRepository.findBy({ boardId: board.boardId });
@@ -58,7 +58,7 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
       this.eventBus.publish(new FilesDeleteEvent(board.boardId, this.boardFileDb));
     }
 
-    const comments = await this.commentRepository.findBy({ qnaId: qnaId });
+    const comments = await this.commentRepository.findBy({ qnaId });
 
     comments.map((comment) => {
       try {

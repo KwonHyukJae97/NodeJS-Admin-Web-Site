@@ -37,7 +37,7 @@ export class GetUserInfoQueryHandler implements IQueryHandler<GetUserInfoQuery> 
     }
 
     const accountFile = await this.fileRepository.findOneBy({
-      accountId: user.account.accountId,
+      accountId: user.accountId,
     });
 
     // 저장된 파일이 있다면, 파일 정보와 함께 반환

@@ -3,9 +3,12 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Account } from '../../account/entities/account';
 
 /**
  * 계정 파일에 대한 엔티티 정의
@@ -88,8 +91,8 @@ export class AccountFile {
   })
   delDate: Date;
 
-  //계정 번호 가져오기
-  // @OneToOne(() => Account)
-  // @JoinColumn({ name: 'account_id' })
-  // account: Account;
+  // 계정 정보
+  @OneToOne(() => Account)
+  @JoinColumn({ name: 'account_id' })
+  account: Account;
 }

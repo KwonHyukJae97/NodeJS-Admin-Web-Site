@@ -37,17 +37,16 @@ export class CreateCommentHandler implements ICommandHandler<CreateCommentComman
     //   throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
     // }
 
-    // @ts-ignore
-    const admin = await this.adminRepository.findOneBy({ accountId: account.accountId });
-
-    if (!admin) {
-      return this.convertException.badRequestAccountError('관리자 계정', 400);
-    }
-
-    const qna = await this.qnaRepository.findOneBy({ qnaId: qnaId });
+    const qna = await this.qnaRepository.findOneBy({ qnaId });
 
     if (!qna) {
       return this.convertException.notFoundError('QnA', 404);
+    }
+
+    const admin = await this.adminRepository.findOneBy({ accountId: account.accountId });
+
+    if (!admin) {
+      return this.convertException.notFoundError('관리자', 404);
     }
 
     const qnaComment = this.commentRepository.create({

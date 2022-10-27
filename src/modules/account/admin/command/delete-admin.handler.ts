@@ -34,7 +34,7 @@ export class DeleteAdminHandler implements ICommandHandler<DeleteAdminCommand> {
     const { adminId, delDate } = command;
 
     const admin = await this.adminRepository.findOneBy({ adminId: adminId });
-    const accountId = admin.accountId.accountId;
+    const accountId = admin.accountId;
 
     const account = await this.accountRepository.findOneBy({ accountId: accountId, delDate });
 

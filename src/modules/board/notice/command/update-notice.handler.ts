@@ -41,20 +41,20 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
       throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
     }
 
-    const notice = await this.noticeRepository.findOneBy({ noticeId: noticeId });
+    const notice = await this.noticeRepository.findOneBy({ noticeId });
 
     if (!notice) {
       return this.convertException.notFoundError('공지사항', 404);
     }
 
-    if (account.accountId !== notice.boardId.accountId) {
-      return this.convertException.badRequestAccountError('작성자', 400);
-    }
-
-    const board = await this.boardRepository.findOneBy({ boardId: notice.boardId.boardId });
+    const board = await this.boardRepository.findOneBy({ boardId: notice.boardId });
 
     if (!board) {
       return this.convertException.notFoundError('게시글', 404);
+    }
+
+    if (account.accountId != board.accountId) {
+      return this.convertException.badRequestAccountError('작성자', 400);
     }
 
     board.title = title;
@@ -68,7 +68,7 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
 
     notice.isTop = isTop;
     notice.noticeGrant = noticeGrant;
-    notice.boardId = board;
+    notice.board = board;
 
     try {
       await this.noticeRepository.save(notice);
