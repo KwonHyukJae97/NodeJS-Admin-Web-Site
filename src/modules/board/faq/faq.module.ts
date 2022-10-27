@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Board } from '../entities/board';
 import { Faq } from './entities/faq';
-import { FaqController } from './Faq.controller';
+import { FaqController } from './faq.controller';
 import { CqrsModule } from '@nestjs/cqrs';
 import { UpdateFaqHandler } from './command/update-faq.handler';
 import { DeleteFaqHandler } from './command/delete-faq.handler';
