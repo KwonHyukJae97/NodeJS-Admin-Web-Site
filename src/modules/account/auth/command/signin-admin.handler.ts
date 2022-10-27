@@ -9,6 +9,9 @@ import * as bcrypt from 'bcrypt';
 import { AccountService } from 'src/modules/account-bak/account.service';
 import { AuthService } from '../auth.service';
 
+/**
+ * 관리자 로그인 핸들러
+ */
 @Injectable()
 @CommandHandler(SignInAdminCommand)
 export class SignInAdminHandler implements ICommandHandler<SignInAdminCommand> {

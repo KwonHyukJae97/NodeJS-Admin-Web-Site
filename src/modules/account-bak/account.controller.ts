@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } fro
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
-import JwtAuthGuard2 from '../../guard/jwt/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/guard/jwt/jwt-auth.guard';
 import { Role, ROLES_ENUM } from '../../guard/role/roles.decorator';
 import { RolesGuard } from '../../guard/role/roles.guard';
 

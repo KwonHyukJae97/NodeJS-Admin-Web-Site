@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { Account } from '../../entities/account';
 import { Admin } from '../entities/admin';
 import { DeleteAdminCommand } from './delete-admin.command';
+import { ConvertException } from 'src/common/utils/convert-exception';
 import { FileDeleteEvent } from '../../../file/event/file-delete-event';
 import { AccountFileDb } from '../../account-file-db';
 import { AccountFile } from '../../../file/entities/account-file';
@@ -18,10 +19,17 @@ export class DeleteAdminHandler implements ICommandHandler<DeleteAdminCommand> {
   constructor(
     @InjectRepository(Admin) private adminRepository: Repository<Admin>,
     @InjectRepository(Account) private accountRepository: Repository<Account>,
+    @Inject(ConvertException) private convertException: ConvertException,
     @InjectRepository(AccountFile) private fileRepository: Repository<AccountFile>,
     @Inject('accountFile') private accountFileDb: AccountFileDb,
     private eventBus: EventBus,
   ) {}
+
+  /**
+   * 관리자 삭제 메소드
+   * @param command  : 관리자 삭제에 필요한 파라미터
+   * @returns : DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 완료 메시지 반환
+   */
   async execute(command: DeleteAdminCommand) {
     const { adminId, delDate } = command;
 
@@ -29,6 +37,10 @@ export class DeleteAdminHandler implements ICommandHandler<DeleteAdminCommand> {
     const accountId = admin.accountId.accountId;
 
     const account = await this.accountRepository.findOneBy({ accountId: accountId, delDate });
+
+    if (!account) {
+      return this.convertException.notFoundError('관리자', 404);
+    }
 
     // new Date()에서 반환하는 UTC시간을 KST시간으로 변경
     const getDate = new Date();

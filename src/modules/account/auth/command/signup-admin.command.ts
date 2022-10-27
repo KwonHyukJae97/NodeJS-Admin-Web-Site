@@ -1,7 +1,7 @@
 import { ICommand } from '@nestjs/cqrs';
 
 /**
- * 관리자 회원가입 커멘드
+ * 관리자 회원가입 커멘드 정의
  */
 export class SignUpAdminCommand implements ICommand {
   constructor(

@@ -16,7 +16,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh-
       // jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request) => {
-          return request?.cookies?.refresh;
+          return request?.cookies?.Refresh;
         },
       ]),
       secretOrKey: configService.get('JWT_REFRESH_TOKEN_SECRET'),
@@ -25,19 +25,9 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh-
     });
   }
 
-  // async validate(req, payload: TokenPayload2) {
-  //   const refreshToken = req.cookies?.refresh;
-
-  //   await this.accountService.getAccountRefreshTokenMatches(payload.accountId, refreshToken);
-
-  //   const account = await this.accountService.getByAccountId(payload.accountId, false);
-
-  //   return account;
-  // }
-
   // //Account 엔티티와 연동
-  async validate(req, id: string) {
+  async validate(req, payload: any) {
     const refreshToken = req.cookies?.refresh;
-    return this.authService.getAccountRefreshTokenMatches(refreshToken, id);
+    return this.authService.getAccountRefreshTokenMatches(refreshToken, payload.id);
   }
 }

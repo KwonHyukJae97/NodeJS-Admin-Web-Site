@@ -1,5 +1,8 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
+/**
+ * 카카오 로그인 dto 정의
+ */
 export class UserKakaoDto {
   @IsString()
   @IsNotEmpty()
