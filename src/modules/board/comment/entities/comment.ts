@@ -64,7 +64,8 @@ export class Comment {
   delDate: Date;
 
   // 문의 정보
-  // @ManyToOne(() => Qna)
+  // @ManyToOne(
+  // () => Qna)
   // @JoinColumn({ name: 'qna_id' })
   // qna: Qna;
 }

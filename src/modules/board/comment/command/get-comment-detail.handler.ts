@@ -90,43 +90,35 @@ export class GetCommentDetailHandler implements ICommandHandler<GetCommentDetail
     // 답변별 답변자 정보 담아주기
     const commentListInfo = await Promise.all(
       commentList.map(async (comment) => {
-        // TODO: 본사 관리자 기준으로 작성자 정보 넣어주는 테스트용 코드 > 회원사 정보 테이블 연결 시, 확인 후 삭제 예정
         const admin = await this.adminRepository.findOneBy({ adminId: comment.adminId });
 
-        const accountAdmin = await this.accountRepository.findOneBy({
-          accountId: admin.accountId,
-        });
+        const adminAccount = await this.accountRepository.findOneBy({ accountId: admin.accountId });
 
-        commentInfo = {
-          comment: comment,
-          writer: accountAdmin.name + '(' + accountAdmin.nickname + ')',
-        };
+        const test = await this.adminRepository
+          .createQueryBuilder('admin')
+          .leftJoinAndSelect('admin.accountId', 'account')
+          .leftJoinAndSelect(Account, 'account', 'account.accountId = admin.accountId')
+          .where('account.');
 
-        return commentInfo;
-
-        // TODO: 회원사 정보 테이블 연결 시, 확인 후 사용 예정
-        // @ts-ignore
-        // const admin = await this.adminRepository.findOneBy({ accountId: account.accountId });
-
-        // 회원사 관리자일 경우
-        // if (admin.companyId) {
-        //   const company = await this.companyRepository.findOneBy({ companyId: admin.companyId });
-        //
-        //   commentInfo = {
-        //     comment: comment,
-        //     writer: account.name + '(' + account.nickname + ')',
-        //     companyName: company.companyName,
-        //     companyId: company.companyId
-        //   };
-        //
         // 본사 관리자일 경우
-        // } else {
-        //   commentInfo = {
-        //     comment: comment,
-        //     writer: account.name + '(' + account.nickname + ')',
-        //   };
-        // }
-        // return commentInfo;
+        if (admin.isSuper) {
+          commentInfo = {
+            comment: comment,
+            writer: adminAccount.name + '(' + adminAccount.nickname + ')',
+          };
+
+          // 회원사 관리자일 경우
+        } else {
+          const company = await this.companyRepository.findOneBy({ companyId: admin.companyId });
+
+          commentInfo = {
+            comment: comment,
+            writer: adminAccount.name + '(' + adminAccount.nickname + ')',
+            companyName: company.companyName,
+            companyId: company.companyId,
+          };
+        }
+        return commentInfo;
       }),
     );
 
