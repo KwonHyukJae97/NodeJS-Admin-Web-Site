@@ -22,6 +22,7 @@ import { AccountFile } from '../../file/entities/account-file';
 import { ConvertException } from '../../../common/utils/convert-exception';
 import { JwtStrategy } from 'src/guard/jwt/jwt.strategy';
 import { LocalStrategy } from 'src/guard/local/local.strategy';
+import { KakaoSignUpAdminHandler } from './command/kakao-signup-admin.handler';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { LocalStrategy } from 'src/guard/local/local.strategy';
   ],
   controllers: [SignController],
   providers: [
+    KakaoSignUpAdminHandler,
     SignUpUserHandler,
     SignUpAdminHandler,
     SignInAdminHandler,

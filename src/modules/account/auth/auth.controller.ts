@@ -33,6 +33,8 @@ import { SignInUserCommand } from './command/signin-user.command';
 import { SignInUserHandler } from './command/signin-user.handler';
 import { UserLoginResDto } from './dto/login-res.dto';
 import JwtRefreshAuthGuard from 'src/guard/jwt/jwt-refresh-auth.guard';
+import { KakaoSignUpAdminDto } from './dto/kakao-signup-admin.dto';
+import { KakaoSignUpAdminCommand } from './command/kakao-signup-admin.command';
 
 /**
  * 회원가입, 로그인 등 계정 관련 auth API controller
@@ -64,12 +66,38 @@ export class SignController {
   }
 
   /**
+   * 카카오 2차정보 가입 메소드
+   * @param kakaoSignUpAdinDto : 2차정보 저장에 필요한 dto
+   * @returns : 카카오 2차 정보 저장 커멘드 전송
+   */
+  @Post('/register/kakao/admin')
+  async kakaoSignUpAdmin(
+    @Body(ValidationPipe) kakaoSignUpAdminDto: KakaoSignUpAdminDto,
+  ): Promise<string> {
+    const { name, phone, nickname, birth, gender, snsId, snsType, snsToken, division } =
+      kakaoSignUpAdminDto;
+    console.log('Kakao 2차 정보 컨트롤러', kakaoSignUpAdminDto);
+    const command = new KakaoSignUpAdminCommand(
+      name,
+      phone,
+      nickname,
+      birth,
+      gender,
+      snsId,
+      snsType,
+      snsToken,
+      division,
+    );
+    return this.commandBus.execute(command);
+  }
+
+  /**
    * 관리자 회원가입 메소드
    * @param SignUpAdminDto : 관리자 회원가입에 필요한 dto
    * @returns : 관리자 회원가입 커맨드 전송
    */
   @Post('/register/admin')
-  async signUpAdmin(@Body(ValidationPipe) SignUpAdminDto: SignUpAdminDto): Promise<string> {
+  async signUpAdmin(@Body(ValidationPipe) signUpAdminDto: SignUpAdminDto): Promise<string> {
     const {
       id,
       password,
@@ -83,8 +111,8 @@ export class SignController {
       roleId,
       isSuper,
       division,
-    } = SignUpAdminDto;
-    console.log('Admin 컨트롤러 로그', SignUpAdminDto);
+    } = signUpAdminDto;
+    console.log('Admin 컨트롤러 로그', signUpAdminDto);
     const command = new SignUpAdminCommand(
       id,
       password,
@@ -108,10 +136,10 @@ export class SignController {
    * @returns : 사용자 회원가입 커맨드 전송
    */
   @Post('/register/user')
-  async signUpUser(@Body(ValidationPipe) SignUpUserDto: SignUpUserDto): Promise<string> {
-    const { id, password, name, email, phone, nickname, birth, gender, grade } = SignUpUserDto;
+  async signUpUser(@Body(ValidationPipe) signUpUserDto: SignUpUserDto): Promise<string> {
+    const { id, password, name, email, phone, nickname, birth, gender, grade } = signUpUserDto;
 
-    console.log('User 컨트롤러 로그', SignUpUserDto);
+    console.log('User 컨트롤러 로그', signUpUserDto);
     const command = new SignUpUserCommand(
       id,
       password,
@@ -305,7 +333,7 @@ export class SignController {
     const { refreshToken, refreshOption } =
       await this.authService.kakaoGetCookieWithJwtRefreshToken(snsId, snsType);
 
-    await this.authService.setCurrentRefreshToken2(refreshToken, snsId);
+    await this.authService.setKakaoCurrentRefreshToken(refreshToken, snsId);
 
     response.cookie('authentication', accessToken, accessOption);
     response.cookie('Refresh', refreshToken, refreshOption);
