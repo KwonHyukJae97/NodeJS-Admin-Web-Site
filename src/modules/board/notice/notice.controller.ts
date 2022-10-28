@@ -6,78 +6,130 @@ import {
   Param,
   Patch,
   Post,
-  UsePipes,
-  ValidationPipe
-} from "@nestjs/common";
-import { CreateNoticeDto } from "./dto/create-notice.dto";
-import { CommandBus, QueryBus } from "@nestjs/cqrs";
-import { CreateNoticeCommand } from "./command/create-notice.command";
-import { GetNoticeInfoQuery } from "./query/get-notice-info.query";
-import { Notice } from "./entities/notice";
-import { GetNoticeDetailQuery } from "./query/get-notice-detail.query";
-import { UpdateNoticeDto } from "./dto/update-notice.dto";
-import { UpdateNoticeCommand } from "./command/update-notice.command";
-import { DeleteNoticeCommand } from "./command/delete-notice.command";
+  Query,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { CreateNoticeDto } from './dto/create-notice.dto';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { CreateNoticeCommand } from './command/create-notice.command';
+import { UpdateNoticeDto } from './dto/update-notice.dto';
+import { UpdateNoticeCommand } from './command/update-notice.command';
+import { DeleteNoticeCommand } from './command/delete-notice.command';
+import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/files.interceptor';
+import { GetNoticeDetailCommand } from './command/get-notice-detail.command';
+import { GetNoticeListQuery } from './query/get-notice-list.query';
+import { GetNoticeInfoDto } from './dto/get-notice-info.dto';
+import { GetNoticeRoleDto } from './dto/get-notice-role.dto';
+import { GetUser } from '../../account/decorator/account.decorator';
+import { Account } from '../../account/entities/account';
+import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
 
 /**
- * 공지사항 관련 API 처리하는 컨트롤러
+ * 공지사항 API controller
  */
-
 @Controller('notice')
 export class NoticeController {
   constructor(private commandBus: CommandBus, private queryBus: QueryBus) {}
 
   /**
    * 공지사항 등록
+   * @returns : 공지사항 등록 커맨드 전송
    */
   @Post()
-  @UsePipes(ValidationPipe)
-  createNotice(@Body() createNoticeDto: CreateNoticeDto): Promise<string> {
-    const { title, content, isTop, noticeGrant } = createNoticeDto;
-    const command = new CreateNoticeCommand(title, content, isTop, noticeGrant);
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FilesInterceptor('files'))
+  createNotice(
+    @Body() createNoticeDto: CreateNoticeDto,
+    @UploadedFiles() files: Express.MulterS3.File[],
+    @GetUser() account: Account,
+  ) {
+    console.log('요청 정보', account.accountId);
+    const { title, content, isTop, noticeGrant, role } = createNoticeDto;
+    const command = new CreateNoticeCommand(
+      title,
+      content,
+      isTop,
+      noticeGrant,
+      role,
+      account,
+      files,
+    );
     return this.commandBus.execute(command);
   }
 
   /**
-   * 공지사항 리스트 조회
+   * 공지사항 전체 & 검색 결과 리스트 조회
+   * @query : keyword
+   * @returns : 공지사항 리스트 조회 쿼리 전송
    */
   @Get()
-  async getAllNotice() {
-    const getNoticeInfoQuery = new GetNoticeInfoQuery();
-    return this.queryBus.execute(getNoticeInfoQuery);
+  @UseGuards(JwtAuthGuard)
+  async getAllSearchNotice(
+    @Query('keyword') keyword: string,
+    @Body() getNoticeInfoDto: GetNoticeInfoDto,
+  ) {
+    const { role, noticeGrant } = getNoticeInfoDto;
+    const getNoticeListSearchQuery = new GetNoticeListQuery(keyword, role, noticeGrant);
+    return this.queryBus.execute(getNoticeListSearchQuery);
   }
 
   /**
-   * 공지사항 상세 조회
-   * @ param : notice_id
+   * 공지사항 상세 정보 조회
+   * @param : notice_id
+   * @returns : 공지사항 상세 정보 조회 커맨드 전송
    */
   @Get(':id')
-  async getNoticeDetail(@Param('id') noticeId: number): Promise<Notice> {
-    const getNoticeDetailQuery = new GetNoticeDetailQuery(noticeId);
-    return this.queryBus.execute(getNoticeDetailQuery);
+  @UseGuards(JwtAuthGuard)
+  async getNoticeDetail(@Param('id') noticeId: number, @Body() getNoticeRoleDto: GetNoticeRoleDto) {
+    const { role } = getNoticeRoleDto;
+    const command = new GetNoticeDetailCommand(noticeId, role);
+    return this.commandBus.execute(command);
   }
 
   /**
-   * 공지사항 수정
-   * @ param : notice_id
+   * 공지사항 상세 정보 수정
+   * @param : notice_id
+   * @returns : 공지사항 상세 정보 수정 커맨드 전송
    */
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FilesInterceptor('files'))
   async updateNotice(
     @Param('id') noticeId: number,
     @Body() updateNoticeDto: UpdateNoticeDto,
-  ): Promise<Notice> {
-    const { title, content, isTop, noticeGrant } = updateNoticeDto;
-    const command = new UpdateNoticeCommand(title, content, isTop, noticeGrant, noticeId);
+    @UploadedFiles() files: Express.MulterS3.File[],
+    @GetUser() account: Account,
+  ) {
+    const { title, content, isTop, noticeGrant, role } = updateNoticeDto;
+    const command = new UpdateNoticeCommand(
+      title,
+      content,
+      isTop,
+      noticeGrant,
+      noticeId,
+      role,
+      account,
+      files,
+    );
     return this.commandBus.execute(command);
   }
 
   /**
-   * 공지사항 삭제
-   * @ param : notice_id
+   * 공지사항 정보 삭제
+   * @param : notice_id
+   * @returns : 공지사항 정보 삭제 커맨드 전송
    */
   @Delete(':id')
-  async deleteNotice(@Param('id') noticeId: number): Promise<string> {
-    const command = new DeleteNoticeCommand(noticeId);
+  @UseGuards(JwtAuthGuard)
+  async deleteNotice(
+    @Param('id') noticeId: number,
+    @Body() deleteNoticeInfoDto: GetNoticeRoleDto,
+    @GetUser() account: Account,
+  ) {
+    const { role } = deleteNoticeInfoDto;
+    const command = new DeleteNoticeCommand(noticeId, role, account);
     return this.commandBus.execute(command);
   }
 }

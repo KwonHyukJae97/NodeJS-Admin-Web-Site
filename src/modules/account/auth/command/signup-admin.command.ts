@@ -1,5 +1,8 @@
 import { ICommand } from '@nestjs/cqrs';
 
+/**
+ * 관리자 회원가입 커멘드 정의
+ */
 export class SignUpAdminCommand implements ICommand {
   constructor(
     readonly id: string,
@@ -13,5 +16,6 @@ export class SignUpAdminCommand implements ICommand {
     readonly companyId: number,
     readonly roleId: number,
     readonly isSuper: boolean,
+    readonly division: boolean,
   ) {}
 }

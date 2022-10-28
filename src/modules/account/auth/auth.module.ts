@@ -5,17 +5,26 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SignController } from './auth.controller';
 import { SignUpUserHandler } from './command/signup-user.handler';
 import { SignUpAdminHandler } from './command/signup-admin.handler';
-import { Admin } from '../admin/entities/admin';
 import { User } from '../user/entities/user';
-import { Account2 } from '../entities/account';
+import { Admin } from '../admin/entities/admin';
+import { Account } from '../entities/account';
 import { JwtModule } from '@nestjs/jwt';
+import { AuthService } from './auth.service';
 import { PassportModule } from '@nestjs/passport';
-import { AuthService2 } from './auth2.service';
+import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
+import { SignInAdminHandler } from './command/signin-admin.handler';
+import { SignInUserHandler } from './command/signin-user.handler';
+import { AccountFileDb } from '../account-file-db';
+import { AccountFile } from '../../file/entities/account-file';
+import { ConvertException } from '../../../common/utils/convert-exception';
+import { JwtStrategy } from 'src/guard/jwt/jwt.strategy';
+import { LocalStrategy } from 'src/guard/local/local.strategy';
+import { KakaoSignUpAdminHandler } from './command/kakao-signup-admin.handler';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forFeature([User, Admin, Account2]),
+    TypeOrmModule.forFeature([User, Admin, Account, AccountFile]),
     CqrsModule,
     PassportModule.register({
       defaultStrategy: 'jwt',
@@ -30,6 +39,18 @@ import { AuthService2 } from './auth2.service';
     }),
   ],
   controllers: [SignController],
-  providers: [SignUpUserHandler, SignUpAdminHandler, AuthService2],
+  providers: [
+    KakaoSignUpAdminHandler,
+    SignUpUserHandler,
+    SignUpAdminHandler,
+    SignInAdminHandler,
+    SignInUserHandler,
+    AuthService,
+    JwtManageService,
+    ConvertException,
+    JwtStrategy,
+    LocalStrategy,
+    { provide: 'accountFile', useClass: AccountFileDb },
+  ],
 })
-export class SecondAuthModule {}
+export class AuthModule {}

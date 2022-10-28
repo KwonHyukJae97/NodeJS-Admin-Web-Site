@@ -1,5 +1,8 @@
 import { IsEmail, IsNotEmpty, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 
+/**
+ * 사용자 회원가입을 위한 dto 정의
+ */
 export class SignUpUserDto {
   @IsNotEmpty()
   @IsString()

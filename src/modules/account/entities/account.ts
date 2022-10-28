@@ -1,20 +1,25 @@
-import { IsOptional, IsString } from 'class-validator';
+import { Temporary } from 'src/modules/temporary/entities/temporary';
+// import { Sleeper } from 'src/modules/sleeper/entities/sleeper';
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
+  JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
-  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { Admin } from '../admin/entities/admin';
 import { User } from '../user/entities/user';
 
+/**
+ * account에 대한 엔티티 정의
+ */
+
 @Entity('account')
-@Unique(['id'])
-export class Account2 extends BaseEntity {
+export class Account extends BaseEntity {
   //계정번호
   @PrimaryGeneratedColumn({
     name: 'account_id',
@@ -23,17 +28,14 @@ export class Account2 extends BaseEntity {
   accountId: number;
 
   //아이디
-  @IsString()
   @Column({
     name: 'id',
     type: 'varchar',
     length: '20',
-    unique: true,
   })
   id: string;
 
   //비밀번호
-  @IsString()
   @Column({
     name: 'password',
     type: 'varchar',
@@ -42,7 +44,6 @@ export class Account2 extends BaseEntity {
   password: string;
 
   //이름
-  @IsString()
   @Column({
     name: 'name',
     type: 'varchar',
@@ -51,16 +52,13 @@ export class Account2 extends BaseEntity {
   name: string;
 
   //이메일
-  @IsString()
   @Column({
     type: 'varchar',
     length: '100',
-    unique: true,
   })
   email: string;
 
   //연락처
-  @IsString()
   @Column({
     name: 'phone',
     type: 'varchar',
@@ -69,17 +67,14 @@ export class Account2 extends BaseEntity {
   phone: string;
 
   //닉네임
-  @IsString()
   @Column({
     name: 'nickname',
     type: 'varchar',
     length: '20',
-    unique: true,
   })
   nickname: string;
 
-  //생년월일
-  @IsString()
+  //생년월
   @Column({
     name: 'birth',
     type: 'varchar',
@@ -88,23 +83,24 @@ export class Account2 extends BaseEntity {
   birth: string;
 
   //성별 (0:M, 1:F)
-  @IsString()
   @Column({
     name: 'gender',
     type: 'char',
   })
   gender: string;
 
-  @IsOptional()
-  @IsString()
+  //리프레쉬 토큰
+  // @IsOptional()
+  // @Exclude()
   @Column({
     name: 'current_hashed_refresh_token',
+    type: 'varchar',
+    length: '200',
     nullable: true,
   })
   currentHashedRefreshToken: string;
 
   //CI고유번호
-  @IsString()
   @Column({
     name: 'ci',
     type: 'varchar',
@@ -113,7 +109,6 @@ export class Account2 extends BaseEntity {
   ci: string;
 
   //sns아이디
-  @IsString()
   @Column({
     name: 'sns_id',
     type: 'varchar',
@@ -122,7 +117,6 @@ export class Account2 extends BaseEntity {
   snsId: string;
 
   //sns타입
-  @IsString()
   @Column({
     name: 'sns_type',
     type: 'char',
@@ -131,11 +125,10 @@ export class Account2 extends BaseEntity {
   snsType: string;
 
   //sns토큰
-  @IsString()
   @Column({
     name: 'sns_token',
     type: 'varchar',
-    length: '150',
+    length: '200',
   })
   snsToken: string;
 
@@ -154,7 +147,7 @@ export class Account2 extends BaseEntity {
   updateDate: Date;
 
   //회원탈퇴 일시
-  @Column({
+  @DeleteDateColumn({
     name: 'del_date',
     type: 'datetime',
   })
@@ -172,11 +165,21 @@ export class Account2 extends BaseEntity {
     name: 'division',
     type: 'boolean',
   })
-  devision: Boolean;
+  division: boolean;
 
-  @OneToOne((type) => User, (user) => user.accountId)
-  userId: number;
+  @OneToOne((type) => Temporary, (temporary) => temporary.accountId)
+  temporaryId: number;
 
-  @OneToOne((type) => Admin, (admin) => admin.accountId)
-  adminId: number;
+  //admin 정보 가져오기
+  @OneToOne(() => Admin)
+  @JoinColumn({ name: 'account_id' })
+  admin: Admin;
+
+  //user 정보 가져오기
+  @OneToOne(() => User)
+  @JoinColumn({ name: 'account_id' })
+  user: User;
+
+  // @OneToOne((type) => Sleeper, (sleeper) => sleeper.sleeperAccountId)
+  // sleeperAccountId: number;
 }

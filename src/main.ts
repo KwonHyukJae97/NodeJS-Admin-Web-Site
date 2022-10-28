@@ -3,14 +3,16 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { GlobalExceptionFilter } from './common/exception/GlobalException.Filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {});
   app.useGlobalPipes(
     new ValidationPipe({
-      // whitelist: true,
-      // forbidNonWhitelisted: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
       transform: true,
+      stopAtFirstError: true,
     }),
   );
   app.use(cookieParser());
@@ -20,7 +22,7 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
-
-  await app.listen(3000);
+  app.useGlobalFilters(new GlobalExceptionFilter());
+  await app.listen(process.env.SERVER_PORT || 3000);
 }
 bootstrap();

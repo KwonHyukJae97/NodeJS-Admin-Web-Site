@@ -1,6 +1,6 @@
-import { IsBoolean, IsNumber } from 'class-validator';
+import { Account } from 'src/modules/account/entities/account';
+import { RolePermission } from 'src/modules/adminRole/entities/rolePermission.entity';
 import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Account2 } from '../../entities/account';
 
 @Entity('admin')
 export class Admin extends BaseEntity {
@@ -12,15 +12,13 @@ export class Admin extends BaseEntity {
   adminId: number;
 
   //회원사 번호
-  @IsNumber()
   @Column({
     name: 'company_id',
     type: 'int',
   })
+  companyId: number;
 
   //역할 번호
-  companyId: number;
-  @IsNumber()
   @Column({
     name: 'role_id',
     type: 'int',
@@ -28,17 +26,26 @@ export class Admin extends BaseEntity {
   roleId: number;
 
   //관리자 타입
-  @IsBoolean()
   @Column({
     name: 'is_super',
     type: 'boolean',
   })
   isSuper: boolean;
 
-  //계정번호
-  @OneToOne((type) => Account2, (account) => account.adminId, { eager: true })
-  @JoinColumn({
+  // 계정 번호
+  @Column({
     name: 'account_id',
+    type: 'bigint',
   })
-  accountId: Account2;
+  accountId: number;
+
+  // 계정 정보
+  @OneToOne(() => Account)
+  @JoinColumn({ name: 'account_id' })
+  account: Account;
+
+  //역할_권한 정보 가져오기
+  @OneToOne(() => RolePermission)
+  @JoinColumn({ name: 'role_id' })
+  rolePermission: RolePermission;
 }

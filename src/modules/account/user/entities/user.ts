@@ -1,7 +1,9 @@
-import { IsNumber } from 'class-validator';
+import { Account } from '../../entities/account';
 import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Account2 } from '../../entities/account';
 
+/**
+ * 앱 사용자에 대한 엔티티 정의
+ */
 @Entity('user')
 export class User extends BaseEntity {
   //회원 번호
@@ -12,17 +14,21 @@ export class User extends BaseEntity {
   userId: number;
 
   //학년 정보
-  @IsNumber()
   @Column({
     name: 'grade',
     type: 'tinyint',
   })
   grade: number;
 
-  //계정번호
-  @OneToOne((type) => Account2, (account) => account.userId, { eager: true })
-  @JoinColumn({
+  // 계정 번호
+  @Column({
     name: 'account_id',
+    type: 'bigint',
   })
-  accountId: Account2;
+  accountId: number;
+
+  // 계정 정보
+  @OneToOne(() => Account)
+  @JoinColumn({ name: 'account_id' })
+  account: Account;
 }

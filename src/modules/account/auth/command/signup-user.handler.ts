@@ -1,14 +1,15 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Account2 } from 'src/modules/account/entities/account';
+import { Account } from 'src/modules/account/entities/account';
 import { User } from 'src/modules/account/user/entities/user';
 import { Repository } from 'typeorm';
 import { SignUpUserCommand } from './signup-user.command';
+import { ConvertException } from 'src/common/utils/convert-exception';
 import * as bcrypt from 'bcryptjs';
 
 /**
- * 사용자 회원가입 Handler
+ * 사용자 회원가입 핸들러
  */
 @Injectable()
 @CommandHandler(SignUpUserCommand)
@@ -16,9 +17,10 @@ export class SignUpUserHandler implements ICommandHandler<SignUpUserCommand> {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(Account)
+    private accountRepository: Repository<Account>,
 
-    @InjectRepository(Account2)
-    private accountRepository: Repository<Account2>,
+    @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
   async execute(command: SignUpUserCommand) {
@@ -56,15 +58,24 @@ export class SignUpUserHandler implements ICommandHandler<SignUpUserCommand> {
       throw new UnauthorizedException('이미 존재하는 닉네임입니다.');
     } else {
       //Account 저장
-      await this.accountRepository.save(accountUser);
+      try {
+        await this.accountRepository.save(accountUser);
+      } catch (err) {
+        console.log(err);
+        return this.convertException.badRequestError('사용자 회원가입에 ', 400);
+      }
     }
 
     const user = this.userRepository.create({
-      accountId: accountUser,
+      accountId: accountUser.accountId,
       grade,
     });
-    console.log('grade result!', user);
-    await this.userRepository.save(user);
+    try {
+      await this.userRepository.save(user);
+    } catch (err) {
+      return this.convertException.CommonError(500);
+    }
+
     return '회원가입 완료 (사용자)';
   }
 }
