@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateAdminRoleCommand } from './update-adminRole.command';
-import { AdminRole } from '../entities/adminrole.entity';
+import { AdminRole } from '../entities/adminRole.entity';
 import { Repository } from 'typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
 
