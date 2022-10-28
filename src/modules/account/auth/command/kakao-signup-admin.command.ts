@@ -11,8 +11,6 @@ export class KakaoSignUpAdminCommand implements ICommand {
     readonly birth: string,
     readonly gender: string,
     readonly snsId: string,
-    readonly snsType: string,
     readonly snsToken: string,
-    readonly division: boolean,
   ) {}
 }

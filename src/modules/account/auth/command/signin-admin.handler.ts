@@ -2,11 +2,9 @@ import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@n
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Admin } from '../../admin/entities/admin';
 import { Account } from '../../entities/account';
 import { SignInAdminCommand } from './signin-admin.command';
 import * as bcrypt from 'bcrypt';
-import { AccountService } from 'src/modules/account-bak/account.service';
 import { AuthService } from '../auth.service';
 
 /**
@@ -16,12 +14,8 @@ import { AuthService } from '../auth.service';
 @CommandHandler(SignInAdminCommand)
 export class SignInAdminHandler implements ICommandHandler<SignInAdminCommand> {
   constructor(
-    @InjectRepository(Admin)
-    private adminRepository: Repository<Admin>,
-
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
-    private readonly accountService: AccountService,
     private readonly authSerive: AuthService,
   ) {}
 

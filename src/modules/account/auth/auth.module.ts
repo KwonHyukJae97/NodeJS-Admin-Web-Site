@@ -11,10 +11,7 @@ import { Account } from '../entities/account';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { PassportModule } from '@nestjs/passport';
-import { AccountService } from 'src/modules/account-bak/account.service';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
-import { Account3 } from 'src/modules/account-bak/entities/account.entity';
-import { KakaoStrategy } from 'src/guard/jwt/kakao.strategy';
 import { SignInAdminHandler } from './command/signin-admin.handler';
 import { SignInUserHandler } from './command/signin-user.handler';
 import { AccountFileDb } from '../account-file-db';
@@ -27,7 +24,7 @@ import { KakaoSignUpAdminHandler } from './command/kakao-signup-admin.handler';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forFeature([User, Admin, Account3, Account, AccountFile]),
+    TypeOrmModule.forFeature([User, Admin, Account, AccountFile]),
     CqrsModule,
     PassportModule.register({
       defaultStrategy: 'jwt',
@@ -49,7 +46,6 @@ import { KakaoSignUpAdminHandler } from './command/kakao-signup-admin.handler';
     SignInAdminHandler,
     SignInUserHandler,
     AuthService,
-    AccountService,
     JwtManageService,
     ConvertException,
     JwtStrategy,
@@ -57,4 +53,4 @@ import { KakaoSignUpAdminHandler } from './command/kakao-signup-admin.handler';
     { provide: 'accountFile', useClass: AccountFileDb },
   ],
 })
-export class SecondAuthModule {}
+export class AuthModule {}

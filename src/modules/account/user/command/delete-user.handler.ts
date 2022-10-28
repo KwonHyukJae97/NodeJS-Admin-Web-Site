@@ -35,7 +35,10 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand> {
     const user = await this.userRepository.findOneBy({ userId: userId });
 
     const accountId = user.accountId;
-    const account = await this.accountRepository.findOneBy({ accountId: accountId, delDate });
+    const account = await this.accountRepository.findOneBy({
+      accountId: accountId,
+      delDate,
+    });
 
     if (!account) {
       return this.convertException.notFoundError('사용자', 404);
@@ -49,11 +52,11 @@ export class DeleteUserHandler implements ICommandHandler<DeleteUserCommand> {
     account.delDate = setDate;
     await this.accountRepository.save(account);
 
-    const accountFile = await this.fileRepository.findOneBy({ accountId: accountId });
+    const accountFile = await this.fileRepository.findOneBy({ accountId: account.accountId });
 
     // 저장되어 있는 프로필 이미지가 있다면 '삭제' 이벤트 호출
     if (accountFile) {
-      this.eventBus.publish(new FileDeleteEvent(accountId, this.accountFileDb));
+      this.eventBus.publish(new FileDeleteEvent(account.accountId, this.accountFileDb));
     }
 
     //탈퇴회원의 개인정보 유출가능한 데이터는 *표로 표시 (기준:휴면계정 데이터)

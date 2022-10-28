@@ -26,8 +26,15 @@ export class KakaoSignUpAdminHandler implements ICommandHandler<KakaoSignUpAdmin
 
   //카카오 2차 정보 저장 메소드
   async execute(command: KakaoSignUpAdminCommand) {
-    const { name, phone, nickname, birth, gender, snsId, snsType, snsToken, division } = command;
-    console.log('kakao command', command);
+    let { name, phone, nickname, birth, gender, snsId, snsToken } = command;
+    console.log('kakao command', command.snsToken);
+
+    //카카오에서 넘어오는 성별 값을 account 형식에 맞게 변경하여 저장
+    if (gender == 'male') {
+      gender = '1';
+    } else {
+      gender = '0';
+    }
 
     const accountKakaoAdmin = this.accountRepository.create({
       name,
@@ -36,9 +43,9 @@ export class KakaoSignUpAdminHandler implements ICommandHandler<KakaoSignUpAdmin
       birth,
       gender,
       snsId,
-      snsType,
+      snsType: '01',
       snsToken,
-      division,
+      division: true,
     });
 
     try {
@@ -49,7 +56,7 @@ export class KakaoSignUpAdminHandler implements ICommandHandler<KakaoSignUpAdmin
     }
 
     const adminKakao = this.adminRepository.create({
-      accountId: accountKakaoAdmin,
+      accountId: accountKakaoAdmin.accountId,
       companyId: 0,
       roleId: 0,
       isSuper: true,
@@ -62,6 +69,7 @@ export class KakaoSignUpAdminHandler implements ICommandHandler<KakaoSignUpAdmin
       return this.convertException.CommonError(500);
     }
 
-    return '카카오 2차 정보 저장 완료 (관리자)';
+    // 카카오 정보를 리턴
+    return accountKakaoAdmin;
   }
 }

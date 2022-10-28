@@ -28,30 +28,6 @@ export class UserController {
   constructor(private commandBus: CommandBus, private queryBus: QueryBus) {}
 
   /**
-   * 앱사용자 회원가입 메소드
-   * @param signUpUserdto : 앱사용자 회원가입에 필요한 dto
-   * @return : 앱사용자 회원 가입 커맨드 전송
-   */
-  @Post()
-  async secondSignupUser(@Body(ValidationPipe) signUpUserdto: SignUpUserDto): Promise<void> {
-    const { id, password, email, name, phone, nickname, birth, gender, grade } = signUpUserdto;
-
-    const command = new SignUpUserCommand(
-      id,
-      password,
-      email,
-      name,
-      phone,
-      nickname,
-      birth,
-      gender,
-      grade,
-    );
-
-    return this.commandBus.execute(command);
-  }
-
-  /**
    * 앱 사용자 전체 리스트 조회
    * @return : 앱 사용자 리스트 조회 커맨드 전송
    */

@@ -1,28 +1,16 @@
-import {
-  ConflictException,
-  HttpException,
-  HttpStatus,
-  Injectable,
-  InternalServerErrorException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { compare, hash } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../user/entities/user';
 import { Account } from 'src/modules/account/entities/account';
 import { Repository } from 'typeorm';
 import { SignInUserDto } from './dto/signin-user.dto';
 import { SignInAdminDto } from './dto/signin-admin.dto';
 import { ConfigService } from '@nestjs/config';
-import { AccountService } from 'src/modules/account-bak/account.service';
-import { ModuleTokenFactory } from '@nestjs/core/injector/module-token-factory';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { FindIdDto } from './dto/findid.dto';
 import { UserKakaoDto } from './dto/user.kakao.dto';
-import axios from 'axios';
-import { UserLoginResDto } from './dto/login-res.dto';
 
 /**
  * Auth 관련 토큰, 검증, 카카오 서비스
@@ -34,9 +22,7 @@ export class AuthService {
 
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
-
     private readonly configService: ConfigService,
-    private readonly accountService: AccountService,
     private readonly jwtManageService: JwtManageService,
   ) {}
 
@@ -100,8 +86,7 @@ export class AuthService {
    */
   async getByAccountId(id: string, snsType: string, showCurrentHashedRefreshToken: boolean) {
     const account = await this.accountRepository.findOne({ where: { id, snsType } });
-    console.log('accountService- Id--------', id);
-    console.log('accountService- account--------', account);
+
     if (account) {
       delete account.password;
       if (!showCurrentHashedRefreshToken) {
@@ -121,8 +106,7 @@ export class AuthService {
    */
   async getBySnsType(snsType: string, snsId: string, showCurrentHashedRefreshToken: boolean) {
     const account = await this.accountRepository.findOne({ where: { snsType, snsId } });
-    console.log('snsType--------', snsType);
-    console.log('snsId--------', snsId);
+
     if (account) {
       delete account.password;
       if (!showCurrentHashedRefreshToken) {
@@ -159,7 +143,7 @@ export class AuthService {
   }
 
   /**
-   * 리프레쉬 토큰을 생성하는 메소드
+   * 일반 로그인 시 리프레쉬 토큰을 생성하는 메소드
    * @param refreshToken
    * @param id
    */
@@ -170,6 +154,11 @@ export class AuthService {
     await this.accountRepository.update({ id }, { currentHashedRefreshToken: refreshToken });
   }
 
+  /**
+   * 카카오 로그인 시 리프레쉬 토큰을 생성하는 메소드
+   * @param refreshToken
+   * @param id
+   */
   async setKakaoCurrentRefreshToken(refreshToken: string, snsId: string) {
     if (refreshToken) {
       refreshToken = await bcrypt.hash(refreshToken, 10);
@@ -202,7 +191,7 @@ export class AuthService {
   }
 
   /**
-   * 카카오 AccessToken 을 발급하는 메소드
+   * 카카오 로그인 시 AccessToken 을 발급하는 메소드
    * @param id
    * @param snsType
    * @returns : 토큰과 토큰 옵션을 리턴
@@ -395,7 +384,7 @@ export class AuthService {
     };
   }
 
-  public getCookiesForLogOut2() {
+  public getCookiesForLogOut() {
     return {
       accessOption: {
         domain: 'localhost',
@@ -456,68 +445,27 @@ export class AuthService {
     return this.accountRepository.update({ accountId }, { currentHashedRefreshToken: null });
   }
 
-  // TODO: 카카오 로그인 처리 메소드
-  async kakaoSignIn(userKakaoDto: UserKakaoDto): Promise<UserLoginResDto> {
-    const { name, email, birth, gender } = userKakaoDto;
-
-    let user = await this.accountRepository.findOneBy({ email });
-
-    if (!user) {
-      user = this.accountRepository.create({
-        email,
-        name,
-        birth,
-        gender,
-      });
-
-      try {
-        await this.accountRepository.save(user);
-      } catch (e) {
-        console.log('error', e);
-      }
-    }
-    const payload = { email };
-    const accessToken = await this.jwtService.sign(payload);
-
-    const loginDto = {
-      loginSuccess: true,
-      accessToken: accessToken,
-    };
-    return loginDto;
-  }
-
   /**
    * 카카오 유저정보 확인 후 FE에 결과값 알려주는 메소드
    * @param userKakaoDto
    * @returns : DB에서 snsId 조회 후 결과 값을 리턴
    */
   async kakaoUserInfos(userKakaoDto: UserKakaoDto) {
-    // const { name, email, birth, snsId, snsType, gender } = userKakaoDto;
-
     const snsId = userKakaoDto.snsId;
-
-    console.log('카카오 정보', snsId);
 
     const user = await this.accountRepository.findOne({ where: { snsId } });
 
     if (user) {
-      console.log('사용자 가입 기록 있음1', snsId);
-      console.log('사용자 가입 기록 있음2', user);
-
-      // const payload = { snsId };
-      // const accessToken = await this.jwtService.sign(payload);
       const loginDto = {
         loginSuccess: true,
-        // accessToken: accessToken,
       };
-      console.log('!!!!!!loginDto@@@@@', loginDto);
+      // loginSuccess (true) 값을 리턴
       return loginDto;
     } else {
-      console.log('사용자 가입 기록 없음', snsId);
       const sencondDataDto = {
         loginSuccess: false,
       };
-      console.log('2차 가입 정보 필요', sencondDataDto);
+      // loginSuccess (false) 값을 리턴
       return sencondDataDto;
     }
   }

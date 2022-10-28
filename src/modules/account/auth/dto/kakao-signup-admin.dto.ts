@@ -29,17 +29,8 @@ export class KakaoSignUpAdminDto {
   @IsString()
   readonly snsId: string;
 
-  //sns_type (00: naver, 01: kakao, 02: google, 03: apple)
-  @IsNotEmpty()
-  @IsString()
-  readonly snsType: string;
-
   //카카오에서 발급해주는 토큰값
   @IsNotEmpty()
   @IsString()
   readonly snsToken: string;
-
-  //관리자 사용자 구분 (true: 1(관리자), false: 0(사용자))
-  @IsNotEmpty()
-  readonly division: boolean;
 }
