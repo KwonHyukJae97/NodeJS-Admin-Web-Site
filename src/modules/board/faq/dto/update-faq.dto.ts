@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 
 /**
  * FAQ 수정에 필요한 요청 Dto 정의
@@ -21,9 +21,4 @@ export class UpdateFaqDto {
   @IsNotEmpty()
   @IsString()
   role: string;
-
-  // 작성자 본인 확인을 위해 임시 사용
-  @IsNotEmpty()
-  //@IsNumber()
-  accountId: number;
 }

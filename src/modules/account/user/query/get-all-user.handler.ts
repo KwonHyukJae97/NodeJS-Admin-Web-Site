@@ -38,10 +38,8 @@ export class GetAllUserQueryHandler implements IQueryHandler<GetAllUserQuery> {
     // 조회한 각 사용자 정보마다 반복문 돌려가면서 필요에 맞는 정보 반환
     const userInfoList = await Promise.all(
       user.map(async (user) => {
-        const accountId = user.accountId;
-
         // '탈퇴'한 회원이면 'user' 정보만 반환
-        if (accountId === null) {
+        if (user.accountId === null) {
           userInfo = {
             user: user,
           };
@@ -49,7 +47,7 @@ export class GetAllUserQueryHandler implements IQueryHandler<GetAllUserQuery> {
           // 현재 회원이면, 저장된 파일이 있는지 확인
         } else {
           const accountFile = await this.fileRepository.findOneBy({
-            accountId: accountId.accountId,
+            accountId: user.accountId,
           });
 
           // 파일이 있으면 'user'와 'file = accountFile' 정보 반환

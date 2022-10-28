@@ -37,7 +37,7 @@ export class UpdateAdminHandler implements ICommandHandler<UpdateAdminCommand> {
     const { password, email, phone, nickname, roleId, isSuper, adminId, file } = command;
 
     const admin = await this.adminRepository.findOneBy({ adminId: adminId });
-    const accountId = admin.accountId.accountId;
+    const accountId = admin.accountId;
     const account = await this.accountRepository.findOneBy({ accountId: accountId });
 
     //역할번호 수정

@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { BoardFile } from '../../../file/entities/board-file';
 import { ConvertException } from '../../../../common/utils/convert-exception';
+import { Account } from '../../../account/entities/account';
 
 /**
  * 공지사항 상세 정보 조회용 커맨드 핸들러
@@ -18,6 +19,7 @@ export class GetNoticeDetailHandler implements ICommandHandler<GetNoticeDetailCo
     @InjectRepository(Notice) private noticeRepository: Repository<Notice>,
     @InjectRepository(Board) private boardRepository: Repository<Board>,
     @InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>,
+    @InjectRepository(Account) private accountRepository: Repository<Account>,
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
@@ -29,7 +31,7 @@ export class GetNoticeDetailHandler implements ICommandHandler<GetNoticeDetailCo
   async execute(command: GetNoticeDetailCommand) {
     const { noticeId, role } = command;
 
-    const notice = await this.noticeRepository.findOneBy({ noticeId: noticeId });
+    const notice = await this.noticeRepository.findOneBy({ noticeId });
 
     if (!notice) {
       return this.convertException.notFoundError('공지사항', 404);
@@ -46,7 +48,7 @@ export class GetNoticeDetailHandler implements ICommandHandler<GetNoticeDetailCo
       }
     }
 
-    const board = await this.boardRepository.findOneBy({ boardId: notice.boardId.boardId });
+    const board = await this.boardRepository.findOneBy({ boardId: notice.boardId });
 
     if (!board) {
       return this.convertException.notFoundError('게시글', 404);
@@ -62,7 +64,7 @@ export class GetNoticeDetailHandler implements ICommandHandler<GetNoticeDetailCo
       return this.convertException.badRequestError('게시글 정보에', 400);
     }
 
-    notice.boardId = board;
+    notice.board = board;
 
     try {
       await this.noticeRepository.save(notice);
@@ -70,13 +72,17 @@ export class GetNoticeDetailHandler implements ICommandHandler<GetNoticeDetailCo
       return this.convertException.badRequestError('공지사항 정보에', 400);
     }
 
+    const account = await this.accountRepository.findOneBy({ accountId: board.accountId });
+
+    if (!account) {
+      return this.convertException.badRequestAccountError('작성자', 400);
+    }
+
     const files = await this.fileRepository.findBy({ boardId: board.boardId });
 
     const getNoticeDetailDto = {
-      noticeId: noticeId,
-      noticeGrant: notice.noticeGrant,
-      isTop: notice.isTop,
-      boardId: board,
+      notice,
+      writer: account.name + '(' + account.nickname + ')',
       fileList: files,
     };
 

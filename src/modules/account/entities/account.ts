@@ -167,12 +167,6 @@ export class Account extends BaseEntity {
   })
   division: boolean;
 
-  @OneToOne((type) => User, (user) => user.accountId)
-  userId: number;
-
-  @OneToOne((type) => Admin, (admin) => admin.accountId)
-  adminId: number;
-
   @OneToOne((type) => Temporary, (temporary) => temporary.accountId)
   temporaryId: number;
 
@@ -185,6 +179,7 @@ export class Account extends BaseEntity {
   @OneToOne(() => User)
   @JoinColumn({ name: 'account_id' })
   user: User;
+
   // @OneToOne((type) => Sleeper, (sleeper) => sleeper.sleeperAccountId)
   // sleeperAccountId: number;
 }

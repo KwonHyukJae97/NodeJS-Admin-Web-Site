@@ -32,14 +32,14 @@ export class Admin extends BaseEntity {
   })
   isSuper: boolean;
 
-  //계정번호
-  @OneToOne((type) => Account, (account) => account.adminId, { eager: true })
-  @JoinColumn({
+  // 계정 번호
+  @Column({
     name: 'account_id',
+    type: 'bigint',
   })
-  accountId: Account;
+  accountId: number;
 
-  //account 정보 가져오기
+  // 계정 정보
   @OneToOne(() => Account)
   @JoinColumn({ name: 'account_id' })
   account: Account;

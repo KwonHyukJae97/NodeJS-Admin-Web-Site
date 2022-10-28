@@ -81,7 +81,7 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
     }
 
     const admin = this.adminRepository.create({
-      accountId: accountAdmin,
+      accountId: accountAdmin.accountId,
       companyId,
       roleId,
       isSuper,

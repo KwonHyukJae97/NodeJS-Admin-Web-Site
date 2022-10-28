@@ -3,7 +3,6 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -13,7 +12,7 @@ import {
  */
 @Entity('qna_comment')
 export class Comment {
-  // 문의 번호
+  // 답변 번호
   @PrimaryGeneratedColumn({
     name: 'comment_id',
     type: 'bigint',
@@ -64,6 +63,8 @@ export class Comment {
   })
   delDate: Date;
 
-  // @ManyToOne((type) => Qna, (qna) => qna.commentList, { eager: true })
-  // qnaId: number;
+  // 문의 정보
+  // @ManyToOne(() => Qna)
+  // @JoinColumn({ name: 'qna_id' })
+  // qna: Qna;
 }

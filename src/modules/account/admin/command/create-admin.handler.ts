@@ -74,7 +74,7 @@ export class CreateAdminhandler implements ICommandHandler<CreateAdminCommand> {
     }
 
     const admin = this.adminRepository.create({
-      accountId: accountAdmin,
+      accountId: accountAdmin.accountId,
       companyId,
       roleId,
       isSuper,

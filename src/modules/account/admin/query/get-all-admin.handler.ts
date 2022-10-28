@@ -1,4 +1,4 @@
-import { Inject, NotFoundException } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -38,10 +38,8 @@ export class GetAllAdminQueryHandler implements IQueryHandler<GetAllAdminQuery> 
     // 조회한 각 사용자 정보마다 반복문 돌려가면서 필요에 맞는 정보 반환
     const adminInfoList = await Promise.all(
       admin.map(async (admin) => {
-        const accountId = admin.accountId;
-
         // '탈퇴'한 회원이면 'user' 정보만 반환
-        if (accountId === null) {
+        if (admin.accountId === null) {
           adminInfo = {
             admin: admin,
           };
@@ -49,7 +47,7 @@ export class GetAllAdminQueryHandler implements IQueryHandler<GetAllAdminQuery> 
           // 현재 회원이면, 저장된 파일이 있는지 확인
         } else {
           const accountFile = await this.fileRepository.findOneBy({
-            accountId: accountId.accountId,
+            accountId: admin.accountId,
           });
 
           // 파일이 있으면 'user'와 'file = accountFile' 정보 반환

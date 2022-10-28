@@ -12,9 +12,4 @@ export class UpdateQnaDto {
   @IsNotEmpty()
   @IsString()
   content: string;
-
-  // 수정 권한 확인을 위한 임시 속성
-  @IsNotEmpty()
-  //@IsNumber()
-  accountId: number;
 }

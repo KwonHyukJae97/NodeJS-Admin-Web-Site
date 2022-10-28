@@ -67,7 +67,7 @@ export class SignUpUserHandler implements ICommandHandler<SignUpUserCommand> {
     }
 
     const user = this.userRepository.create({
-      accountId: accountUser,
+      accountId: accountUser.accountId,
       grade,
     });
     try {

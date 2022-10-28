@@ -13,12 +13,14 @@ import { GetQnaDetailHandler } from './command/get-qna-detail.handler';
 import { Comment } from '../comment/entities/comment';
 import { BoardFileDb } from '../board-file-db';
 import { ConvertException } from '../../../common/utils/convert-exception';
+import { Account } from '../../account/entities/account';
+import { Admin } from '../../account/admin/entities/admin';
 
 const CommandHandlers = [CreateQnaHandler, UpdateQnaHandler, DeleteQnaHandler, GetQnaDetailHandler];
 const QueryHandlers = [GetQnaListHandler];
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Board, Qna, BoardFile, Comment]), CqrsModule],
+  imports: [TypeOrmModule.forFeature([Board, Qna, BoardFile, Comment, Account, Admin]), CqrsModule],
   controllers: [QnaController],
   providers: [
     ...CommandHandlers,
