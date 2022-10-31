@@ -14,12 +14,13 @@ import { GetCategoryListHandler } from './query/get-category-list.handler';
 import { GetFaqListHandler } from './query/get-faq-list.handler';
 import { BoardFileDb } from '../board-file-db';
 import { ConvertException } from '../../../common/utils/convert-exception';
+import { Account } from '../../account/entities/account';
 
 const CommandHandlers = [CreateFaqHandler, UpdateFaqHandler, DeleteFaqHandler, GetFaqDetailHandler];
 const QueryHandlers = [GetFaqListHandler, GetCategoryListHandler];
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Board, Faq, BoardFile, FaqCategory]), CqrsModule],
+  imports: [TypeOrmModule.forFeature([Board, Faq, BoardFile, FaqCategory, Account]), CqrsModule],
   controllers: [FaqController],
   providers: [
     ...CommandHandlers,

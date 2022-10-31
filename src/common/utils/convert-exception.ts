@@ -45,6 +45,18 @@ export class ConvertException {
   }
 
   /**
+   * 계정 관련 BadRequest Exception 처리
+   * @param param : 에러메시지에 함께 표시할 파라미터 정의
+   * @param status : HTTP Exception 에러 코드
+   */
+  async badRequestAccountError(param: string, status: number) {
+    throw new HttpException(
+      this.translator.translate('badRequestAccount', { replace: { param: param } }),
+      status,
+    );
+  }
+
+  /**
    * 기타 Exception 처리
    * @param param : 에러메시지에 함께 표시할 파라미터 정의
    * @param status : HTTP Exception 에러 코드

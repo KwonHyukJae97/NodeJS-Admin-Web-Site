@@ -8,7 +8,7 @@ export class GetQnaInfoDto {
   @IsString()
   role: string;
 
-  @IsNotEmpty()
-  @IsNumber()
-  accountId: number;
+  // @IsNotEmpty()
+  // @IsNumber()
+  // accountId: number;
 }

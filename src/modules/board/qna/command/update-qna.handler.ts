@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateQnaCommand } from './update-qna.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -34,23 +34,22 @@ export class UpdateQnaHandler implements ICommandHandler<UpdateQnaCommand> {
    * @returns : DB처리 실패 시 에러 메시지 반환 / 수정 성공 시 1:1 문의 정보 반환
    */
   async execute(command: UpdateQnaCommand) {
-    const { title, content, qnaId, files, accountId } = command;
+    const { title, content, qnaId, files, account } = command;
 
-    const qna = await this.qnaRepository.findOneBy({ qnaId: qnaId });
+    const qna = await this.qnaRepository.findOneBy({ qnaId });
 
     if (!qna) {
       return this.convertException.notFoundError('QnA', 404);
     }
 
-    // TODO : 유저 정보 데코레이터 적용시 확인 후, 삭제 예정
-    if (accountId !== qna.boardId.accountId) {
-      throw new BadRequestException('작성자만 수정이 가능합니다.');
-    }
-
-    const board = await this.boardRepository.findOneBy({ boardId: qna.boardId.boardId });
+    const board = await this.boardRepository.findOneBy({ boardId: qna.boardId });
 
     if (!board) {
       return this.convertException.notFoundError('게시글', 404);
+    }
+
+    if (account.accountId != board.accountId) {
+      return this.convertException.badRequestAccountError('작성자', 400);
     }
 
     board.title = title;
@@ -62,7 +61,7 @@ export class UpdateQnaHandler implements ICommandHandler<UpdateQnaCommand> {
       return this.convertException.badRequestError('게시글 정보에', 400);
     }
 
-    qna.boardId = board;
+    qna.board = board;
 
     try {
       await this.qnaRepository.save(qna);

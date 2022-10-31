@@ -26,6 +26,10 @@ export class UserKakaoDto {
 
   @IsString()
   @IsNotEmpty()
+  snsToken: string;
+
+  @IsString()
+  @IsNotEmpty()
   gender: string;
 
   @IsString()

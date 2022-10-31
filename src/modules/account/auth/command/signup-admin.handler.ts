@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { SignUpAdminCommand } from './signup-admin.command';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import * as bcrypt from 'bcryptjs';
+import { Company } from 'src/modules/company/entities/company.entity';
 
 /**
  * 관리자 회원가입 핸들러
@@ -18,26 +19,26 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
     @InjectRepository(Admin)
     private adminRepository: Repository<Admin>,
 
+    @InjectRepository(Company)
+    private companyRepository: Repository<Company>,
+
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
+  //관리자 회원가입 시 companyId, roleId, isSuper, division의 값을 어떤식으로 넣어줘야하는지 질문하기
+  //중복 또는 유효성검사에 통과하지 못한 요청의 FE에서 에러처리 필요
+  //네이버 로그인 BackEnd 로직 생성
   async execute(command: SignUpAdminCommand) {
-    const {
-      id,
-      password,
-      name,
-      email,
-      phone,
-      nickname,
-      birth,
-      gender,
-      companyId,
-      roleId,
-      isSuper,
-      division,
-    } = command;
+    let { id, password, name, email, phone, nickname, birth, gender, companyName, companyCode } =
+      command;
+
+    if (gender == 'male') {
+      gender = '1';
+    } else {
+      gender = '0';
+    }
 
     /**
      * 비밀번호 암호화 저장 (bcrypt)
@@ -53,7 +54,7 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
       nickname,
       birth,
       gender,
-      division,
+      division: true,
     });
 
     //중복체크
@@ -80,11 +81,23 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
       }
     }
 
+    //회원가입 시 회원사 테이블 데이터저장
+    const company = this.companyRepository.create({
+      companyName,
+      companyCode,
+    });
+    try {
+      await this.companyRepository.save(company);
+    } catch (err) {
+      console.log(err);
+      return this.convertException.badRequestError('회원사 정보 가입에', 400);
+    }
+
     const admin = this.adminRepository.create({
-      accountId: accountAdmin,
-      companyId,
-      roleId,
-      isSuper,
+      accountId: accountAdmin.accountId,
+      companyId: company.companyId,
+      roleId: 0,
+      isSuper: false, //본사: true, 회원사: false
     });
     try {
       await this.adminRepository.save(admin);

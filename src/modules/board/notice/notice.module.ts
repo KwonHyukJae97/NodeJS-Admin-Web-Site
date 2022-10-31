@@ -12,6 +12,7 @@ import { GetNoticeListHandler } from './query/get-notice-list.handler';
 import { BoardFileDb } from '../board-file-db';
 import { GetNoticeDetailHandler } from './command/get-notice-detail.handler';
 import { ConvertException } from '../../../common/utils/convert-exception';
+import { Account } from '../../account/entities/account';
 
 const CommandHandlers = [
   CreateNoticeHandler,
@@ -22,7 +23,7 @@ const CommandHandlers = [
 const QueryHandlers = [GetNoticeListHandler];
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Board, Notice, BoardFile]), CqrsModule],
+  imports: [TypeOrmModule.forFeature([Board, Notice, BoardFile, Account]), CqrsModule],
   controllers: [NoticeController],
   providers: [
     ...CommandHandlers,

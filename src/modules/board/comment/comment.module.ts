@@ -11,12 +11,18 @@ import { BoardFile } from '../../file/entities/board-file';
 import { GetCommentDetailHandler } from './command/get-comment-detail.handler';
 import { Qna } from '../qna/entities/qna';
 import { ConvertException } from '../../../common/utils/convert-exception';
+import { Admin } from '../../account/admin/entities/admin';
+import { Company } from '../../company/entities/company.entity';
+import { Account } from '../../account/entities/account';
 
 const CommandHandlers = [CreateCommentHandler, UpdateCommentHandler, GetCommentDetailHandler];
 const QueryHandlers = [GetCommentListHandler];
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Board, Comment, BoardFile, Qna]), CqrsModule],
+  imports: [
+    TypeOrmModule.forFeature([Board, Comment, BoardFile, Qna, Admin, Company, Account]),
+    CqrsModule,
+  ],
   controllers: [CommentController],
   providers: [...CommandHandlers, ...QueryHandlers, ConvertException],
 })

@@ -15,7 +15,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { JwtAuthGuard } from 'src/guard/jwt/jwt-auth.guard';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { LocalAuthGuard } from 'src/guard/local/local-auth.guard';
-import { AccountService } from 'src/modules/account-bak/account.service';
 import { Repository } from 'typeorm';
 import { Account } from '../entities/account';
 import { AuthService } from './auth.service';
@@ -26,13 +25,12 @@ import { SignInAdminDto } from './dto/signin-admin.dto';
 import { SignInUserDto } from './dto/signin-user.dto';
 import { SignUpAdminDto } from './dto/signup-admin.dto';
 import { SignUpUserDto } from './dto/signup-user.dto';
-import { AuthGuard } from '@nestjs/passport';
 import { UserKakaoDto } from './dto/user.kakao.dto';
 import { SignInAdminCommand } from './command/signin-admin.command';
 import { SignInUserCommand } from './command/signin-user.command';
-import { SignInUserHandler } from './command/signin-user.handler';
-import { UserLoginResDto } from './dto/login-res.dto';
 import JwtRefreshAuthGuard from 'src/guard/jwt/jwt-refresh-auth.guard';
+import { KakaoSignUpAdminDto } from './dto/kakao-signup-admin.dto';
+import { KakaoSignUpAdminCommand } from './command/kakao-signup-admin.command';
 
 /**
  * 회원가입, 로그인 등 계정 관련 auth API controller
@@ -41,13 +39,8 @@ import JwtRefreshAuthGuard from 'src/guard/jwt/jwt-refresh-auth.guard';
 export class SignController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
     private readonly authService: AuthService,
-    private readonly accountService: AccountService,
     private readonly jwtManageService: JwtManageService,
-    private readonly signInUserHandler: SignInUserHandler,
-    @InjectRepository(Account)
-    private accountRepository2: Repository<Account>,
   ) {}
 
   /**
@@ -55,10 +48,40 @@ export class SignController {
    * @returns : account 정보 반환
    */
   @Get('me')
-  @UseGuards(AuthGuard())
+  @UseGuards(JwtAuthGuard)
   async getAuthInfo(@Req() req) {
     const authInfo = req.user;
+    console.log('kakao test');
+    console.log('카카오 정보', req.user);
     return authInfo;
+  }
+
+  /**
+   * 카카오 2차정보 가입 메소드
+   * @param kakaoSignUpAdinDto : 2차정보 저장에 필요한 dto
+   * @returns : 카카오 2차 정보 저장 커멘드 전송
+   */
+  @Post('/register/kakao/admin')
+  async kakaoSignUpAdmin(
+    @Body(ValidationPipe) kakaoSignUpAdminDto: KakaoSignUpAdminDto,
+  ): Promise<string> {
+    const { name, phone, nickname, birth, gender, snsId, snsToken, companyName, companyCode } =
+      kakaoSignUpAdminDto;
+    console.log('Kakao 2차 정보 컨트롤러', kakaoSignUpAdminDto.snsToken);
+
+    const command = new KakaoSignUpAdminCommand(
+      name,
+      phone,
+      nickname,
+      birth,
+      gender,
+      snsId,
+      snsToken,
+      companyName,
+      companyCode,
+    );
+
+    return this.commandBus.execute(command);
   }
 
   /**
@@ -67,7 +90,8 @@ export class SignController {
    * @returns : 관리자 회원가입 커맨드 전송
    */
   @Post('/register/admin')
-  async signUpAdmin(@Body(ValidationPipe) SignUpAdminDto: SignUpAdminDto): Promise<string> {
+  async signUpAdmin(@Body(ValidationPipe) signUpAdminDto: SignUpAdminDto): Promise<string> {
+    console.log('company정보!!!');
     const {
       id,
       password,
@@ -81,8 +105,10 @@ export class SignController {
       roleId,
       isSuper,
       division,
-    } = SignUpAdminDto;
-    console.log('Admin 컨트롤러 로그', SignUpAdminDto);
+      companyName,
+      companyCode,
+    } = signUpAdminDto;
+    console.log('Admin 컨트롤러 로그', signUpAdminDto);
     const command = new SignUpAdminCommand(
       id,
       password,
@@ -96,6 +122,8 @@ export class SignController {
       roleId,
       isSuper,
       division,
+      companyName,
+      companyCode,
     );
     return this.commandBus.execute(command);
   }
@@ -106,10 +134,10 @@ export class SignController {
    * @returns : 사용자 회원가입 커맨드 전송
    */
   @Post('/register/user')
-  async signUpUser(@Body(ValidationPipe) SignUpUserDto: SignUpUserDto): Promise<string> {
-    const { id, password, name, email, phone, nickname, birth, gender, grade } = SignUpUserDto;
+  async signUpUser(@Body(ValidationPipe) signUpUserDto: SignUpUserDto): Promise<string> {
+    const { id, password, name, email, phone, nickname, birth, gender, grade } = signUpUserDto;
 
-    console.log('User 컨트롤러 로그', SignUpUserDto);
+    console.log('User 컨트롤러 로그', signUpUserDto);
     const command = new SignUpUserCommand(
       id,
       password,
@@ -245,7 +273,7 @@ export class SignController {
   @UseGuards(JwtAuthGuard)
   @Post('/logout/admin')
   async logoutAdmin(@Req() request, @Res() response) {
-    const { accessOption, refreshOption } = this.authService.getCookiesForLogOut2();
+    const { accessOption, refreshOption } = this.authService.getCookiesForLogOut();
     await this.authService.removeRefreshToken(request.user.accountId);
     response.cookie('authentication', '', accessOption);
     response.cookie('Refresh', '', refreshOption);
@@ -262,7 +290,7 @@ export class SignController {
   @UseGuards(JwtAuthGuard)
   @Post('/logout/user')
   async logoutUser(@Req() request, @Res() response) {
-    const { accessOption, refreshOption } = this.authService.getCookiesForLogOut2();
+    const { accessOption, refreshOption } = this.authService.getCookiesForLogOut();
     await this.authService.removeRefreshToken(request.user.accountId);
     response.cookie('authentication', '', accessOption);
     response.cookie('Refresh', '', refreshOption);
@@ -290,34 +318,26 @@ export class SignController {
   @Post('/kakao')
   async kakaoLoginUserInfo(@Req() req, @Res({ passthrough: true }) response) {
     const userKakaoDto: UserKakaoDto = req.body;
-    console.log('프론트에서 넘어오는 카카오 유저데이터', userKakaoDto);
+    const snsToken = req.body.resKakaoAccessToken;
 
-    const id = userKakaoDto.snsId;
+    const snsId = userKakaoDto.snsId;
     const snsType = '01';
 
-    const { accessToken, accessOption } = await this.authService.getCookieWithJwtAccessToken(
-      id,
+    const { accessToken, accessOption } = await this.authService.kakaoGetCookieWithJwtAccessToken(
+      snsId,
       snsType,
     );
-    const { refreshToken, refreshOption } = await this.authService.getCookieWithJwtRefreshToken(
-      id,
-      snsType,
-    );
+    const { refreshToken, refreshOption } =
+      await this.authService.kakaoGetCookieWithJwtRefreshToken(snsId, snsType);
 
-    await this.authService.setCurrentRefreshToken(refreshToken, id);
+    await this.authService.setKakaoCurrentRefreshToken(refreshToken, snsId);
+
+    await this.authService.setKakaoToken(snsToken, snsId);
 
     response.cookie('authentication', accessToken, accessOption);
     response.cookie('Refresh', refreshToken, refreshOption);
 
     return this.authService.kakaoUserInfos(userKakaoDto);
-  }
-
-  // TODO: 카카오 로그인 콜백
-  @Post('/kakao/callback')
-  // @UseGuards(AuthGuard('kakao'))
-  async kakaoLoginCallback(@Req() req): Promise<UserLoginResDto> {
-    const userKakaoDto: UserKakaoDto = req.body;
-    return this.authService.kakaoSignIn(userKakaoDto);
   }
 
   // TODO: 리프레쉬 토큰
@@ -331,6 +351,7 @@ export class SignController {
         accountId: account.accountId,
         id: account.id,
         snsType: account.snsType,
+        snsId: account.snsId,
       };
       const { accessToken, accessOption } =
         this.jwtManageService.getCookieWithJwtAccessToken(payload);

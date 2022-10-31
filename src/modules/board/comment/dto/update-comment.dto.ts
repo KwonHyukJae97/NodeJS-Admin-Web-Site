@@ -8,7 +8,7 @@ export class UpdateCommentDto {
   @IsString()
   comment: string;
 
-  @IsNotEmpty()
-  //@IsNumber()
-  adminId: number;
+  // @IsNotEmpty()
+  // //@IsNumber()
+  // adminId: number;
 }

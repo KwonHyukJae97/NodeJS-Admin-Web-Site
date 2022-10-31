@@ -40,7 +40,7 @@ export class GetAdminInfoQueryHandler implements IQueryHandler<GetAdminInfoQuery
     console.log('관리자', admin);
 
     const accountFile = await this.fileRepository.findOneBy({
-      accountId: admin.account.accountId,
+      accountId: admin.accountId,
     });
 
     // 저장된 파일이 있다면, 파일 정보와 함께 반환

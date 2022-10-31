@@ -1,5 +1,4 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { IsBoolean, IsString } from 'class-validator';
 import { Board } from '../../entities/board';
 
 /**
@@ -30,9 +29,16 @@ export class Notice {
   isTop: boolean;
 
   // 게시글 번호
-  @OneToOne((type) => Board, (board) => board.noticeId, { eager: true })
+  @Column({
+    name: 'board_id',
+    type: 'bigint',
+  })
+  boardId: number;
+
+  // 게시글 정보
+  @OneToOne(() => Board)
   @JoinColumn({
     name: 'board_id',
   })
-  boardId: Board;
+  board: Board;
 }

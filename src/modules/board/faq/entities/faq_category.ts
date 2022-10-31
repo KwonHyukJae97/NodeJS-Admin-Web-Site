@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 /**
  * FAQ 카테고리에 대한 엔티티 정의
@@ -26,7 +26,4 @@ export class FaqCategory {
     type: 'boolean',
   })
   isUse: boolean;
-
-  // @OneToMany((type) => Faq, (faq) => faq.categoryId)
-  // faqList: Faq[];
 }

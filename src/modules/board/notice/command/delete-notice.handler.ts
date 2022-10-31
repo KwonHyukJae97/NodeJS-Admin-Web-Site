@@ -31,28 +31,27 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
    * @returns : DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 완료 메시지 반환
    */
   async execute(command: DeleteNoticeCommand) {
-    const { noticeId, role, accountId } = command;
+    const { noticeId, role, account } = command;
 
     // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
     if (role !== '본사 관리자' && role !== '회원사 관리자') {
       throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
     }
 
-    const notice = await this.noticeRepository.findOneBy({ noticeId: noticeId });
+    const notice = await this.noticeRepository.findOneBy({ noticeId });
 
     if (!notice) {
       return this.convertException.notFoundError('공지사항', 404);
     }
 
-    // TODO : 유저 정보 데코레이터 적용시 확인 후, 삭제 예정
-    if (accountId != notice.boardId.accountId) {
-      throw new BadRequestException('작성자만 삭제가 가능합니다.');
-    }
-
-    const board = await this.boardRepository.findOneBy({ boardId: notice.boardId.boardId });
+    const board = await this.boardRepository.findOneBy({ boardId: notice.boardId });
 
     if (!board) {
       return this.convertException.notFoundError('게시글', 404);
+    }
+
+    if (account.accountId != board.accountId) {
+      return this.convertException.badRequestAccountError('작성자', 400);
     }
 
     const boardFiles = await this.fileRepository.findBy({ boardId: board.boardId });
