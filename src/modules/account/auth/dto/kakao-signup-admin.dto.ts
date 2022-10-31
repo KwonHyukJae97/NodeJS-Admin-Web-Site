@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 /**
  * 카카오 (관리자) 로그인 시 2차 정보를 입력을 위한 dto 정의
@@ -33,4 +33,12 @@ export class KakaoSignUpAdminDto {
   @IsNotEmpty()
   @IsString()
   readonly snsToken: string;
+
+  @IsNotEmpty()
+  @IsString()
+  readonly companyName: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  readonly companyCode: number;
 }

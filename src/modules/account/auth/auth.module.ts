@@ -9,7 +9,7 @@ import { User } from '../user/entities/user';
 import { Admin } from '../admin/entities/admin';
 import { Account } from '../entities/account';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthService } from './auth.service';
+
 import { PassportModule } from '@nestjs/passport';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { SignInAdminHandler } from './command/signin-admin.handler';
@@ -19,12 +19,15 @@ import { AccountFile } from '../../file/entities/account-file';
 import { ConvertException } from '../../../common/utils/convert-exception';
 import { JwtStrategy } from 'src/guard/jwt/jwt.strategy';
 import { LocalStrategy } from 'src/guard/local/local.strategy';
+
+import { Company } from 'src/modules/company/entities/company.entity';
 import { KakaoSignUpAdminHandler } from './command/kakao-signup-admin.handler';
+import { AuthService } from './auth.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forFeature([User, Admin, Account, AccountFile]),
+    TypeOrmModule.forFeature([User, Admin, Account, AccountFile, Company]),
     CqrsModule,
     PassportModule.register({
       defaultStrategy: 'jwt',

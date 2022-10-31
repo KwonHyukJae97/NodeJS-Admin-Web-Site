@@ -65,7 +65,8 @@ export class SignController {
   async kakaoSignUpAdmin(
     @Body(ValidationPipe) kakaoSignUpAdminDto: KakaoSignUpAdminDto,
   ): Promise<string> {
-    const { name, phone, nickname, birth, gender, snsId, snsToken } = kakaoSignUpAdminDto;
+    const { name, phone, nickname, birth, gender, snsId, snsToken, companyName, companyCode } =
+      kakaoSignUpAdminDto;
     console.log('Kakao 2차 정보 컨트롤러', kakaoSignUpAdminDto.snsToken);
 
     const command = new KakaoSignUpAdminCommand(
@@ -76,6 +77,8 @@ export class SignController {
       gender,
       snsId,
       snsToken,
+      companyName,
+      companyCode,
     );
 
     return this.commandBus.execute(command);
@@ -88,6 +91,7 @@ export class SignController {
    */
   @Post('/register/admin')
   async signUpAdmin(@Body(ValidationPipe) signUpAdminDto: SignUpAdminDto): Promise<string> {
+    console.log('company정보!!!');
     const {
       id,
       password,
@@ -101,6 +105,8 @@ export class SignController {
       roleId,
       isSuper,
       division,
+      companyName,
+      companyCode,
     } = signUpAdminDto;
     console.log('Admin 컨트롤러 로그', signUpAdminDto);
     const command = new SignUpAdminCommand(
@@ -116,6 +122,8 @@ export class SignController {
       roleId,
       isSuper,
       division,
+      companyName,
+      companyCode,
     );
     return this.commandBus.execute(command);
   }
@@ -310,6 +318,7 @@ export class SignController {
   @Post('/kakao')
   async kakaoLoginUserInfo(@Req() req, @Res({ passthrough: true }) response) {
     const userKakaoDto: UserKakaoDto = req.body;
+    const snsToken = req.body.resKakaoAccessToken;
 
     const snsId = userKakaoDto.snsId;
     const snsType = '01';
@@ -322,6 +331,8 @@ export class SignController {
       await this.authService.kakaoGetCookieWithJwtRefreshToken(snsId, snsType);
 
     await this.authService.setKakaoCurrentRefreshToken(refreshToken, snsId);
+
+    await this.authService.setKakaoToken(snsToken, snsId);
 
     response.cookie('authentication', accessToken, accessOption);
     response.cookie('Refresh', refreshToken, refreshOption);

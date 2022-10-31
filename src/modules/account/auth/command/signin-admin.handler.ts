@@ -82,7 +82,7 @@ export class SignInAdminHandler implements ICommandHandler<SignInAdminCommand> {
     const isPasswordMatching = await bcrypt.compare(plainTextPassword, hashedPassword);
 
     if (!isPasswordMatching) {
-      throw new HttpException('잘못된 인증 정보3312입니다.', HttpStatus.BAD_REQUEST);
+      throw new HttpException('잘못된 인증 정보입니다.', HttpStatus.BAD_REQUEST);
     }
   }
 }

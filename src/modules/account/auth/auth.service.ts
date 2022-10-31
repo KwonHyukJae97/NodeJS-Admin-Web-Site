@@ -165,6 +165,15 @@ export class AuthService {
     }
     await this.accountRepository.update({ snsId }, { currentHashedRefreshToken: refreshToken });
   }
+
+  async setKakaoToken(snsToken: string, snsId: string) {
+    console.log('sns토큰값 카카오', snsToken);
+    if (snsToken) {
+      snsToken = await bcrypt.hash(snsToken, 10);
+    }
+    await this.accountRepository.update({ snsId }, { snsToken: snsToken });
+  }
+
   /**
    * AccessToken 을 발급하는 메소드
    * @param id
@@ -452,8 +461,10 @@ export class AuthService {
    */
   async kakaoUserInfos(userKakaoDto: UserKakaoDto) {
     const snsId = userKakaoDto.snsId;
-
+    console.log('snsToken값 테스트', userKakaoDto.snsToken);
     const user = await this.accountRepository.findOne({ where: { snsId } });
+
+    // const snsTokenData = await this.accountRepository.update({snsId,})
 
     if (user) {
       const loginDto = {

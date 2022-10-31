@@ -1,5 +1,6 @@
 import { Account } from 'src/modules/account/entities/account';
 import { RolePermission } from 'src/modules/adminRole/entities/rolePermission.entity';
+import { Company } from 'src/modules/company/entities/company.entity';
 import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('admin')
@@ -48,4 +49,9 @@ export class Admin extends BaseEntity {
   @OneToOne(() => RolePermission)
   @JoinColumn({ name: 'role_id' })
   rolePermission: RolePermission;
+
+  //회원사 정보 가져오기
+  @OneToOne(() => Company)
+  @JoinColumn({ name: 'company_id' })
+  company: Company;
 }
