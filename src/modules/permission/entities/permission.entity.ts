@@ -23,13 +23,21 @@ export class Permission extends BaseEntity {
   })
   permissionId: number;
 
-  //메뉴명
+  //메뉴 이름
   @Column({
     name: 'menu_name',
     type: 'varchar',
     length: '50',
   })
   menuName: string;
+
+  //화면 이름
+  @Column({
+    name: 'display_name',
+    type: 'varchar',
+    length: '50',
+  })
+  displayName: string;
 
   //변경 일시
   @UpdateDateColumn({

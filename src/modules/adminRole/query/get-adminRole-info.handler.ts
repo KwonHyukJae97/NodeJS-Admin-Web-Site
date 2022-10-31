@@ -37,7 +37,7 @@ export class GetAdminRoleInfoQueryHandler implements IQueryHandler<GetAdminRoleI
       .getRawOne();
 
     if (!rolePermission) {
-      return this.convertException.notFoundError('사용자', 404);
+      return this.convertException.notFoundError('역할', 404);
     }
 
     return rolePermission;
