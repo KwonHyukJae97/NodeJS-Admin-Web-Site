@@ -31,6 +31,9 @@ import { SignInUserCommand } from './command/signin-user.command';
 import JwtRefreshAuthGuard from 'src/guard/jwt/jwt-refresh-auth.guard';
 import { KakaoSignUpAdminDto } from './dto/kakao-signup-admin.dto';
 import { KakaoSignUpAdminCommand } from './command/kakao-signup-admin.command';
+import { UserNaverDto } from './dto/user.naver.dto';
+import { NaverSignUpAdminDto } from './dto/naver-signup-admin.dto';
+import { NaverSignUpAdminCommand } from './command/naver-signup-admin.command';
 
 /**
  * 회원가입, 로그인 등 계정 관련 auth API controller
@@ -51,8 +54,7 @@ export class SignController {
   @UseGuards(JwtAuthGuard)
   async getAuthInfo(@Req() req) {
     const authInfo = req.user;
-    console.log('kakao test');
-    console.log('카카오 정보', req.user);
+    console.log('소셜 로그인 정보', req.user);
     return authInfo;
   }
 
@@ -70,6 +72,34 @@ export class SignController {
     console.log('Kakao 2차 정보 컨트롤러', kakaoSignUpAdminDto.snsToken);
 
     const command = new KakaoSignUpAdminCommand(
+      name,
+      phone,
+      nickname,
+      birth,
+      gender,
+      snsId,
+      snsToken,
+      companyName,
+      companyCode,
+    );
+
+    return this.commandBus.execute(command);
+  }
+
+  /**
+   * 네이버 2차정보 가입 메소드
+   * @param naverSignUpAdminDto : 2차정보 저장에 필요한 dto
+   * @returns : 네이버 2차 정보 저장 커멘드 전송
+   */
+  @Post('/register/naver/admin')
+  async naverSignUpAdmin(
+    @Body(ValidationPipe) naverSignUpAdminDto: NaverSignUpAdminDto,
+  ): Promise<string> {
+    const { name, phone, nickname, birth, gender, snsId, snsToken, companyName, companyCode } =
+      naverSignUpAdminDto;
+    console.log('Naver 2차 정보 컨트롤러', naverSignUpAdminDto);
+
+    const command = new NaverSignUpAdminCommand(
       name,
       phone,
       nickname,
@@ -338,6 +368,37 @@ export class SignController {
     response.cookie('Refresh', refreshToken, refreshOption);
 
     return this.authService.kakaoUserInfos(userKakaoDto);
+  }
+
+  /**
+   * 네이버 로그인 메소드
+   * @param req : FE에서 넘어오는 네이버 유저 정보
+   * @returns : 네이버 유저정보를 담은 dto를 카카오 로그인 서비스에 전송
+   */
+  @Post('/naver')
+  async naverLoginUserInfo(@Req() req, @Res({ passthrough: true }) response) {
+    const userNaverDto: UserNaverDto = req.body;
+    const snsToken = req.body.resNaverAccessToken;
+
+    console.log('네이버 정보', userNaverDto);
+    const snsId = userNaverDto.snsId;
+    const snsType = '00';
+
+    const { accessToken, accessOption } = await this.authService.kakaoGetCookieWithJwtAccessToken(
+      snsId,
+      snsType,
+    );
+    const { refreshToken, refreshOption } =
+      await this.authService.kakaoGetCookieWithJwtRefreshToken(snsId, snsType);
+
+    await this.authService.setKakaoCurrentRefreshToken(refreshToken, snsId);
+
+    await this.authService.setKakaoToken(snsToken, snsId);
+
+    response.cookie('authentication', accessToken, accessOption);
+    response.cookie('Refresh', refreshToken, refreshOption);
+
+    return this.authService.naverUserInfos(userNaverDto);
   }
 
   // TODO: 리프레쉬 토큰

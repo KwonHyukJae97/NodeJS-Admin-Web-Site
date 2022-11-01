@@ -78,7 +78,7 @@ export class Account extends BaseEntity {
   @Column({
     name: 'birth',
     type: 'varchar',
-    length: '8',
+    length: '12',
   })
   birth: string;
 
