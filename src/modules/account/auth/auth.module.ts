@@ -23,6 +23,7 @@ import { LocalStrategy } from 'src/guard/local/local.strategy';
 import { Company } from 'src/modules/company/entities/company.entity';
 import { KakaoSignUpAdminHandler } from './command/kakao-signup-admin.handler';
 import { AuthService } from './auth.service';
+import { NaverSignUpAdminHandler } from './command/naver-signup-admin.handler';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { AuthService } from './auth.service';
   controllers: [SignController],
   providers: [
     KakaoSignUpAdminHandler,
+    NaverSignUpAdminHandler,
     SignUpUserHandler,
     SignUpAdminHandler,
     SignInAdminHandler,

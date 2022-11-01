@@ -11,6 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { FindIdDto } from './dto/findid.dto';
 import { UserKakaoDto } from './dto/user.kakao.dto';
+import { UserNaverDto } from './dto/user.naver.dto';
 
 /**
  * Auth 관련 토큰, 검증, 카카오 서비스
@@ -461,9 +462,33 @@ export class AuthService {
    */
   async kakaoUserInfos(userKakaoDto: UserKakaoDto) {
     const snsId = userKakaoDto.snsId;
-    console.log('snsToken값 테스트', userKakaoDto.snsToken);
     const user = await this.accountRepository.findOne({ where: { snsId } });
 
+    console.log('카카오 정보 !!!!-------', snsId);
+    console.log('카카오 정보 !!!!-------', user);
+    // const snsTokenData = await this.accountRepository.update({snsId,})
+
+    if (user) {
+      const loginDto = {
+        loginSuccess: true,
+      };
+      // loginSuccess (true) 값을 리턴
+      return loginDto;
+    } else {
+      const sencondDataDto = {
+        loginSuccess: false,
+      };
+      // loginSuccess (false) 값을 리턴
+      return sencondDataDto;
+    }
+  }
+
+  async naverUserInfos(userNaverDto: UserNaverDto) {
+    const snsId = userNaverDto.snsId;
+    const user = await this.accountRepository.findOne({ where: { snsId } });
+
+    console.log('네이버 정보 !!!!-------', snsId);
+    console.log('네이버 정보 !!!!-------', user);
     // const snsTokenData = await this.accountRepository.update({snsId,})
 
     if (user) {
