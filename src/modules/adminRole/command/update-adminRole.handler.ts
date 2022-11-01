@@ -6,7 +6,7 @@ import { AdminRole } from '../entities/adminrole.entity';
 import { Repository } from 'typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { RolePermission } from '../entities/rolePermission.entity';
-import { UpdateAdminRoleDto } from '../dto/update-adminRole.dto';
+import { rolePermissionDto } from '../dto/rolePermission.dto';
 
 /**
  * 역할 정보 수정용 커맨드 핸들러
@@ -49,7 +49,7 @@ export class UpdateAdminRoleHandler implements ICommandHandler<UpdateAdminRoleCo
     }
 
     // 역할_권한 정보 찾기
-    roleDto.forEach(async (value: UpdateAdminRoleDto) => {
+    roleDto.forEach(async (value: rolePermissionDto) => {
       const findRolePermission = await this.rolePermissionRepository
         .createQueryBuilder('rolePermission')
         .where('rolePermission.roleId=:roleId', { roleId: roleId })

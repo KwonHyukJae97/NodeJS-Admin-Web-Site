@@ -1,5 +1,5 @@
 import { ICommand } from '@nestjs/cqrs';
-import { UpdateAdminRoleDto } from '../dto/update-adminRole.dto';
+import { rolePermissionDto } from '../dto/rolePermission.dto';
 
 /**
  * 역할 정보 수정용 커맨드 정의
@@ -7,7 +7,7 @@ import { UpdateAdminRoleDto } from '../dto/update-adminRole.dto';
 export class UpdateAdminRoleCommand implements ICommand {
   constructor(
     readonly roleName: string,
-    readonly roleDto: UpdateAdminRoleDto[],
+    readonly roleDto: rolePermissionDto[],
     readonly roleId: number,
   ) {}
 }

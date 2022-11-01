@@ -1,12 +1,13 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsString } from 'class-validator';
+import { rolePermissionDto } from './rolePermission.dto';
 
 /**
- * 역할 수정 dto
+ * 역할 수정 시 필요한 권한 데이터 dto
  */
 export class UpdateAdminRoleDto {
-  @IsString()
-  readonly grantType: string;
   @IsNotEmpty()
-  @IsNumber()
-  readonly permissionId: number;
+  @IsString()
+  readonly roleName: string;
+  @IsArray()
+  readonly roleDto: rolePermissionDto[];
 }

@@ -4,7 +4,7 @@ import { CreateAdminRoleCommand } from './command/create-adminRole.command';
 import { DeleteAdminRoleCommand } from './command/delete-adminRole.command';
 import { UpdateAdminRoleCommand } from './command/update-adminRole.command';
 import { CreateAdminRoleDto } from './dto/create-adminRole.dto';
-import { UpdateAdminRolePermissionDto } from './dto/update-adminRolePermission.dto';
+import { UpdateAdminRoleDto } from './dto/update-adminRole.dto';
 import { GetAdminRoleInfoQuery } from './query/get-adminRole-info.query';
 import { GetAllAdminRoleQuery } from './query/get-all-adminRole.query';
 /**
@@ -21,8 +21,9 @@ export class AdminRoleController {
    */
   @Post()
   async createAdminRole(@Body() createAdminRoleDto: CreateAdminRoleDto): Promise<void> {
-    const { roleName, grantType, companyId, permissionId } = createAdminRoleDto;
-    const command = new CreateAdminRoleCommand(roleName, grantType, companyId, permissionId);
+    console.log(createAdminRoleDto);
+    const { roleName, companyId, roleDto } = createAdminRoleDto;
+    const command = new CreateAdminRoleCommand(roleName, companyId, roleDto);
     return this.commandBus.execute(command);
   }
 
@@ -53,11 +54,8 @@ export class AdminRoleController {
    * @return : 역할 정보 수정 커맨드 전송
    */
   @Patch(':id')
-  updateAdminRole(
-    @Param('id') roleId: number,
-    @Body() updateAdminRolePermissionDto: UpdateAdminRolePermissionDto,
-  ) {
-    const { roleName, roleDto } = updateAdminRolePermissionDto;
+  updateAdminRole(@Param('id') roleId: number, @Body() updateAdminRoleDto: UpdateAdminRoleDto) {
+    const { roleName, roleDto } = updateAdminRoleDto;
     const command = new UpdateAdminRoleCommand(roleName, roleDto, roleId);
     return this.commandBus.execute(command);
   }

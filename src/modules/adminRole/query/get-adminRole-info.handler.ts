@@ -24,22 +24,42 @@ export class GetAdminRoleInfoQueryHandler implements IQueryHandler<GetAdminRoleI
   async execute(query: GetAdminRoleInfoQuery) {
     const { roleId } = query;
 
-    // const adminrole = await this.adminroleRepository.findOneBy({ roleId: roleId });
-
-    // if (!adminrole) {
-    //   return this.convertException.notFoundError('역할', 404);
-    // }
-
     const rolePermission = await this.rolePermissionRepository
       .createQueryBuilder('RP')
       .leftJoinAndSelect('RP.permission', 'P')
       .where('RP.roleId = :roleId', { roleId: roleId })
-      .getRawOne();
+      .orderBy({ 'RP.permission_id': 'ASC', RP_grant_type: 'ASC' })
+      .getRawMany();
 
     if (!rolePermission) {
       return this.convertException.notFoundError('역할', 404);
     }
 
-    return rolePermission;
+    // 역할_권한 정보를 권한(화면이름)으로 묶음 처리
+    const permissionMap = new Map();
+    rolePermission.forEach((value) => {
+      const permissionId = value.P_permission_id;
+      if (!permissionMap.has(permissionId)) {
+        const permissionInfo = {
+          permission_id: permissionId,
+          menu_name: value.P_menu_name,
+          display_name: value.P_display_name,
+          grant_type_list: [],
+        };
+
+        permissionMap.set(permissionId, permissionInfo);
+      }
+
+      permissionMap.get(permissionId).grant_type_list.push({
+        grant_type: value.RP_grant_type,
+      });
+    });
+
+    const permissionList = [];
+    permissionMap.forEach((data) => {
+      permissionList.push(data);
+    });
+
+    return permissionList;
   }
 }
