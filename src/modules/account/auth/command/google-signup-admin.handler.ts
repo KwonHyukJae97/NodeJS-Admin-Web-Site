@@ -6,14 +6,14 @@ import { Company } from 'src/modules/company/entities/company.entity';
 import { Repository } from 'typeorm';
 import { Admin } from '../../admin/entities/admin';
 import { Account } from '../../entities/account';
-import { NaverSignUpAdminCommand } from './naver-signup-admin.command';
+import { GoogleSignUpAdminCommand } from './google-signup-admin.command';
 
 /**
- * 네이버 (관리자) 2차정보 가입 핸들러
+ * 구글 (관리자) 2차정보 가입 핸들러
  */
 @Injectable()
-@CommandHandler(NaverSignUpAdminCommand)
-export class NaverSignUpAdminHandler implements ICommandHandler<NaverSignUpAdminCommand> {
+@CommandHandler(GoogleSignUpAdminCommand)
+export class GoogleSignUpAdminHandler implements ICommandHandler<GoogleSignUpAdminCommand> {
   constructor(
     @InjectRepository(Admin)
     private adminRepository: Repository<Admin>,
@@ -28,20 +28,20 @@ export class NaverSignUpAdminHandler implements ICommandHandler<NaverSignUpAdmin
     private convertException: ConvertException,
   ) {}
 
-  //네이버 2차 정보 저장 메소드
-  async execute(command: NaverSignUpAdminCommand) {
+  //구글 2차 정보 저장 메소드
+  async execute(command: GoogleSignUpAdminCommand) {
     let { name, phone, nickname, birth, gender, snsId, snsToken, companyName, companyCode } =
       command;
-    console.log('naver command', command.snsToken);
+    console.log('google command', command.snsToken);
 
-    const accountNaverAdmin = this.accountRepository.create({
+    const accountGoogleAdmin = this.accountRepository.create({
       name,
       phone,
       nickname,
       birth,
       gender,
       snsId,
-      snsType: '00',
+      snsType: '02',
       snsToken,
       division: true,
     });
@@ -53,7 +53,7 @@ export class NaverSignUpAdminHandler implements ICommandHandler<NaverSignUpAdmin
 
     if (isIdExist) {
       return this.convertException.badRequestAccountError(
-        '이미 존재하는 네이버 아이디이므로 저장에',
+        '이미 존재하는 구글 아이디이므로 저장에',
         400,
       );
     } else if (isPhoneExist) {
@@ -62,10 +62,10 @@ export class NaverSignUpAdminHandler implements ICommandHandler<NaverSignUpAdmin
       return this.convertException.badRequestAccountError('이미 존재하는 닉네임이므로 저장에', 400);
     } else {
       try {
-        await this.accountRepository.save(accountNaverAdmin);
+        await this.accountRepository.save(accountGoogleAdmin);
       } catch (err) {
         console.log(err);
-        return this.convertException.badRequestError('네이버 2차정보 저장에', 400);
+        return this.convertException.badRequestError('google 2차정보 저장에', 400);
       }
     }
 
@@ -81,22 +81,22 @@ export class NaverSignUpAdminHandler implements ICommandHandler<NaverSignUpAdmin
       return this.convertException.badRequestError('회원사 정보 가입에', 400);
     }
 
-    const adminNaver = this.adminRepository.create({
-      accountId: accountNaverAdmin.accountId,
-      companyId: company.companyId,
+    const adminGoogle = this.adminRepository.create({
+      accountId: accountGoogleAdmin.accountId,
       //임의값 입력
+      companyId: company.companyId,
       roleId: 0,
       isSuper: true,
     });
 
     try {
-      await this.adminRepository.save(adminNaver);
+      await this.adminRepository.save(adminGoogle);
     } catch (err) {
       console.log(err);
       return this.convertException.CommonError(500);
     }
 
-    // 네이버 정보를 리턴
-    return accountNaverAdmin;
+    // 구글 정보를 리턴
+    return accountGoogleAdmin;
   }
 }

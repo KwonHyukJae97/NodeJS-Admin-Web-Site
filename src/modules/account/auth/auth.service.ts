@@ -12,6 +12,7 @@ import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { FindIdDto } from './dto/findid.dto';
 import { UserKakaoDto } from './dto/user.kakao.dto';
 import { UserNaverDto } from './dto/user.naver.dto';
+import { UserGoogleDto } from './dto/user.google.dto';
 
 /**
  * Auth 관련 토큰, 검증, 카카오 서비스
@@ -160,15 +161,14 @@ export class AuthService {
    * @param refreshToken
    * @param id
    */
-  async setKakaoCurrentRefreshToken(refreshToken: string, snsId: string) {
+  async setSocialCurrentRefreshToken(refreshToken: string, snsId: string) {
     if (refreshToken) {
       refreshToken = await bcrypt.hash(refreshToken, 10);
     }
     await this.accountRepository.update({ snsId }, { currentHashedRefreshToken: refreshToken });
   }
 
-  async setKakaoToken(snsToken: string, snsId: string) {
-    console.log('sns토큰값 카카오', snsToken);
+  async setSocialToken(snsToken: string, snsId: string) {
     if (snsToken) {
       snsToken = await bcrypt.hash(snsToken, 10);
     }
@@ -206,7 +206,7 @@ export class AuthService {
    * @param snsType
    * @returns : 토큰과 토큰 옵션을 리턴
    */
-  public kakaoGetCookieWithJwtAccessToken(snsId: string, snsType: string) {
+  public socialGetCookieWithJwtAccessToken(snsId: string, snsType: string) {
     const payload = { snsId, snsType };
     const token = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
@@ -256,7 +256,7 @@ export class AuthService {
    * @param snsType
    * @returns : 카카오 리프레쉬 토큰과 카카오 리프레쉬 토큰 옵션을 리턴
    */
-  public kakaoGetCookieWithJwtRefreshToken(snsId: string, snsType: string) {
+  public socialGetCookieWithJwtRefreshToken(snsId: string, snsType: string) {
     const payload = { snsId, snsType };
     const token = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
@@ -464,9 +464,29 @@ export class AuthService {
     const snsId = userKakaoDto.snsId;
     const user = await this.accountRepository.findOne({ where: { snsId } });
 
-    console.log('카카오 정보 !!!!-------', snsId);
-    console.log('카카오 정보 !!!!-------', user);
-    // const snsTokenData = await this.accountRepository.update({snsId,})
+    if (user) {
+      const loginDto = {
+        loginSuccess: true,
+      };
+      // loginSuccess (true) 값을 리턴
+      return loginDto;
+    } else {
+      const sencondDataDto = {
+        loginSuccess: false,
+      };
+      // loginSuccess (false) 값을 리턴
+      return sencondDataDto;
+    }
+  }
+
+  /**
+   * 네이버 유저정보 확인 후 FE에 결과값 알려주는 메소드
+   * @param userNaverDto
+   * @returns : DB에서 snsId 조회 후 결과 값을 리턴
+   */
+  async naverUserInfos(userNaverDto: UserNaverDto) {
+    const snsId = userNaverDto.snsId;
+    const user = await this.accountRepository.findOne({ where: { snsId } });
 
     if (user) {
       const loginDto = {
@@ -483,13 +503,14 @@ export class AuthService {
     }
   }
 
-  async naverUserInfos(userNaverDto: UserNaverDto) {
-    const snsId = userNaverDto.snsId;
+  /**
+   * 구글 유저정보 확인 후 FE에 결과값 알려주는 메소드
+   * @param userGoogleDto
+   * @returns : DB에서 snsId 조회 후 결과 값을 리턴
+   */
+  async googleUserInfos(userGoogleDto: UserGoogleDto) {
+    const snsId = userGoogleDto.snsId;
     const user = await this.accountRepository.findOne({ where: { snsId } });
-
-    console.log('네이버 정보 !!!!-------', snsId);
-    console.log('네이버 정보 !!!!-------', user);
-    // const snsTokenData = await this.accountRepository.update({snsId,})
 
     if (user) {
       const loginDto = {

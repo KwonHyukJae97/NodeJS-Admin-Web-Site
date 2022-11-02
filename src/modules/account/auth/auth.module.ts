@@ -24,6 +24,7 @@ import { Company } from 'src/modules/company/entities/company.entity';
 import { KakaoSignUpAdminHandler } from './command/kakao-signup-admin.handler';
 import { AuthService } from './auth.service';
 import { NaverSignUpAdminHandler } from './command/naver-signup-admin.handler';
+import { GoogleSignUpAdminHandler } from './command/google-signup-admin.handler';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { NaverSignUpAdminHandler } from './command/naver-signup-admin.handler';
   providers: [
     KakaoSignUpAdminHandler,
     NaverSignUpAdminHandler,
+    GoogleSignUpAdminHandler,
     SignUpUserHandler,
     SignUpAdminHandler,
     SignInAdminHandler,
