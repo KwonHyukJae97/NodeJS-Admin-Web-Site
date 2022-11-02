@@ -31,44 +31,6 @@ export class AdminController {
   constructor(private commandBus: CommandBus, private queryBus: QueryBus) {}
 
   /**
-   * 관리자 회원가입 컨트롤러
-   */
-  // @Post()
-  // async signupAdmin(@Body() signUpAdmindto: SignUpAdminDto): Promise<void> {
-  //   const {
-  //     id,
-  //     password,
-  //     email,
-  //     name,
-  //     phone,
-  //     nickname,
-  //     birth,
-  //     gender,
-  //     companyId,
-  //     roleId,
-  //     isSuper,
-  //     division,
-  //   } = signUpAdmindto;
-
-  //   const command = new SignUpAdminCommand(
-  //     id,
-  //     password,
-  //     email,
-  //     name,
-  //     phone,
-  //     nickname,
-  //     birth,
-  //     gender,
-  //     companyId,
-  //     roleId,
-  //     isSuper,
-  //     division,
-  //   );
-
-  //   return this.commandBus.execute(command);
-  // }
-
-  /**
    * 관리자 전체 리스트 조회
    * @returns : 관리자 리스트 조회 커맨드 전송
    */

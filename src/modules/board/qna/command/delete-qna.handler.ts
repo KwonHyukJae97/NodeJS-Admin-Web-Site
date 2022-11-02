@@ -33,23 +33,22 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
    * @returns : DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 완료 메시지 반환
    */
   async execute(command: DeleteQnaCommand) {
-    const { qnaId, accountId } = command;
+    const { qnaId, account } = command;
 
-    const qna = await this.qnaRepository.findOneBy({ qnaId: qnaId });
+    const qna = await this.qnaRepository.findOneBy({ qnaId });
 
     if (!qna) {
       return this.convertException.notFoundError('QnA', 404);
     }
 
-    // TODO : 유저 정보 데코레이터 적용시 확인 후, 삭제 예정
-    if (accountId != qna.boardId.accountId) {
-      throw new BadRequestException('작성자만 삭제가 가능합니다.');
-    }
-
-    const board = await this.boardRepository.findOneBy({ boardId: qna.boardId.boardId });
+    const board = await this.boardRepository.findOneBy({ boardId: qna.boardId });
 
     if (!board) {
       return this.convertException.notFoundError('게시글', 404);
+    }
+
+    if (account.accountId != board.accountId) {
+      return this.convertException.badRequestAccountError('작성자', 400);
     }
 
     const boardFiles = await this.fileRepository.findBy({ boardId: board.boardId });
@@ -59,7 +58,7 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
       this.eventBus.publish(new FilesDeleteEvent(board.boardId, this.boardFileDb));
     }
 
-    const comments = await this.commentRepository.findBy({ qnaId: qnaId });
+    const comments = await this.commentRepository.findBy({ qnaId });
 
     comments.map((comment) => {
       try {

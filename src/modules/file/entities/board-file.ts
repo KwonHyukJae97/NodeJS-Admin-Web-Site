@@ -87,4 +87,9 @@ export class BoardFile {
     nullable: true,
   })
   delDate: Date;
+
+  // 게시글 정보
+  // @ManyToOne(() => Board)
+  // @JoinColumn({ name: 'board_id' })
+  // board: Board;
 }

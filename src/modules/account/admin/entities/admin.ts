@@ -1,5 +1,6 @@
 import { Account } from 'src/modules/account/entities/account';
 import { RolePermission } from 'src/modules/adminRole/entities/rolePermission.entity';
+import { Company } from 'src/modules/company/entities/company.entity';
 import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('admin')
@@ -32,14 +33,14 @@ export class Admin extends BaseEntity {
   })
   isSuper: boolean;
 
-  //계정번호
-  @OneToOne((type) => Account, (account) => account.adminId, { eager: true })
-  @JoinColumn({
+  // 계정 번호
+  @Column({
     name: 'account_id',
+    type: 'bigint',
   })
-  accountId: Account;
+  accountId: number;
 
-  //account 정보 가져오기
+  // 계정 정보
   @OneToOne(() => Account)
   @JoinColumn({ name: 'account_id' })
   account: Account;
@@ -48,4 +49,9 @@ export class Admin extends BaseEntity {
   @OneToOne(() => RolePermission)
   @JoinColumn({ name: 'role_id' })
   rolePermission: RolePermission;
+
+  //회원사 정보 가져오기
+  @OneToOne(() => Company)
+  @JoinColumn({ name: 'company_id' })
+  company: Company;
 }

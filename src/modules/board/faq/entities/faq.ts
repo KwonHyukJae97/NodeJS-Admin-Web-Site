@@ -1,4 +1,4 @@
-import { Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Board } from '../../entities/board';
 import { FaqCategory } from './faq_category';
 
@@ -15,16 +15,30 @@ export class Faq {
   faqId: number;
 
   // 분류 번호
-  @ManyToOne((type) => FaqCategory, { eager: true })
-  @JoinColumn({
+  @Column({
     name: 'category_id',
+    type: 'tinyint',
   })
   categoryId: number;
 
   // 게시글 번호
-  @OneToOne((type) => Board, (board) => board.faqId, { eager: true })
+  @Column({
+    name: 'board_id',
+    type: 'bigint',
+  })
+  boardId: number;
+
+  // 분류 정보
+  @ManyToOne(() => FaqCategory)
+  @JoinColumn({
+    name: 'category_id',
+  })
+  category: FaqCategory;
+
+  // 게시글 정보
+  @OneToOne(() => Board)
   @JoinColumn({
     name: 'board_id',
   })
-  boardId: Board;
+  board: Board;
 }

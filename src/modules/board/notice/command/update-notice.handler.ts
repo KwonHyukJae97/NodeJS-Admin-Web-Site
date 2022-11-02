@@ -9,7 +9,6 @@ import { FilesUpdateEvent } from '../../../file/event/files-update-event';
 import { BoardFileDb } from '../../board-file-db';
 import { FileType } from '../../../file/entities/file-type.enum';
 import { ConvertException } from '../../../../common/utils/convert-exception';
-import { FileCreateEvent } from '../../../file/event/file-create-event';
 import { FilesCreateEvent } from '../../../file/event/files-create-event';
 import { FilesDeleteEvent } from '../../../file/event/files-delete-event';
 import { BoardFile } from '../../../file/entities/board-file';
@@ -35,28 +34,27 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
    * @returns : DB처리 실패 시 에러 메시지 반환 / 수정 성공 시 공지사항 정보 반환
    */
   async execute(command: UpdateNoticeCommand) {
-    const { title, content, isTop, noticeGrant, noticeId, role, accountId, files } = command;
+    const { title, content, isTop, noticeGrant, noticeId, role, account, files } = command;
 
     // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
     if (role !== '본사 관리자' && role !== '회원사 관리자') {
       throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
     }
 
-    const notice = await this.noticeRepository.findOneBy({ noticeId: noticeId });
+    const notice = await this.noticeRepository.findOneBy({ noticeId });
 
     if (!notice) {
       return this.convertException.notFoundError('공지사항', 404);
     }
 
-    // TODO : 유저 정보 데코레이터 적용시 확인 후, 삭제 예정
-    if (accountId !== notice.boardId.accountId) {
-      throw new BadRequestException('작성자만 수정이 가능합니다.');
-    }
-
-    const board = await this.boardRepository.findOneBy({ boardId: notice.boardId.boardId });
+    const board = await this.boardRepository.findOneBy({ boardId: notice.boardId });
 
     if (!board) {
       return this.convertException.notFoundError('게시글', 404);
+    }
+
+    if (account.accountId != board.accountId) {
+      return this.convertException.badRequestAccountError('작성자', 400);
     }
 
     board.title = title;
@@ -70,7 +68,7 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
 
     notice.isTop = isTop;
     notice.noticeGrant = noticeGrant;
-    notice.boardId = board;
+    notice.board = board;
 
     try {
       await this.noticeRepository.save(notice);

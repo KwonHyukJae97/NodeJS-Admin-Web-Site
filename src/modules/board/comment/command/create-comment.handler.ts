@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreateCommentCommand } from './create-comment.command';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,6 +6,7 @@ import { Comment } from '../entities/comment';
 import { Repository } from 'typeorm';
 import { Qna } from '../../qna/entities/qna';
 import { ConvertException } from '../../../../common/utils/convert-exception';
+import { Admin } from '../../../account/admin/entities/admin';
 
 /**
  * 답변 등록용 커맨드 핸들러
@@ -16,6 +17,7 @@ export class CreateCommentHandler implements ICommandHandler<CreateCommentComman
   constructor(
     @InjectRepository(Comment) private commentRepository: Repository<Comment>,
     @InjectRepository(Qna) private qnaRepository: Repository<Qna>,
+    @InjectRepository(Admin) private adminRepository: Repository<Admin>,
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
@@ -25,7 +27,7 @@ export class CreateCommentHandler implements ICommandHandler<CreateCommentComman
    * @returns : DB처리 실패 시 에러 메시지 반환 / 등록 완료 시 답변 정보 반환
    */
   async execute(command: CreateCommentCommand) {
-    const { qnaId, comment, adminId } = command;
+    const { qnaId, comment, account } = command;
 
     // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
     // 본사 관리자만 접근 가능
@@ -35,16 +37,22 @@ export class CreateCommentHandler implements ICommandHandler<CreateCommentComman
     //   throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
     // }
 
-    const qna = await this.qnaRepository.findOneBy({ qnaId: qnaId });
+    const qna = await this.qnaRepository.findOneBy({ qnaId });
 
     if (!qna) {
       return this.convertException.notFoundError('QnA', 404);
     }
 
+    const admin = await this.adminRepository.findOneBy({ accountId: account.accountId });
+
+    if (!admin) {
+      return this.convertException.notFoundError('관리자', 404);
+    }
+
     const qnaComment = this.commentRepository.create({
       qnaId,
       comment,
-      adminId,
+      adminId: admin.adminId,
     });
 
     try {

@@ -28,6 +28,7 @@ export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
       gender: kakao_account.gender,
       snsId: kakao_account.email,
       snsType: '01',
+      snsToken: '123',
       accessToken,
     };
     console.log('카카오 스토리지', kakao_account);

@@ -2,10 +2,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AccountModule2 } from './modules/account-bak/account.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
-import { AuthModule } from './modules/auth/auth.module';
 import { utilities, WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { LoggingModule } from './logging/logging.module';
@@ -16,16 +14,17 @@ import { CompanyModule } from './modules/company/company.module';
 import { QnaModule } from './modules/board/qna/qna.module';
 import { CommentModule } from './modules/board/comment/comment.module';
 import { FaqModule } from './modules/board/faq/faq.module';
-import { SecondAuthModule } from './modules/account/auth/auth.module';
+import { AuthModule } from './modules/account/auth/auth.module';
 import { FileModule } from './modules/file/file.module';
 import { TemporaryModule } from './modules/temporary/temporary.module';
-import { UserModule } from './modules/account/user/user.module';
-import { AdminModule } from './modules/account/admin/admin.module';
+
 import { AccountModule } from './modules/account/account.module';
 import { TranslatorModule } from 'nestjs-translator';
 import { ExceptionModule } from './common/exception/Exception.module';
 import { APP_FILTER } from '@nestjs/core';
 import { TranslatorFilter } from 'nestjs-translator';
+import { UserModule } from './modules/account/user/user.module';
+import { AdminModule } from './modules/account/admin/admin.module';
 
 @Module({
   imports: [
@@ -83,9 +82,7 @@ import { TranslatorFilter } from 'nestjs-translator';
       defaultLang: 'ko',
       translationSource: '/src/common/i18n',
     }),
-    AccountModule2,
     AccountModule,
-    AuthModule,
     LoggingModule,
     FileModule,
     PermissionModule,
@@ -95,7 +92,7 @@ import { TranslatorFilter } from 'nestjs-translator';
     FaqModule,
     QnaModule,
     CommentModule,
-    SecondAuthModule,
+    AuthModule,
     TemporaryModule,
     UserModule,
     AdminModule,
