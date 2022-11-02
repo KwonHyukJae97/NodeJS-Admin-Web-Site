@@ -48,7 +48,7 @@ export class CreateAdminRoleHandler implements ICommandHandler<CreateAdminRoleCo
 
       // 역할_권한 정보 DB저장
       try {
-        await this.rolePermissionRepository.save(rolePermission);
+        await this.rolePermissionRepository.insert(rolePermission);
       } catch (err) {
         return this.convertException.CommonError(500);
       }
