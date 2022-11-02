@@ -34,13 +34,6 @@ export class KakaoSignUpAdminHandler implements ICommandHandler<KakaoSignUpAdmin
       command;
     console.log('kakao command', command.snsToken);
 
-    //카카오에서 넘어오는 성별 값을 account 형식에 맞게 변경하여 저장
-    if (gender == 'male') {
-      gender = '1';
-    } else {
-      gender = '0';
-    }
-
     const accountKakaoAdmin = this.accountRepository.create({
       name,
       phone,
@@ -90,7 +83,8 @@ export class KakaoSignUpAdminHandler implements ICommandHandler<KakaoSignUpAdmin
 
     const adminKakao = this.adminRepository.create({
       accountId: accountKakaoAdmin.accountId,
-      companyId: 0,
+      companyId: company.companyId,
+      //임의값 입력
       roleId: 0,
       isSuper: true,
     });
