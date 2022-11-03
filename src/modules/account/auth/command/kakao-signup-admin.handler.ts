@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
+import { string } from 'joi';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { Company } from 'src/modules/company/entities/company.entity';
 import { Repository } from 'typeorm';
