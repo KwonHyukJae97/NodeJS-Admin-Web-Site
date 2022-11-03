@@ -27,7 +27,6 @@ export class CreatePermissionHandler implements ICommandHandler<CreatePermission
 
     const permission = this.permissionRepository.create({
       menuName,
-      grantType,
     });
 
     //권한 정보 DB저장

@@ -13,6 +13,9 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
       stopAtFirstError: true,
+      transformOptions: {
+        enableImplicitConversion: true, // allow conversion underneath
+      },
     }),
   );
   app.use(cookieParser());

@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { rolePermissionDto } from './rolePermission.dto';
 
 /**
  * 역할 등록 dto
@@ -8,6 +9,10 @@ export class CreateAdminRoleDto {
   @IsString()
   readonly roleName: string;
 
+  @IsNotEmpty()
+  @IsNumber()
   readonly companyId: number;
-  readonly permissionId: number;
+
+  @IsArray()
+  readonly roleDto: rolePermissionDto[];
 }

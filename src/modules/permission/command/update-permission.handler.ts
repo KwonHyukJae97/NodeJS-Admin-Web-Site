@@ -33,7 +33,6 @@ export class UpdatePermissionHandler implements ICommandHandler<UpdatePermission
     }
 
     permission.menuName = menuName;
-    permission.grantType = grantType;
 
     //권한 정보 DB저장
     try {

@@ -1,11 +1,11 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { UpdateAdminRoleCommand } from './command/update-adminRole.command';
+import { CreateAdminRoleCommand } from './command/create-adminRole.command';
 import { DeleteAdminRoleCommand } from './command/delete-adminRole.command';
+import { UpdateAdminRoleCommand } from './command/update-adminRole.command';
+import { CreateAdminRoleDto } from './dto/create-adminRole.dto';
 import { UpdateAdminRoleDto } from './dto/update-adminRole.dto';
 import { GetAdminRoleInfoQuery } from './query/get-adminRole-info.query';
-import { CreateAdminRoleDto } from './dto/create-adminRole.dto';
-import { CreateAdminRoleCommand } from './command/create-adminRole.command';
 import { GetAllAdminRoleQuery } from './query/get-all-adminRole.query';
 /**
  * 역할 API controller
@@ -21,8 +21,9 @@ export class AdminRoleController {
    */
   @Post()
   async createAdminRole(@Body() createAdminRoleDto: CreateAdminRoleDto): Promise<void> {
-    const { roleName, companyId, permissionId } = createAdminRoleDto;
-    const command = new CreateAdminRoleCommand(roleName, companyId, permissionId);
+    console.log(createAdminRoleDto);
+    const { roleName, companyId, roleDto } = createAdminRoleDto;
+    const command = new CreateAdminRoleCommand(roleName, companyId, roleDto);
     return this.commandBus.execute(command);
   }
 
@@ -53,9 +54,9 @@ export class AdminRoleController {
    * @return : 역할 정보 수정 커맨드 전송
    */
   @Patch(':id')
-  updateAdminRole(@Param('id') roleId: number, @Body() updateAdminDto: UpdateAdminRoleDto) {
-    const { roleName } = updateAdminDto;
-    const command = new UpdateAdminRoleCommand(roleName, roleId);
+  updateAdminRole(@Param('id') roleId: number, @Body() updateAdminRoleDto: UpdateAdminRoleDto) {
+    const { roleName, roleDto } = updateAdminRoleDto;
+    const command = new UpdateAdminRoleCommand(roleName, roleDto, roleId);
     return this.commandBus.execute(command);
   }
 
