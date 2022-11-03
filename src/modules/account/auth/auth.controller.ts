@@ -315,7 +315,7 @@ export class SignController {
     response.cookie('authentication', '', accessOption);
     response.cookie('Refresh', '', refreshOption);
 
-    return response.sendStatus(200);
+    return response.sendStatus(200), '로그아웃 완료';
   }
 
   /**
@@ -335,7 +335,7 @@ export class SignController {
    * @param req : FE에서 넘어오는 카카오 유저 정보
    * @returns : 카카오 유저정보를 담은 dto를 카카오 로그인 서비스에 전송
    */
-  @Post('/kakao')
+  @Post('/login/admin/kakao')
   async kakaoLoginUserInfo(@Req() req, @Res({ passthrough: true }) response) {
     const userKakaoDto: UserKakaoDto = req.body;
     const snsToken = req.body.resKakaoAccessToken;
@@ -365,7 +365,7 @@ export class SignController {
    * @param req : FE에서 넘어오는 네이버 유저 정보
    * @returns : 네이버 유저정보를 담은 dto를 카카오 로그인 서비스에 전송
    */
-  @Post('/naver')
+  @Post('/login/admin/naver')
   async naverLoginUserInfo(@Req() req, @Res({ passthrough: true }) response) {
     const userNaverDto: UserNaverDto = req.body;
     const snsToken = req.body.resNaverAccessToken;
@@ -396,7 +396,7 @@ export class SignController {
    * @param req : FE에서 넘어오는 구글 유저 정보
    * @returns : 구글 유저정보를 담은 dto를 카카오 로그인 서비스에 전송
    */
-  @Post('/google')
+  @Post('/login/admin/google')
   async googleLoginUserInfo(@Req() req, @Res({ passthrough: true }) response) {
     const userGoogleDto: UserGoogleDto = req.body;
     const snsToken = req.body.resKakaoAccessToken;
@@ -421,10 +421,22 @@ export class SignController {
     return this.authService.kakaoUserInfos(userGoogleDto);
   }
 
+  //리프레쉬 토큰 유효성 검사 후 통과되면 엑세스 토큰 재발급
+  @UseGuards(JwtRefreshAuthGuard)
+  @Get('/refresh')
+  refresh(@Req() req, @Res({ passthrough: true }) res) {
+    const account = req.user;
+    const id = account.id;
+    const { accessToken, ...accessOption } = this.authService.getCookieWithJwtAccessToken(id, null);
+    res.cookie('authentication', accessToken, accessOption);
+
+    return account;
+  }
+
   // TODO: 리프레쉬 토큰
   @UseGuards(JwtRefreshAuthGuard)
   @Post('/refresh')
-  async refresh(@Req() request, @Res() response) {
+  async refreshToken(@Req() request, @Res() response) {
     const account: Account = request.user;
 
     if (account) {
