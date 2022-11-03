@@ -1,10 +1,9 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { Repository } from 'typeorm';
-import { AdminRole } from '../entities/adminRole.entity';
+import { RolePermission } from '../entities/RolePermission.entity';
 import { GetAdminRoleInfoQuery } from './get-adminRole-info.query';
 
 /**
@@ -13,7 +12,7 @@ import { GetAdminRoleInfoQuery } from './get-adminRole-info.query';
 @QueryHandler(GetAdminRoleInfoQuery)
 export class GetAdminRoleInfoQueryHandler implements IQueryHandler<GetAdminRoleInfoQuery> {
   constructor(
-    @InjectRepository(AdminRole) private adminroleRepository: Repository<AdminRole>,
+    @InjectRepository(RolePermission) private rolePermissionRepository: Repository<RolePermission>,
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
@@ -25,11 +24,42 @@ export class GetAdminRoleInfoQueryHandler implements IQueryHandler<GetAdminRoleI
   async execute(query: GetAdminRoleInfoQuery) {
     const { roleId } = query;
 
-    const adminrole = await this.adminroleRepository.findOneBy({ roleId: roleId });
+    const rolePermission = await this.rolePermissionRepository
+      .createQueryBuilder('RP')
+      .leftJoinAndSelect('RP.permission', 'P')
+      .where('RP.roleId = :roleId', { roleId: roleId })
+      .orderBy({ 'RP.permission_id': 'ASC', RP_grant_type: 'ASC' })
+      .getRawMany();
 
-    if (!adminrole) {
+    if (!rolePermission) {
       return this.convertException.notFoundError('역할', 404);
     }
-    return adminrole;
+
+    // 역할_권한 정보를 권한(화면이름)으로 묶음 처리
+    const permissionMap = new Map();
+    rolePermission.forEach((value) => {
+      const permissionId = value.P_permission_id;
+      if (!permissionMap.has(permissionId)) {
+        const permissionInfo = {
+          permission_id: permissionId,
+          menu_name: value.P_menu_name,
+          display_name: value.P_display_name,
+          grant_type_list: [],
+        };
+
+        permissionMap.set(permissionId, permissionInfo);
+      }
+
+      permissionMap.get(permissionId).grant_type_list.push({
+        grant_type: value.RP_grant_type,
+      });
+    });
+
+    const permissionList = [];
+    permissionMap.forEach((data) => {
+      permissionList.push(data);
+    });
+
+    return permissionList;
   }
 }
