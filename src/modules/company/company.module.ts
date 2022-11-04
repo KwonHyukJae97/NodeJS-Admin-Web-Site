@@ -9,9 +9,10 @@ import { UpdateCompanyHandler } from './command/update-company.handler';
 import { Admin } from '../account/admin/entities/admin';
 import { RolePermission } from '../adminRole/entities/rolePermission.entity';
 import { ConvertException } from 'src/common/utils/convert-exception';
+import { GetAllCompanyQueryHandler } from './query/get-all-company.handler';
 
 const CommandHandlers = [UpdateCompanyHandler, DeleteCompanyHandler];
-const QueryHandlers = [GetCompanyInfoQueryHandler];
+const QueryHandlers = [GetCompanyInfoQueryHandler, GetAllCompanyQueryHandler];
 @Module({
   imports: [TypeOrmModule.forFeature([Company, Admin, RolePermission]), CqrsModule],
   controllers: [CompanyController],

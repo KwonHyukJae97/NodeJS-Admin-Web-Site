@@ -4,6 +4,7 @@ import { UpdateCompanyCommand } from './command/update-company.command';
 import { DeleteCompanyCommand } from './command/delete-company.command';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { GetCompanyInfoQuery } from './query/get-company-info.query';
+import { GetAllCompanyQuery } from './query/get-all-company.query';
 
 /**
  * 회원사 API controller
@@ -11,6 +12,16 @@ import { GetCompanyInfoQuery } from './query/get-company-info.query';
 @Controller('company')
 export class CompanyController {
   constructor(private commandBus: CommandBus, private queryBus: QueryBus) {}
+
+  /**
+   * 회원사 전체 리스트 조회
+   * @return : 회원사 리스트 조회 쿼리 전송
+   */
+  @Get()
+  getAllCompany() {
+    const getAllCompanyQuery = new GetAllCompanyQuery();
+    return this.queryBus.execute(getAllCompanyQuery);
+  }
 
   /**
    * 회원사 상세 정보 조회
