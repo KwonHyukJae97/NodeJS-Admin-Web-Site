@@ -3,19 +3,16 @@ import {
   Controller,
   Get,
   HttpCode,
-  HttpStatus,
   Post,
   Req,
   Res,
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { InjectRepository } from '@nestjs/typeorm';
+import { CommandBus } from '@nestjs/cqrs';
 import { JwtAuthGuard } from 'src/guard/jwt/jwt-auth.guard';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { LocalAuthGuard } from 'src/guard/local/local-auth.guard';
-import { Repository } from 'typeorm';
 import { Account } from '../entities/account';
 import { AuthService } from './auth.service';
 import { SignUpAdminCommand } from './command/signup-admin.command';
@@ -34,6 +31,9 @@ import { KakaoSignUpAdminCommand } from './command/kakao-signup-admin.command';
 import { UserNaverDto } from './dto/user.naver.dto';
 import { NaverSignUpAdminDto } from './dto/naver-signup-admin.dto';
 import { NaverSignUpAdminCommand } from './command/naver-signup-admin.command';
+import { GoogleSignUpAdminDto } from './dto/google-signup-admin.dto';
+import { GoogleSignUpAdminCommand } from './command/google-signup-admin.command';
+import { UserGoogleDto } from './dto/user.google.dto';
 
 /**
  * 회원가입, 로그인 등 계정 관련 auth API controller
@@ -100,6 +100,34 @@ export class SignController {
     console.log('Naver 2차 정보 컨트롤러', naverSignUpAdminDto);
 
     const command = new NaverSignUpAdminCommand(
+      name,
+      phone,
+      nickname,
+      birth,
+      gender,
+      snsId,
+      snsToken,
+      companyName,
+      companyCode,
+    );
+
+    return this.commandBus.execute(command);
+  }
+
+  /**
+   * 구글 2차정보 가입 메소드
+   * @param googleSignUpAdminDto : 2차정보 저장에 필요한 dto
+   * @returns : 구글 2차 정보 저장 커멘드 전송
+   */
+  @Post('/register/google/admin')
+  async googleSignUpAdmin(
+    @Body(ValidationPipe) googleSignUpAdminDto: GoogleSignUpAdminDto,
+  ): Promise<string> {
+    const { name, phone, nickname, birth, gender, snsId, snsToken, companyName, companyCode } =
+      googleSignUpAdminDto;
+    console.log('Naver 2차 정보 컨트롤러', googleSignUpAdminDto);
+
+    const command = new GoogleSignUpAdminCommand(
       name,
       phone,
       nickname,
@@ -256,44 +284,6 @@ export class SignController {
     return this.commandBus.execute(command);
   }
 
-  // TODO : 관리자 로그인 테스트
-  @HttpCode(200)
-  @UseGuards(LocalAuthGuard)
-  @Post('/login/admin/test')
-  async loginAdmin2(
-    @Res({ passthrough: true }) response,
-    @Body(ValidationPipe) signInAdminDto: SignInAdminDto,
-  ) {
-    const { accessToken, accessOption, refreshToken, refreshOption, account } =
-      await this.authService.loginAdmin(signInAdminDto);
-    response.cookie('authentication', accessToken, accessOption);
-    response.cookie('Refresh', refreshToken, refreshOption);
-    console.log('AccessToken 테스트', accessToken);
-    console.log('RefreshToken 테스트', refreshToken);
-    console.log('AccessOption 테스트', accessOption);
-    console.log('RefreshOption 테스트', refreshOption);
-    return { account };
-  }
-
-  // TODO : 사용자 로그인 테스트
-  @HttpCode(200)
-  @UseGuards(LocalAuthGuard)
-  @Post('/login/user/test')
-  async loginUser2(
-    @Res({ passthrough: true }) response,
-    @Body(ValidationPipe) signInUserDto: SignInUserDto,
-  ) {
-    const { accessToken, accessOption, refreshToken, refreshOption, account } =
-      await this.authService.loginUser(signInUserDto);
-    response.cookie('authentication', accessToken, accessOption);
-    response.cookie('Refresh', refreshToken, refreshOption);
-    console.log('AccessToken 테스트', accessToken);
-    console.log('RefreshToken 테스트', refreshToken);
-    console.log('AccessOption 테스트', accessOption);
-    console.log('RefreshOption 테스트', refreshOption);
-    return { account };
-  }
-
   /**
    * 관리자 로그아웃 메소드
    * @param request
@@ -325,7 +315,7 @@ export class SignController {
     response.cookie('authentication', '', accessOption);
     response.cookie('Refresh', '', refreshOption);
 
-    return response.sendStatus(200);
+    return response.sendStatus(200), '로그아웃 완료';
   }
 
   /**
@@ -345,7 +335,7 @@ export class SignController {
    * @param req : FE에서 넘어오는 카카오 유저 정보
    * @returns : 카카오 유저정보를 담은 dto를 카카오 로그인 서비스에 전송
    */
-  @Post('/kakao')
+  @Post('/login/admin/kakao')
   async kakaoLoginUserInfo(@Req() req, @Res({ passthrough: true }) response) {
     const userKakaoDto: UserKakaoDto = req.body;
     const snsToken = req.body.resKakaoAccessToken;
@@ -353,16 +343,16 @@ export class SignController {
     const snsId = userKakaoDto.snsId;
     const snsType = '01';
 
-    const { accessToken, accessOption } = await this.authService.kakaoGetCookieWithJwtAccessToken(
+    const { accessToken, accessOption } = await this.authService.socialGetCookieWithJwtAccessToken(
       snsId,
       snsType,
     );
     const { refreshToken, refreshOption } =
-      await this.authService.kakaoGetCookieWithJwtRefreshToken(snsId, snsType);
+      await this.authService.socialGetCookieWithJwtRefreshToken(snsId, snsType);
 
-    await this.authService.setKakaoCurrentRefreshToken(refreshToken, snsId);
+    await this.authService.setSocialCurrentRefreshToken(refreshToken, snsId);
 
-    await this.authService.setKakaoToken(snsToken, snsId);
+    await this.authService.setSocialToken(snsToken, snsId);
 
     response.cookie('authentication', accessToken, accessOption);
     response.cookie('Refresh', refreshToken, refreshOption);
@@ -375,7 +365,7 @@ export class SignController {
    * @param req : FE에서 넘어오는 네이버 유저 정보
    * @returns : 네이버 유저정보를 담은 dto를 카카오 로그인 서비스에 전송
    */
-  @Post('/naver')
+  @Post('/login/admin/naver')
   async naverLoginUserInfo(@Req() req, @Res({ passthrough: true }) response) {
     const userNaverDto: UserNaverDto = req.body;
     const snsToken = req.body.resNaverAccessToken;
@@ -384,16 +374,16 @@ export class SignController {
     const snsId = userNaverDto.snsId;
     const snsType = '00';
 
-    const { accessToken, accessOption } = await this.authService.kakaoGetCookieWithJwtAccessToken(
+    const { accessToken, accessOption } = await this.authService.socialGetCookieWithJwtAccessToken(
       snsId,
       snsType,
     );
     const { refreshToken, refreshOption } =
-      await this.authService.kakaoGetCookieWithJwtRefreshToken(snsId, snsType);
+      await this.authService.socialGetCookieWithJwtRefreshToken(snsId, snsType);
 
-    await this.authService.setKakaoCurrentRefreshToken(refreshToken, snsId);
+    await this.authService.setSocialCurrentRefreshToken(refreshToken, snsId);
 
-    await this.authService.setKakaoToken(snsToken, snsId);
+    await this.authService.setSocialToken(snsToken, snsId);
 
     response.cookie('authentication', accessToken, accessOption);
     response.cookie('Refresh', refreshToken, refreshOption);
@@ -401,10 +391,52 @@ export class SignController {
     return this.authService.naverUserInfos(userNaverDto);
   }
 
+  /**
+   * 구글 로그인 메소드
+   * @param req : FE에서 넘어오는 구글 유저 정보
+   * @returns : 구글 유저정보를 담은 dto를 카카오 로그인 서비스에 전송
+   */
+  @Post('/login/admin/google')
+  async googleLoginUserInfo(@Req() req, @Res({ passthrough: true }) response) {
+    const userGoogleDto: UserGoogleDto = req.body;
+    const snsToken = req.body.resKakaoAccessToken;
+
+    const snsId = userGoogleDto.snsId;
+    const snsType = '02';
+
+    const { accessToken, accessOption } = await this.authService.socialGetCookieWithJwtAccessToken(
+      snsId,
+      snsType,
+    );
+    const { refreshToken, refreshOption } =
+      await this.authService.socialGetCookieWithJwtRefreshToken(snsId, snsType);
+
+    await this.authService.setSocialCurrentRefreshToken(refreshToken, snsId);
+
+    await this.authService.setSocialToken(snsToken, snsId);
+
+    response.cookie('authentication', accessToken, accessOption);
+    response.cookie('Refresh', refreshToken, refreshOption);
+
+    return this.authService.kakaoUserInfos(userGoogleDto);
+  }
+
+  //리프레쉬 토큰 유효성 검사 후 통과되면 엑세스 토큰 재발급
+  @UseGuards(JwtRefreshAuthGuard)
+  @Get('/refresh')
+  refresh(@Req() req, @Res({ passthrough: true }) res) {
+    const account = req.user;
+    const id = account.id;
+    const { accessToken, ...accessOption } = this.authService.getCookieWithJwtAccessToken(id, null);
+    res.cookie('authentication', accessToken, accessOption);
+
+    return account;
+  }
+
   // TODO: 리프레쉬 토큰
   @UseGuards(JwtRefreshAuthGuard)
   @Post('/refresh')
-  async refresh(@Req() request, @Res() response) {
+  async refreshToken(@Req() request, @Res() response) {
     const account: Account = request.user;
 
     if (account) {

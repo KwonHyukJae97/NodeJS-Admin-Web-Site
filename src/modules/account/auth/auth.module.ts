@@ -24,6 +24,8 @@ import { Company } from 'src/modules/company/entities/company.entity';
 import { KakaoSignUpAdminHandler } from './command/kakao-signup-admin.handler';
 import { AuthService } from './auth.service';
 import { NaverSignUpAdminHandler } from './command/naver-signup-admin.handler';
+import { GoogleSignUpAdminHandler } from './command/google-signup-admin.handler';
+import { JwtRefreshStrategy } from 'src/guard/jwt/jwt-refresh.strategy';
 
 @Module({
   imports: [
@@ -38,7 +40,9 @@ import { NaverSignUpAdminHandler } from './command/naver-signup-admin.handler';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.get<string>('JWT_ACCESS_TOKEN_SECRET'),
-        signOptions: { expiresIn: '1d' },
+        signOptions: {
+          expiresIn: `${config.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}s`,
+        },
       }),
     }),
   ],
@@ -46,6 +50,7 @@ import { NaverSignUpAdminHandler } from './command/naver-signup-admin.handler';
   providers: [
     KakaoSignUpAdminHandler,
     NaverSignUpAdminHandler,
+    GoogleSignUpAdminHandler,
     SignUpUserHandler,
     SignUpAdminHandler,
     SignInAdminHandler,
@@ -54,6 +59,7 @@ import { NaverSignUpAdminHandler } from './command/naver-signup-admin.handler';
     JwtManageService,
     ConvertException,
     JwtStrategy,
+    JwtRefreshStrategy,
     LocalStrategy,
     { provide: 'accountFile', useClass: AccountFileDb },
   ],
