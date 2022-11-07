@@ -90,30 +90,34 @@ export class GetCommentDetailHandler implements ICommandHandler<GetCommentDetail
     // 답변별 답변자 정보 담아주기
     const commentListInfo = await Promise.all(
       commentList.map(async (comment) => {
-        const admin = await this.adminRepository.findOneBy({ adminId: comment.adminId });
+        // const admin = await this.adminRepository.findOneBy({ adminId: comment.adminId });
+        // const adminAccount = await this.accountRepository.findOneBy({ accountId: admin.accountId });
 
-        const adminAccount = await this.accountRepository.findOneBy({ accountId: admin.accountId });
-
-        const test = await this.adminRepository
+        // 쿼리빌더로 한번에 admin + account 정보 조회
+        const adminAccount = await this.adminRepository
           .createQueryBuilder('admin')
-          .leftJoinAndSelect('admin.accountId', 'account')
           .leftJoinAndSelect(Account, 'account', 'account.accountId = admin.accountId')
-          .where('account.');
+          .where('admin.adminId = :adminId', { adminId: comment.adminId })
+          .getRawOne();
+
+        console.log('test query', adminAccount);
 
         // 본사 관리자일 경우
-        if (admin.isSuper) {
+        if (adminAccount.admin_is_super == 0) {
           commentInfo = {
             comment: comment,
-            writer: adminAccount.name + '(' + adminAccount.nickname + ')',
+            writer: adminAccount.account_name + '(' + adminAccount.account_nickname + ')',
           };
 
           // 회원사 관리자일 경우
         } else {
-          const company = await this.companyRepository.findOneBy({ companyId: admin.companyId });
+          const company = await this.companyRepository.findOneBy({
+            companyId: adminAccount.admin_company_id,
+          });
 
           commentInfo = {
             comment: comment,
-            writer: adminAccount.name + '(' + adminAccount.nickname + ')',
+            writer: adminAccount.account_name + '(' + adminAccount.account_nickname + ')',
             companyName: company.companyName,
             companyId: company.companyId,
           };
