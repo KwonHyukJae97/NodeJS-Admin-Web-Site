@@ -25,6 +25,7 @@ import { GetNoticeRoleDto } from './dto/get-notice-role.dto';
 import { GetUser } from '../../account/decorator/account.decorator';
 import { Account } from '../../account/entities/account';
 import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
+import { GetNoticeRequestDto } from './dto/get-notice-request.dto';
 
 /**
  * 공지사항 API controller
@@ -38,24 +39,15 @@ export class NoticeController {
    * @returns : 공지사항 등록 커맨드 전송
    */
   @Post()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   createNotice(
     @Body() createNoticeDto: CreateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
-    @GetUser() account: Account,
+    // @GetUser() account: Account,
   ) {
-    console.log('요청 정보', account.accountId);
     const { title, content, isTop, noticeGrant, role } = createNoticeDto;
-    const command = new CreateNoticeCommand(
-      title,
-      content,
-      isTop,
-      noticeGrant,
-      role,
-      account,
-      files,
-    );
+    const command = new CreateNoticeCommand(title, content, isTop, noticeGrant, role, files);
     return this.commandBus.execute(command);
   }
 
@@ -65,13 +57,13 @@ export class NoticeController {
    * @returns : 공지사항 리스트 조회 쿼리 전송
    */
   @Get()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async getAllSearchNotice(
-    @Query('keyword') keyword: string,
-    @Body() getNoticeInfoDto: GetNoticeInfoDto,
+    @Body() param: GetNoticeRequestDto,
   ) {
-    const { role, noticeGrant } = getNoticeInfoDto;
-    const getNoticeListSearchQuery = new GetNoticeListQuery(keyword, role, noticeGrant);
+    // const { role, noticeGrant, searchWord, page } = getNoticeRequestDto;
+    // const getNoticeListSearchQuery = new GetNoticeListQuery(role, noticeGrant, searchWord, page);
+    const getNoticeListSearchQuery = new GetNoticeListQuery(param);
     return this.queryBus.execute(getNoticeListSearchQuery);
   }
 
