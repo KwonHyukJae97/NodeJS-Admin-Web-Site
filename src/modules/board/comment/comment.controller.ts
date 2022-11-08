@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateCommentCommand } from './command/create-comment.command';
@@ -36,14 +36,23 @@ export class CommentController {
   }
 
   /**
-   * 답변 전체 리스트 조회
+   * 답변 전체 & 검색 결과 리스트 조회
+   * @query : writer
+   * @query : commenter
+   * @query : regDate
    * @returns : 답변 리스트 조회 쿼리 전송
    */
   @Get()
   @UseGuards(JwtAuthGuard)
-  async getAllComment(@Body() getCommentInfoDto: GetCommentInfoDto) {
+  async getAllComment(
+    @Body() getCommentInfoDto: GetCommentInfoDto,
+    @GetUser() account: Account,
+    @Query('writer') writer: string,
+    @Query('commenter') commenter: number,
+    @Query('regDate') regDate: string,
+  ) {
     const { role } = getCommentInfoDto;
-    const getCommentListQuery = new GetCommentListQuery(role);
+    const getCommentListQuery = new GetCommentListQuery(role, account, writer, commenter, regDate);
     return this.queryBus.execute(getCommentListQuery);
   }
 

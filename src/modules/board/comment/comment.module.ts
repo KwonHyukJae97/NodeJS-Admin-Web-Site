@@ -14,13 +14,25 @@ import { ConvertException } from '../../../common/utils/convert-exception';
 import { Admin } from '../../account/admin/entities/admin';
 import { Company } from '../../company/entities/company.entity';
 import { Account } from '../../account/entities/account';
+import { UserCompany } from '../../account/user/entities/user-company';
+import { User } from '../../account/user/entities/user';
 
 const CommandHandlers = [CreateCommentHandler, UpdateCommentHandler, GetCommentDetailHandler];
 const QueryHandlers = [GetCommentListHandler];
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Board, Comment, BoardFile, Qna, Admin, Company, Account]),
+    TypeOrmModule.forFeature([
+      Board,
+      Comment,
+      BoardFile,
+      Qna,
+      Admin,
+      Company,
+      Account,
+      UserCompany,
+      User,
+    ]),
     CqrsModule,
   ],
   controllers: [CommentController],
