@@ -6,7 +6,6 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -20,7 +19,6 @@ import { DeleteNoticeCommand } from './command/delete-notice.command';
 import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/files.interceptor';
 import { GetNoticeDetailCommand } from './command/get-notice-detail.command';
 import { GetNoticeListQuery } from './query/get-notice-list.query';
-import { GetNoticeInfoDto } from './dto/get-notice-info.dto';
 import { GetNoticeRoleDto } from './dto/get-notice-role.dto';
 import { GetUser } from '../../account/decorator/account.decorator';
 import { Account } from '../../account/entities/account';
@@ -39,30 +37,33 @@ export class NoticeController {
    * @returns : 공지사항 등록 커맨드 전송
    */
   @Post()
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   createNotice(
     @Body() createNoticeDto: CreateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
-    // @GetUser() account: Account,
+    @GetUser() account: Account,
   ) {
     const { title, content, isTop, noticeGrant, role } = createNoticeDto;
-    const command = new CreateNoticeCommand(title, content, isTop, noticeGrant, role, files);
+    const command = new CreateNoticeCommand(
+      title,
+      content,
+      isTop,
+      noticeGrant,
+      role,
+      account,
+      files,
+    );
     return this.commandBus.execute(command);
   }
 
   /**
    * 공지사항 전체 & 검색 결과 리스트 조회
-   * @query : keyword
    * @returns : 공지사항 리스트 조회 쿼리 전송
    */
   @Get()
   // @UseGuards(JwtAuthGuard)
-  async getAllSearchNotice(
-    @Body() param: GetNoticeRequestDto,
-  ) {
-    // const { role, noticeGrant, searchWord, page } = getNoticeRequestDto;
-    // const getNoticeListSearchQuery = new GetNoticeListQuery(role, noticeGrant, searchWord, page);
+  async getAllSearchNotice(@Body() param: GetNoticeRequestDto) {
     const getNoticeListSearchQuery = new GetNoticeListQuery(param);
     return this.queryBus.execute(getNoticeListSearchQuery);
   }

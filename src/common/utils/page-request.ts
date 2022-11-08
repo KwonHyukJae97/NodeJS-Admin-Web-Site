@@ -1,18 +1,20 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional } from 'class-validator';
 
 /**
  * 페이징 요청 시, 사용되는 클래스 정의
  */
 export class PageRequest {
-  //@IsOptional() 데코레이터는 undefined도 받을 수 있다.
-  @IsString()
+  // 요청 페이지 번호
+  @IsNumber()
   @IsOptional()
   pageNo?: number | 1;
 
-  @IsString()
+  // 한 페이지당 조회건 수
+  @IsNumber()
   @IsOptional()
   pageSize?: number | 10;
 
+  // 전체 데이터 조회 여부
   @IsOptional()
   totalData: boolean;
 
@@ -25,13 +27,13 @@ export class PageRequest {
       this.pageSize = 10;
     }
 
-    return (Number(this.pageNo) - 1) * Number(this.pageSize);
+    return (this.pageNo - 1) * this.pageSize;
   }
 
   getLimit(): number {
     if (this.pageSize < 1 || this.pageSize === null || this.pageSize === undefined) {
       this.pageSize = 10;
     }
-    return Number(this.pageSize);
+    return this.pageSize;
   }
 }

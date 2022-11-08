@@ -25,7 +25,6 @@ export class GetNoticeListHandler implements IQueryHandler<GetNoticeListQuery> {
    *            검색어가 있을 경우, 조회 성공 시 검색어에 포함되는 공지사항 리스트 반환
    */
   async execute(query: GetNoticeListQuery) {
-    // const { role, noticeGrant, searchWord, page } = query;
     const { param } = query;
 
     // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
@@ -52,57 +51,25 @@ export class GetNoticeListHandler implements IQueryHandler<GetNoticeListQuery> {
       notice.andWhere('board.title like :title', { title: `%${param.searchWord}%` });
     }
 
-    // 전체 데이터 조회일 경우
-    if (param.totalData) {
-      const list = await notice.getMany();
-      const total = await notice.getCount();
+    let tempQuery = notice;
 
-      if (total === 0) {
-        return this.convertException.notFoundError('해당 키워드에 대한 공지사항', 404);
-      }
-
-      return new Page(1, 1, total, list);
-    } else {
-      const list = await notice.take(param.getLimit()).skip(param.getOffset()).getMany();
-      const total = await notice.getCount();
-
-      if (total === 0) {
-        return this.convertException.notFoundError('해당 키워드에 대한 공지사항', 404);
-      }
-
-      return new Page(param.pageNo, param.pageSize, total, list);
+    // 전체 조회 값이 false일 경우, 페이징 처리
+    if (!param.totalData) {
+      tempQuery = tempQuery.take(param.getLimit()).skip(param.getOffset());
     }
 
-    // 검색 키워드가 있을 경우
-    // if (keyword) {
-    //   const notice = await this.noticeRepository
-    //     .createQueryBuilder('notice')
-    //     .leftJoinAndSelect('notice.board', 'board')
-    //     .where('notice.noticeGrant = :noticeGrant', { noticeGrant: noticeGrant })
-    //     .andWhere('board.title like :title', { title: `%${keyword}%` })
-    //     .orderBy('notice.noticeId', 'DESC')
-    //     .getMany();
-    //
-    //   if (!notice || notice.length === 0) {
-    //     return this.convertException.notFoundError('해당 키워드에 대한 공지사항', 404);
-    //   }
-    //
-    //   return notice;
-    //
-    //   // 검색 키워드가 없을 경우
-    // } else {
-    //   const notice = await this.noticeRepository
-    //     .createQueryBuilder('notice')
-    //     .leftJoinAndSelect('notice.board', 'board')
-    //     .where('notice.noticeGrant = :noticeGrant', { noticeGrant: noticeGrant })
-    //     .orderBy({ 'notice.noticeId': 'DESC' })
-    //     .getMany();
-    //
-    //   if (notice.length === 0) {
-    //     return this.convertException.notFoundError('공지사항', 404);
-    //   }
-    //
-    //   return notice;
-    // }
+    // 최종 데이터 반환
+    const list = await tempQuery.getMany();
+    // 최종 데이터의 총 개수 반환
+    const total = await tempQuery.getCount();
+    // 전체 조회 값 여부에 따른 pageNo/pageSize 반환값 설정
+    const pageNo = param.totalData ? 1 : param.pageNo;
+    const pageSize = param.totalData ? total : param.pageSize;
+
+    if (total === 0) {
+      return this.convertException.notFoundError('공지사항', 404);
+    }
+
+    return new Page(pageNo, pageSize, total, list);
   }
 }

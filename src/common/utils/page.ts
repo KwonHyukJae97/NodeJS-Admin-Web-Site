@@ -4,12 +4,16 @@
 export class Page<T> {
   // 현재 페이지
   currentPage: number;
+
   // 한 페이지당 조회건 수
   pageSize: number;
+
   // 총 데이터 건수
   totalCount: number;
+
   // 총 페이지 수
   totalPage: number;
+
   // 조회 데이터 리스트
   items: T[];
 
