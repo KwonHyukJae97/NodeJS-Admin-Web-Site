@@ -9,7 +9,6 @@ import {
   JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
-  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { Admin } from '../admin/entities/admin';
@@ -20,7 +19,6 @@ import { User } from '../user/entities/user';
  */
 
 @Entity('account')
-@Unique(['id'])
 export class Account extends BaseEntity {
   //계정번호
   @PrimaryGeneratedColumn({
@@ -34,7 +32,6 @@ export class Account extends BaseEntity {
     name: 'id',
     type: 'varchar',
     length: '20',
-    unique: true,
   })
   id: string;
 
@@ -58,7 +55,6 @@ export class Account extends BaseEntity {
   @Column({
     type: 'varchar',
     length: '100',
-    unique: true,
   })
   email: string;
 
@@ -75,7 +71,6 @@ export class Account extends BaseEntity {
     name: 'nickname',
     type: 'varchar',
     length: '20',
-    unique: true,
   })
   nickname: string;
 
@@ -83,7 +78,7 @@ export class Account extends BaseEntity {
   @Column({
     name: 'birth',
     type: 'varchar',
-    length: '8',
+    length: '12',
   })
   birth: string;
 
@@ -100,7 +95,7 @@ export class Account extends BaseEntity {
   @Column({
     name: 'current_hashed_refresh_token',
     type: 'varchar',
-    length: '200',
+    length: '250',
     nullable: true,
   })
   currentHashedRefreshToken: string;
@@ -133,7 +128,7 @@ export class Account extends BaseEntity {
   @Column({
     name: 'sns_token',
     type: 'varchar',
-    length: '200',
+    length: '250',
   })
   snsToken: string;
 

@@ -1,11 +1,14 @@
-import { Admin } from 'src/modules/account/admin/entities/admin';
+import { Permission } from 'src/modules/permission/entities/permission.entity';
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  OneToOne,
   PrimaryColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 /**
@@ -28,6 +31,21 @@ export class RolePermission extends BaseEntity {
   })
   permissionId: number;
 
+  //권한 종류
+  @Column({
+    name: 'grant_type',
+    type: 'char',
+  })
+  grantType: string;
+
+  //변경 일시
+  @UpdateDateColumn({
+    name: 'update_date',
+    type: 'datetime',
+    nullable: true,
+  })
+  updateDate: Date;
+
   //삭제 일시
   @DeleteDateColumn({
     name: 'del_date',
@@ -42,4 +60,9 @@ export class RolePermission extends BaseEntity {
     type: 'datetime',
   })
   regDate: Date;
+
+  //user 정보 가져오기
+  @OneToOne(() => Permission)
+  @JoinColumn({ name: 'permission_id' })
+  permission: Permission;
 }

@@ -13,6 +13,7 @@ import { GetAllAdminQueryHandler } from './query/get-all-admin.handler';
 import { AccountFileDb } from '../account-file-db';
 import { AccountFile } from '../../file/entities/account-file';
 import { ConvertException } from '../../../common/utils/convert-exception';
+import { Company } from 'src/modules/company/entities/company.entity';
 
 const CommandHandler = [
   SignUpAdminHandler,
@@ -23,7 +24,7 @@ const CommandHandler = [
 const QueryHandler = [GetAdminInfoQueryHandler, GetAllAdminQueryHandler];
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Account, Admin, AccountFile]), CqrsModule],
+  imports: [TypeOrmModule.forFeature([Account, Admin, AccountFile, Company]), CqrsModule],
   controllers: [AdminController],
 
   providers: [

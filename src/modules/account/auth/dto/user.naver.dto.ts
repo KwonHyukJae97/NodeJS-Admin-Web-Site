@@ -1,20 +1,16 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
 /**
- * 카카오 로그인 dto 정의
+ * 네이버 로그인 dto 정의
  */
-export class UserKakaoDto {
+export class UserNaverDto {
+  @IsString()
+  @IsNotEmpty()
+  nickname: string;
+
   @IsString()
   @IsNotEmpty()
   name: string;
-
-  @IsString()
-  @IsNotEmpty()
-  email: string | null;
-
-  @IsString()
-  @IsNotEmpty()
-  birth: string | null;
 
   @IsString()
   @IsNotEmpty()
@@ -22,15 +18,31 @@ export class UserKakaoDto {
 
   @IsString()
   @IsNotEmpty()
-  snsType: string;
-
-  @IsString()
-  @IsNotEmpty()
   snsToken: string;
 
   @IsString()
   @IsNotEmpty()
+  snsType: string;
+
+  @IsString()
+  @IsNotEmpty()
   gender: string;
+
+  @IsString()
+  @IsNotEmpty()
+  age: string;
+
+  @IsString()
+  @IsNotEmpty()
+  birth: string | null;
+
+  // @IsString()
+  // @IsNotEmpty()
+  // birthYear: string;
+
+  @IsString()
+  @IsNotEmpty()
+  phone: string;
 
   @IsString()
   @IsNotEmpty()

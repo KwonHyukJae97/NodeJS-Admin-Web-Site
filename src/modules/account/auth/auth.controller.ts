@@ -3,20 +3,16 @@ import {
   Controller,
   Get,
   HttpCode,
-  HttpStatus,
   Post,
   Req,
   Res,
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { InjectRepository } from '@nestjs/typeorm';
+import { CommandBus } from '@nestjs/cqrs';
 import { JwtAuthGuard } from 'src/guard/jwt/jwt-auth.guard';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { LocalAuthGuard } from 'src/guard/local/local-auth.guard';
-import { AccountService } from 'src/modules/account-bak/account.service';
-import { Repository } from 'typeorm';
 import { Account } from '../entities/account';
 import { AuthService } from './auth.service';
 import { SignUpAdminCommand } from './command/signup-admin.command';
@@ -26,13 +22,18 @@ import { SignInAdminDto } from './dto/signin-admin.dto';
 import { SignInUserDto } from './dto/signin-user.dto';
 import { SignUpAdminDto } from './dto/signup-admin.dto';
 import { SignUpUserDto } from './dto/signup-user.dto';
-import { AuthGuard } from '@nestjs/passport';
 import { UserKakaoDto } from './dto/user.kakao.dto';
 import { SignInAdminCommand } from './command/signin-admin.command';
 import { SignInUserCommand } from './command/signin-user.command';
-import { SignInUserHandler } from './command/signin-user.handler';
-import { UserLoginResDto } from './dto/login-res.dto';
 import JwtRefreshAuthGuard from 'src/guard/jwt/jwt-refresh-auth.guard';
+import { KakaoSignUpAdminDto } from './dto/kakao-signup-admin.dto';
+import { KakaoSignUpAdminCommand } from './command/kakao-signup-admin.command';
+import { UserNaverDto } from './dto/user.naver.dto';
+import { NaverSignUpAdminDto } from './dto/naver-signup-admin.dto';
+import { NaverSignUpAdminCommand } from './command/naver-signup-admin.command';
+import { GoogleSignUpAdminDto } from './dto/google-signup-admin.dto';
+import { GoogleSignUpAdminCommand } from './command/google-signup-admin.command';
+import { UserGoogleDto } from './dto/user.google.dto';
 
 /**
  * 회원가입, 로그인 등 계정 관련 auth API controller
@@ -41,13 +42,8 @@ import JwtRefreshAuthGuard from 'src/guard/jwt/jwt-refresh-auth.guard';
 export class SignController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
     private readonly authService: AuthService,
-    private readonly accountService: AccountService,
     private readonly jwtManageService: JwtManageService,
-    private readonly signInUserHandler: SignInUserHandler,
-    @InjectRepository(Account)
-    private accountRepository2: Repository<Account>,
   ) {}
 
   /**
@@ -55,10 +51,95 @@ export class SignController {
    * @returns : account 정보 반환
    */
   @Get('me')
-  @UseGuards(AuthGuard())
+  @UseGuards(JwtAuthGuard)
   async getAuthInfo(@Req() req) {
     const authInfo = req.user;
+    console.log('소셜 로그인 정보', req.user);
     return authInfo;
+  }
+
+  /**
+   * 카카오 2차정보 가입 메소드
+   * @param kakaoSignUpAdinDto : 2차정보 저장에 필요한 dto
+   * @returns : 카카오 2차 정보 저장 커멘드 전송
+   */
+  @Post('/register/kakao/admin')
+  async kakaoSignUpAdmin(
+    @Body(ValidationPipe) kakaoSignUpAdminDto: KakaoSignUpAdminDto,
+  ): Promise<string> {
+    const { name, phone, nickname, birth, gender, snsId, snsToken, companyName, companyCode } =
+      kakaoSignUpAdminDto;
+    console.log('Kakao 2차 정보 컨트롤러', kakaoSignUpAdminDto.snsToken);
+
+    const command = new KakaoSignUpAdminCommand(
+      name,
+      phone,
+      nickname,
+      birth,
+      gender,
+      snsId,
+      snsToken,
+      companyName,
+      companyCode,
+    );
+
+    return this.commandBus.execute(command);
+  }
+
+  /**
+   * 네이버 2차정보 가입 메소드
+   * @param naverSignUpAdminDto : 2차정보 저장에 필요한 dto
+   * @returns : 네이버 2차 정보 저장 커멘드 전송
+   */
+  @Post('/register/naver/admin')
+  async naverSignUpAdmin(
+    @Body(ValidationPipe) naverSignUpAdminDto: NaverSignUpAdminDto,
+  ): Promise<string> {
+    const { name, phone, nickname, birth, gender, snsId, snsToken, companyName, companyCode } =
+      naverSignUpAdminDto;
+    console.log('Naver 2차 정보 컨트롤러', naverSignUpAdminDto);
+
+    const command = new NaverSignUpAdminCommand(
+      name,
+      phone,
+      nickname,
+      birth,
+      gender,
+      snsId,
+      snsToken,
+      companyName,
+      companyCode,
+    );
+
+    return this.commandBus.execute(command);
+  }
+
+  /**
+   * 구글 2차정보 가입 메소드
+   * @param googleSignUpAdminDto : 2차정보 저장에 필요한 dto
+   * @returns : 구글 2차 정보 저장 커멘드 전송
+   */
+  @Post('/register/google/admin')
+  async googleSignUpAdmin(
+    @Body(ValidationPipe) googleSignUpAdminDto: GoogleSignUpAdminDto,
+  ): Promise<string> {
+    const { name, phone, nickname, birth, gender, snsId, snsToken, companyName, companyCode } =
+      googleSignUpAdminDto;
+    console.log('Naver 2차 정보 컨트롤러', googleSignUpAdminDto);
+
+    const command = new GoogleSignUpAdminCommand(
+      name,
+      phone,
+      nickname,
+      birth,
+      gender,
+      snsId,
+      snsToken,
+      companyName,
+      companyCode,
+    );
+
+    return this.commandBus.execute(command);
   }
 
   /**
@@ -67,7 +148,8 @@ export class SignController {
    * @returns : 관리자 회원가입 커맨드 전송
    */
   @Post('/register/admin')
-  async signUpAdmin(@Body(ValidationPipe) SignUpAdminDto: SignUpAdminDto): Promise<string> {
+  async signUpAdmin(@Body(ValidationPipe) signUpAdminDto: SignUpAdminDto): Promise<string> {
+    console.log('company정보!!!');
     const {
       id,
       password,
@@ -81,8 +163,10 @@ export class SignController {
       roleId,
       isSuper,
       division,
-    } = SignUpAdminDto;
-    console.log('Admin 컨트롤러 로그', SignUpAdminDto);
+      companyName,
+      companyCode,
+    } = signUpAdminDto;
+    console.log('Admin 컨트롤러 로그', signUpAdminDto);
     const command = new SignUpAdminCommand(
       id,
       password,
@@ -96,6 +180,8 @@ export class SignController {
       roleId,
       isSuper,
       division,
+      companyName,
+      companyCode,
     );
     return this.commandBus.execute(command);
   }
@@ -106,10 +192,10 @@ export class SignController {
    * @returns : 사용자 회원가입 커맨드 전송
    */
   @Post('/register/user')
-  async signUpUser(@Body(ValidationPipe) SignUpUserDto: SignUpUserDto): Promise<string> {
-    const { id, password, name, email, phone, nickname, birth, gender, grade } = SignUpUserDto;
+  async signUpUser(@Body(ValidationPipe) signUpUserDto: SignUpUserDto): Promise<string> {
+    const { id, password, name, email, phone, nickname, birth, gender, grade } = signUpUserDto;
 
-    console.log('User 컨트롤러 로그', SignUpUserDto);
+    console.log('User 컨트롤러 로그', signUpUserDto);
     const command = new SignUpUserCommand(
       id,
       password,
@@ -198,44 +284,6 @@ export class SignController {
     return this.commandBus.execute(command);
   }
 
-  // TODO : 관리자 로그인 테스트
-  @HttpCode(200)
-  @UseGuards(LocalAuthGuard)
-  @Post('/login/admin/test')
-  async loginAdmin2(
-    @Res({ passthrough: true }) response,
-    @Body(ValidationPipe) signInAdminDto: SignInAdminDto,
-  ) {
-    const { accessToken, accessOption, refreshToken, refreshOption, account } =
-      await this.authService.loginAdmin(signInAdminDto);
-    response.cookie('authentication', accessToken, accessOption);
-    response.cookie('Refresh', refreshToken, refreshOption);
-    console.log('AccessToken 테스트', accessToken);
-    console.log('RefreshToken 테스트', refreshToken);
-    console.log('AccessOption 테스트', accessOption);
-    console.log('RefreshOption 테스트', refreshOption);
-    return { account };
-  }
-
-  // TODO : 사용자 로그인 테스트
-  @HttpCode(200)
-  @UseGuards(LocalAuthGuard)
-  @Post('/login/user/test')
-  async loginUser2(
-    @Res({ passthrough: true }) response,
-    @Body(ValidationPipe) signInUserDto: SignInUserDto,
-  ) {
-    const { accessToken, accessOption, refreshToken, refreshOption, account } =
-      await this.authService.loginUser(signInUserDto);
-    response.cookie('authentication', accessToken, accessOption);
-    response.cookie('Refresh', refreshToken, refreshOption);
-    console.log('AccessToken 테스트', accessToken);
-    console.log('RefreshToken 테스트', refreshToken);
-    console.log('AccessOption 테스트', accessOption);
-    console.log('RefreshOption 테스트', refreshOption);
-    return { account };
-  }
-
   /**
    * 관리자 로그아웃 메소드
    * @param request
@@ -245,7 +293,7 @@ export class SignController {
   @UseGuards(JwtAuthGuard)
   @Post('/logout/admin')
   async logoutAdmin(@Req() request, @Res() response) {
-    const { accessOption, refreshOption } = this.authService.getCookiesForLogOut2();
+    const { accessOption, refreshOption } = this.authService.getCookiesForLogOut();
     await this.authService.removeRefreshToken(request.user.accountId);
     response.cookie('authentication', '', accessOption);
     response.cookie('Refresh', '', refreshOption);
@@ -262,12 +310,12 @@ export class SignController {
   @UseGuards(JwtAuthGuard)
   @Post('/logout/user')
   async logoutUser(@Req() request, @Res() response) {
-    const { accessOption, refreshOption } = this.authService.getCookiesForLogOut2();
+    const { accessOption, refreshOption } = this.authService.getCookiesForLogOut();
     await this.authService.removeRefreshToken(request.user.accountId);
     response.cookie('authentication', '', accessOption);
     response.cookie('Refresh', '', refreshOption);
 
-    return response.sendStatus(200);
+    return response.sendStatus(200), '로그아웃 완료';
   }
 
   /**
@@ -287,24 +335,24 @@ export class SignController {
    * @param req : FE에서 넘어오는 카카오 유저 정보
    * @returns : 카카오 유저정보를 담은 dto를 카카오 로그인 서비스에 전송
    */
-  @Post('/kakao')
+  @Post('/login/admin/kakao')
   async kakaoLoginUserInfo(@Req() req, @Res({ passthrough: true }) response) {
     const userKakaoDto: UserKakaoDto = req.body;
-    console.log('프론트에서 넘어오는 카카오 유저데이터', userKakaoDto);
+    const snsToken = req.body.resKakaoAccessToken;
 
-    const id = userKakaoDto.snsId;
+    const snsId = userKakaoDto.snsId;
     const snsType = '01';
 
-    const { accessToken, accessOption } = await this.authService.getCookieWithJwtAccessToken(
-      id,
+    const { accessToken, accessOption } = await this.authService.socialGetCookieWithJwtAccessToken(
+      snsId,
       snsType,
     );
-    const { refreshToken, refreshOption } = await this.authService.getCookieWithJwtRefreshToken(
-      id,
-      snsType,
-    );
+    const { refreshToken, refreshOption } =
+      await this.authService.socialGetCookieWithJwtRefreshToken(snsId, snsType);
 
-    await this.authService.setCurrentRefreshToken(refreshToken, id);
+    await this.authService.setSocialCurrentRefreshToken(refreshToken, snsId);
+
+    await this.authService.setSocialToken(snsToken, snsId);
 
     response.cookie('authentication', accessToken, accessOption);
     response.cookie('Refresh', refreshToken, refreshOption);
@@ -312,18 +360,83 @@ export class SignController {
     return this.authService.kakaoUserInfos(userKakaoDto);
   }
 
-  // TODO: 카카오 로그인 콜백
-  @Post('/kakao/callback')
-  // @UseGuards(AuthGuard('kakao'))
-  async kakaoLoginCallback(@Req() req): Promise<UserLoginResDto> {
-    const userKakaoDto: UserKakaoDto = req.body;
-    return this.authService.kakaoSignIn(userKakaoDto);
+  /**
+   * 네이버 로그인 메소드
+   * @param req : FE에서 넘어오는 네이버 유저 정보
+   * @returns : 네이버 유저정보를 담은 dto를 카카오 로그인 서비스에 전송
+   */
+  @Post('/login/admin/naver')
+  async naverLoginUserInfo(@Req() req, @Res({ passthrough: true }) response) {
+    const userNaverDto: UserNaverDto = req.body;
+    const snsToken = req.body.resNaverAccessToken;
+
+    console.log('네이버 정보', userNaverDto);
+    const snsId = userNaverDto.snsId;
+    const snsType = '00';
+
+    const { accessToken, accessOption } = await this.authService.socialGetCookieWithJwtAccessToken(
+      snsId,
+      snsType,
+    );
+    const { refreshToken, refreshOption } =
+      await this.authService.socialGetCookieWithJwtRefreshToken(snsId, snsType);
+
+    await this.authService.setSocialCurrentRefreshToken(refreshToken, snsId);
+
+    await this.authService.setSocialToken(snsToken, snsId);
+
+    response.cookie('authentication', accessToken, accessOption);
+    response.cookie('Refresh', refreshToken, refreshOption);
+
+    return this.authService.naverUserInfos(userNaverDto);
+  }
+
+  /**
+   * 구글 로그인 메소드
+   * @param req : FE에서 넘어오는 구글 유저 정보
+   * @returns : 구글 유저정보를 담은 dto를 카카오 로그인 서비스에 전송
+   */
+  @Post('/login/admin/google')
+  async googleLoginUserInfo(@Req() req, @Res({ passthrough: true }) response) {
+    const userGoogleDto: UserGoogleDto = req.body;
+    const snsToken = req.body.resKakaoAccessToken;
+
+    const snsId = userGoogleDto.snsId;
+    const snsType = '02';
+
+    const { accessToken, accessOption } = await this.authService.socialGetCookieWithJwtAccessToken(
+      snsId,
+      snsType,
+    );
+    const { refreshToken, refreshOption } =
+      await this.authService.socialGetCookieWithJwtRefreshToken(snsId, snsType);
+
+    await this.authService.setSocialCurrentRefreshToken(refreshToken, snsId);
+
+    await this.authService.setSocialToken(snsToken, snsId);
+
+    response.cookie('authentication', accessToken, accessOption);
+    response.cookie('Refresh', refreshToken, refreshOption);
+
+    return this.authService.kakaoUserInfos(userGoogleDto);
+  }
+
+  //리프레쉬 토큰 유효성 검사 후 통과되면 엑세스 토큰 재발급
+  @UseGuards(JwtRefreshAuthGuard)
+  @Get('/refresh')
+  refresh(@Req() req, @Res({ passthrough: true }) res) {
+    const account = req.user;
+    const id = account.id;
+    const { accessToken, ...accessOption } = this.authService.getCookieWithJwtAccessToken(id, null);
+    res.cookie('authentication', accessToken, accessOption);
+
+    return account;
   }
 
   // TODO: 리프레쉬 토큰
   @UseGuards(JwtRefreshAuthGuard)
   @Post('/refresh')
-  async refresh(@Req() request, @Res() response) {
+  async refreshToken(@Req() request, @Res() response) {
     const account: Account = request.user;
 
     if (account) {
@@ -331,6 +444,7 @@ export class SignController {
         accountId: account.accountId,
         id: account.id,
         snsType: account.snsType,
+        snsId: account.snsId,
       };
       const { accessToken, accessOption } =
         this.jwtManageService.getCookieWithJwtAccessToken(payload);

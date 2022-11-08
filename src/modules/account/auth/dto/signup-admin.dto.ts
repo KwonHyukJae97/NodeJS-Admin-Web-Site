@@ -1,4 +1,12 @@
-import { IsEmail, IsNotEmpty, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 /**
  * 관리자 회원가입을 위한 dto 정의
@@ -46,16 +54,20 @@ export class SignUpAdminDto {
   @IsNotEmpty()
   readonly gender: string;
 
-  @IsNotEmpty()
   readonly companyId: number;
 
-  @IsNotEmpty()
   readonly roleId: number;
 
-  @IsNotEmpty()
   readonly isSuper: boolean;
 
   //관리자 사용자 구분 (true: 1(관리자), false: 0(사용자))
-  @IsNotEmpty()
   readonly division: boolean;
+
+  @IsNotEmpty()
+  @IsString()
+  readonly companyName: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  readonly companyCode: number;
 }

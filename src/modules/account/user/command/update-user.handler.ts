@@ -64,18 +64,18 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
       return this.convertException.CommonError(500);
     }
 
-    const accountFile = await this.fileRepository.findOneBy({ accountId: accountId });
+    const accountFile = await this.fileRepository.findOneBy({ accountId: account.accountId });
 
     if (file) {
       // 저장되어 있는 프로필 이미지가 있다면 '수정' 이벤트 호출
       if (accountFile) {
         this.eventBus.publish(
-          new FileUpdateEvent(accountId, FileType.ACCOUNT, file, this.accountFileDb),
+          new FileUpdateEvent(account.accountId, FileType.ACCOUNT, file, this.accountFileDb),
         );
         // 저장되어 있는 프로필 이미지가 없다면 '등록' 이벤트 호출
       } else {
         this.eventBus.publish(
-          new FileCreateEvent(accountId, FileType.ACCOUNT, file, this.accountFileDb),
+          new FileCreateEvent(account.accountId, FileType.ACCOUNT, file, this.accountFileDb),
         );
       }
     }

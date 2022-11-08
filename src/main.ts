@@ -6,19 +6,16 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { GlobalExceptionFilter } from './common/exception/GlobalException.Filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    //CORS 허용
-    // cors: {
-    //   origin: 'http://localhost:3002',
-    //   credentials: true,
-    // },
-  });
+  const app = await NestFactory.create(AppModule, {});
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
       stopAtFirstError: true,
+      transformOptions: {
+        enableImplicitConversion: true, // allow conversion underneath
+      },
     }),
   );
   app.use(cookieParser());
