@@ -6,7 +6,6 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -20,11 +19,11 @@ import { DeleteNoticeCommand } from './command/delete-notice.command';
 import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/files.interceptor';
 import { GetNoticeDetailCommand } from './command/get-notice-detail.command';
 import { GetNoticeListQuery } from './query/get-notice-list.query';
-import { GetNoticeInfoDto } from './dto/get-notice-info.dto';
 import { GetNoticeRoleDto } from './dto/get-notice-role.dto';
 import { GetUser } from '../../account/decorator/account.decorator';
 import { Account } from '../../account/entities/account';
 import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
+import { GetNoticeRequestDto } from './dto/get-notice-request.dto';
 
 /**
  * 공지사항 API controller
@@ -45,7 +44,6 @@ export class NoticeController {
     @UploadedFiles() files: Express.MulterS3.File[],
     @GetUser() account: Account,
   ) {
-    console.log('요청 정보', account.accountId);
     const { title, content, isTop, noticeGrant, role } = createNoticeDto;
     const command = new CreateNoticeCommand(
       title,
@@ -61,17 +59,12 @@ export class NoticeController {
 
   /**
    * 공지사항 전체 & 검색 결과 리스트 조회
-   * @query : keyword
    * @returns : 공지사항 리스트 조회 쿼리 전송
    */
   @Get()
-  @UseGuards(JwtAuthGuard)
-  async getAllSearchNotice(
-    @Query('keyword') keyword: string,
-    @Body() getNoticeInfoDto: GetNoticeInfoDto,
-  ) {
-    const { role, noticeGrant } = getNoticeInfoDto;
-    const getNoticeListSearchQuery = new GetNoticeListQuery(keyword, role, noticeGrant);
+  // @UseGuards(JwtAuthGuard)
+  async getAllSearchNotice(@Body() param: GetNoticeRequestDto) {
+    const getNoticeListSearchQuery = new GetNoticeListQuery(param);
     return this.queryBus.execute(getNoticeListSearchQuery);
   }
 
