@@ -1,5 +1,16 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards, ValidationPipe } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+  ValidationPipe,
+} from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { JwtAuthGuard } from 'src/guard/jwt/jwt-auth.guard';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { LocalAuthGuard } from 'src/guard/local/local-auth.guard';
@@ -24,6 +35,9 @@ import { NaverSignUpAdminCommand } from './command/naver-signup-admin.command';
 import { GoogleSignUpAdminDto } from './dto/google-signup-admin.dto';
 import { GoogleSignUpAdminCommand } from './command/google-signup-admin.command';
 import { UserGoogleDto } from './dto/user.google.dto';
+import { GetAuthInfoQuery } from './query/get-auth-info.query';
+import { AdminUpdateInfoDto } from './dto/admin-update-info.dto';
+import { AdminUpdateInfoCommand } from './command/admin-update-info.command';
 
 /**
  * 회원가입, 로그인 등 계정 관련 auth API controller
@@ -34,6 +48,7 @@ export class SignController {
     private readonly commandBus: CommandBus,
     private readonly authService: AuthService,
     private readonly jwtManageService: JwtManageService,
+    private queryBus: QueryBus,
   ) {}
 
   /**
@@ -46,6 +61,29 @@ export class SignController {
     const authInfo = req.user;
     console.log('소셜 로그인 정보', req.user);
     return authInfo;
+  }
+
+  //프로필 버튼 클릭 시 어카운트 아이디로 데이터 조회
+  @Get(':id')
+  getUserInfo(@Param('id') accountId: number) {
+    const getUserInfoQuery = new GetAuthInfoQuery(accountId);
+    console.log('프로필입니다', accountId);
+    return this.queryBus.execute(getUserInfoQuery);
+  }
+
+  /**
+   * 관리자 상세 정보 수정
+   * @Param : accountId
+   * @return : 관리자 정보 수정 커맨드 전송
+   */
+  @Patch(':id')
+  updateInfo(@Param('id') accountId: number, @Body() dto: AdminUpdateInfoDto) {
+    const { email, phone, nickname } = dto;
+    console.log('수정 데이터111?', email);
+    console.log('수정 데이터222?', phone);
+    console.log('수정 데이터333?', nickname);
+    const command = new AdminUpdateInfoCommand(accountId, email, phone, nickname);
+    return this.commandBus.execute(command);
   }
 
   /**
