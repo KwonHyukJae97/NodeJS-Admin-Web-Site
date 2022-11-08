@@ -18,7 +18,7 @@ export class GetCompanyInfoQueryHandler implements IQueryHandler<GetCompanyInfoQ
 
   /**
    * 회원사 상세 정보 조회 메소드
-   * @param query : g회원사 상세 정보 조회 쿼리
+   * @param query : 회원사 상세 정보 조회 쿼리
    * @returns : DB처리 실패 시 에러 메시지 반환 / 수정 완료 시 회원사 상세 정보 반환
    */
   async execute(query: GetCompanyInfoQuery) {
@@ -29,6 +29,23 @@ export class GetCompanyInfoQueryHandler implements IQueryHandler<GetCompanyInfoQ
     if (!company) {
       return this.convertException.notFoundError('회원사', 404);
     }
-    return company;
+
+    // 회원사에 속한 사용자 수, 관리자 수 구하기
+    const count = await this.companyRepository
+      .createQueryBuilder('company')
+      .select([
+        `DISTINCT(company.company_id) AS company_id, company.company_name AS company_name, 
+       company.company_code AS company_code, company.business_number AS business_number, 
+       company.reg_date AS reg_date`,
+      ])
+      .leftJoin('company.userCompany', 'userCompany')
+      .leftJoin('company.admin', 'admin')
+      .addSelect('COUNT(company.companyId) AS user_count')
+      .addSelect('COUNT(admin.adminId) AS admin_count')
+      .where('company.company_id = :companyId', { companyId: companyId })
+      .groupBy('company.companyId, admin.adminId')
+      .getRawMany();
+
+    return count;
   }
 }

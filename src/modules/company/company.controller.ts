@@ -41,8 +41,8 @@ export class CompanyController {
    */
   @Patch(':id')
   updateCompany(@Param('id') companyId: number, @Body() updateCompanyDto: UpdateCompanyDto) {
-    const { companyName, companyCode } = updateCompanyDto;
-    const command = new UpdateCompanyCommand(companyName, companyCode, companyId);
+    const { companyName, businessNumber } = updateCompanyDto;
+    const command = new UpdateCompanyCommand(companyName, businessNumber, companyId);
     return this.commandBus.execute(command);
   }
 

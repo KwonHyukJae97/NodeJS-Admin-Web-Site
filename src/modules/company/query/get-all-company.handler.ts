@@ -2,8 +2,11 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
+import { distinct } from 'rxjs';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { Repository } from 'typeorm';
+import { Admin } from 'src/modules/account/admin/entities/admin';
+import { UserCompany } from 'src/modules/account/user/entities/user-company';
+import { Like, MoreThanOrEqual, Repository } from 'typeorm';
 import { Company } from '../entities/company.entity';
 import { GetAllCompanyQuery } from './get-all-company.query';
 
@@ -14,6 +17,8 @@ import { GetAllCompanyQuery } from './get-all-company.query';
 export class GetAllCompanyQueryHandler implements IQueryHandler<GetAllCompanyQuery> {
   constructor(
     @InjectRepository(Company) private companyRepository: Repository<Company>,
+    @InjectRepository(UserCompany) private userCompanyRepository: Repository<UserCompany>,
+    @InjectRepository(Admin) private adminRepository: Repository<Admin>,
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
@@ -29,6 +34,21 @@ export class GetAllCompanyQueryHandler implements IQueryHandler<GetAllCompanyQue
       return this.convertException.notFoundError('회원사', 404);
     }
 
-    return company;
+    // 회원사에 속한 사용자 수, 관리자 수 구하기
+    const count = await this.companyRepository
+      .createQueryBuilder('company')
+      .select([
+        `DISTINCT(company.company_id) AS company_id, company.company_name AS company_name, 
+       company.company_code AS company_code, company.business_number AS business_number, 
+       company.reg_date AS reg_date`,
+      ])
+      .leftJoin('company.userCompany', 'userCompany')
+      .leftJoin('company.admin', 'admin')
+      .addSelect('COUNT(company.companyId) AS user_count')
+      .addSelect('COUNT(admin.adminId) AS admin_count')
+      .groupBy('company.companyId, admin.adminId')
+      .getRawMany();
+
+    return count;
   }
 }
