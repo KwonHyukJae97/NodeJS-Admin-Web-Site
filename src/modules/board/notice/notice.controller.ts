@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -37,23 +38,17 @@ export class NoticeController {
    * @returns : 공지사항 등록 커맨드 전송
    */
   @Post()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   createNotice(
     @Body() createNoticeDto: CreateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
-    @GetUser() account: Account,
+    // @GetUser() account: Account,
   ) {
+    console.log('Dto', createNoticeDto);
+    console.log('file', files);
     const { title, content, isTop, noticeGrant, role } = createNoticeDto;
-    const command = new CreateNoticeCommand(
-      title,
-      content,
-      isTop,
-      noticeGrant,
-      role,
-      account,
-      files,
-    );
+    const command = new CreateNoticeCommand(title, content, isTop, noticeGrant, role, files);
     return this.commandBus.execute(command);
   }
 
@@ -74,9 +69,8 @@ export class NoticeController {
    * @returns : 공지사항 상세 정보 조회 커맨드 전송
    */
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
-  async getNoticeDetail(@Param('id') noticeId: number, @Body() getNoticeRoleDto: GetNoticeRoleDto) {
-    const { role } = getNoticeRoleDto;
+  // @UseGuards(JwtAuthGuard)
+  async getNoticeDetail(@Param('id') noticeId: number, @Query() role: string) {
     const command = new GetNoticeDetailCommand(noticeId, role);
     return this.commandBus.execute(command);
   }
