@@ -38,15 +38,17 @@ export class GetAllCompanyQueryHandler implements IQueryHandler<GetAllCompanyQue
     const count = await this.companyRepository
       .createQueryBuilder('company')
       .select([
-        `DISTINCT(company.company_id) AS company_id, company.company_name AS company_name, 
-       company.company_code AS company_code, company.business_number AS business_number, 
+        `DISTINCT(company.company_id) AS company_id, 
+        company.company_name AS company_name, 
+       company.company_code AS company_code, 
+       company.business_number AS business_number, 
        company.reg_date AS reg_date`,
       ])
       .leftJoin('company.userCompany', 'userCompany')
       .leftJoin('company.admin', 'admin')
-      .addSelect('COUNT(company.companyId) AS user_count')
+      .addSelect('COUNT(userCompany.companyId) AS user_count')
       .addSelect('COUNT(admin.adminId) AS admin_count')
-      .groupBy('company.companyId, admin.adminId')
+      .groupBy('company.companyId, userCompany.companyId, admin.adminId')
       .getRawMany();
 
     return count;
