@@ -48,7 +48,7 @@ export class SignUpAdminDto {
 
   @IsNotEmpty()
   @IsString()
-  @MaxLength(8)
+  @MaxLength(10)
   readonly birth: string;
 
   @IsNotEmpty()
