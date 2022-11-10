@@ -38,6 +38,8 @@ import { UserGoogleDto } from './dto/user.google.dto';
 import { GetAuthInfoQuery } from './query/get-auth-info.query';
 import { AdminUpdateInfoDto } from './dto/admin-update-info.dto';
 import { AdminUpdateInfoCommand } from './command/admin-update-info.command';
+import { AdminUpdatePasswordDto } from './dto/admin-update-password.dto';
+import { AdminUpdatePasswordCommand } from './command/admin-update-password.command';
 
 /**
  * 회원가입, 로그인 등 계정 관련 auth API controller
@@ -83,6 +85,20 @@ export class SignController {
     console.log('수정 데이터222?', phone);
     console.log('수정 데이터333?', nickname);
     const command = new AdminUpdateInfoCommand(accountId, email, phone, nickname);
+    return this.commandBus.execute(command);
+  }
+
+  /**
+   * 비밀번호 수정
+   * @param accountId
+   * @param dto : 비밀번호
+   * @returns : 관리자 비밀번호 수정 커멘드 전송
+   */
+  @Patch('/update_password/:id')
+  updatePassword(@Param('id') accountId: number, @Body() dto: AdminUpdatePasswordDto) {
+    const { password } = dto;
+    console.log('변경하는 비밀번호', password);
+    const command = new AdminUpdatePasswordCommand(accountId, password);
     return this.commandBus.execute(command);
   }
 
@@ -356,6 +372,16 @@ export class SignController {
     const findid = await this.authService.findId(findIdDto);
     console.log('아이디찾는 값 추출', findIdDto);
     return findid;
+  }
+
+  /**
+   * 임시 비밀번호 발송(이메일) 메소드
+   * @param Dto: 입력한 이메일 주소
+   * @returns : 이메일주소
+   */
+  @Post('/find_password')
+  async findPassword(@Body() Dto) {
+    return this.authService.findPassword(Dto);
   }
 
   /**

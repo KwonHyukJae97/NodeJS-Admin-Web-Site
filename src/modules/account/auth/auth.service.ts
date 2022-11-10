@@ -1,4 +1,12 @@
-import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { compare, hash } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -13,6 +21,9 @@ import { FindIdDto } from './dto/findid.dto';
 import { UserKakaoDto } from './dto/user.kakao.dto';
 import { UserNaverDto } from './dto/user.naver.dto';
 import { UserGoogleDto } from './dto/user.google.dto';
+import { EmailService } from 'src/modules/email/email.service';
+import * as uuid from 'uuid';
+import { Connection } from 'typeorm';
 
 /**
  * Auth 관련 토큰, 검증, 카카오 서비스
@@ -26,6 +37,8 @@ export class AuthService {
     private accountRepository: Repository<Account>,
     private readonly configService: ConfigService,
     private readonly jwtManageService: JwtManageService,
+    private readonly emailService: EmailService,
+    private connection: Connection,
   ) {}
 
   /**
@@ -140,7 +153,7 @@ export class AuthService {
     if (isRefreshTokenMatching) {
       return { result: true };
     } else {
-      throw new UnauthorizedException('여기에서 접근에러입니다.');
+      throw new UnauthorizedException('접근에러입니다.');
     }
   }
 
@@ -524,6 +537,41 @@ export class AuthService {
       };
       // loginSuccess (false) 값을 리턴
       return sencondDataDto;
+    }
+  }
+
+  /**
+   * 임시 비밀번호 발급 메소드
+   * @param Dto
+   * @returns: 기존 비밀번호 -> 새로 발급해주는 임시비밀번호로 변경 후 결과 값 리턴
+   */
+  async findPassword(Dto) {
+    const { email } = Dto;
+    const user = await this.accountRepository.findOne({ where: { email } });
+
+    if (!user) {
+      throw new BadRequestException('메일 정보가 정확하지 않습니다.');
+    }
+    const tempUUID = uuid.v4();
+    const tempPassword = tempUUID.split('-')[0];
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(tempPassword, salt);
+    console.log('수정된 비밀번호 확인', hashedPassword);
+    const accountId = user.accountId;
+    const queryRunner = this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      await this.accountRepository.update(accountId, { password: hashedPassword });
+      await this.emailService.sendTempPassword(email, tempPassword);
+      console.log('임시 코드 확인', tempPassword);
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+      throw new ConflictException({ message: '비밀번호 찾기 오류입니다. 다시 시도해주세요.' });
+    } finally {
+      await queryRunner.release();
+      return { success: true, message: '이메일을 확인해주세요.' };
     }
   }
 }
