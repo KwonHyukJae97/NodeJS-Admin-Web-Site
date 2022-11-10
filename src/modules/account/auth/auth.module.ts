@@ -28,6 +28,8 @@ import { GoogleSignUpAdminHandler } from './command/google-signup-admin.handler'
 import { JwtRefreshStrategy } from 'src/guard/jwt/jwt-refresh.strategy';
 import { GetAuthInfoQueryHandler } from './query/get-auth-info-handler';
 import { AdminUpdateInfoHandler } from './command/admin-update-info-handler';
+import { EmailService } from 'src/modules/email/email.service';
+import { AdminUpdatePasswordHandler } from './command/admin-update-password.handler';
 
 @Module({
   imports: [
@@ -59,7 +61,9 @@ import { AdminUpdateInfoHandler } from './command/admin-update-info-handler';
     SignUpAdminHandler,
     SignInAdminHandler,
     SignInUserHandler,
+    AdminUpdatePasswordHandler,
     AuthService,
+    EmailService,
     JwtManageService,
     ConvertException,
     JwtStrategy,
