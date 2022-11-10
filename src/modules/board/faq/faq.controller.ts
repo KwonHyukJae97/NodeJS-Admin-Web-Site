@@ -26,6 +26,7 @@ import { GetFaqListQuery } from './query/get-faq-list.query';
 import { Account } from '../../account/entities/account';
 import { GetUser } from '../../account/decorator/account.decorator';
 import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
+import { GetFaqRequestDto } from './dto/get-faq-request.dto';
 
 /**
  * FAQ API controller
@@ -58,13 +59,9 @@ export class FaqController {
    * @returns : FAQ 리스트 조회 쿼리 전송
    */
   @Get()
-  @UseGuards(JwtAuthGuard)
-  async getFaqSearch(
-    @Query('categoryName') categoryName: string,
-    @Query('keyword') keyword: string,
-    @Query('role') role: string,
-  ) {
-    const getFaqListSearchQuery = new GetFaqListQuery(categoryName, keyword, role);
+  // @UseGuards(JwtAuthGuard)
+  async getFaqSearch(@Body() param: GetFaqRequestDto) {
+    const getFaqListSearchQuery = new GetFaqListQuery(param);
     return this.queryBus.execute(getFaqListSearchQuery);
   }
 

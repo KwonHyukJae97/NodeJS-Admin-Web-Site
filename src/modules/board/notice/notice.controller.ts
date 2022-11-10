@@ -8,7 +8,6 @@ import {
   Post,
   Query,
   UploadedFiles,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { CreateNoticeDto } from './dto/create-notice.dto';
@@ -20,10 +19,8 @@ import { DeleteNoticeCommand } from './command/delete-notice.command';
 import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/files.interceptor';
 import { GetNoticeDetailCommand } from './command/get-notice-detail.command';
 import { GetNoticeListQuery } from './query/get-notice-list.query';
-import { GetNoticeRoleDto } from './dto/get-notice-role.dto';
 import { GetUser } from '../../account/decorator/account.decorator';
 import { Account } from '../../account/entities/account';
-import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
 import { GetNoticeRequestDto } from './dto/get-notice-request.dto';
 
 /**
@@ -81,7 +78,7 @@ export class NoticeController {
    * @returns : 공지사항 상세 정보 수정 커맨드 전송
    */
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   async updateNotice(
     @Param('id') noticeId: number,
@@ -97,7 +94,7 @@ export class NoticeController {
       noticeGrant,
       noticeId,
       role,
-      account,
+      // account,
       files,
     );
     return this.commandBus.execute(command);
@@ -109,14 +106,13 @@ export class NoticeController {
    * @returns : 공지사항 정보 삭제 커맨드 전송
    */
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async deleteNotice(
     @Param('id') noticeId: number,
-    @Body() deleteNoticeInfoDto: GetNoticeRoleDto,
+    @Query() role: string,
     @GetUser() account: Account,
   ) {
-    const { role } = deleteNoticeInfoDto;
-    const command = new DeleteNoticeCommand(noticeId, role, account);
+    const command = new DeleteNoticeCommand(noticeId, role);
     return this.commandBus.execute(command);
   }
 }
