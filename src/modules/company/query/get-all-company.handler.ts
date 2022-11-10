@@ -1,12 +1,10 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { distinct } from 'rxjs';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { Admin } from 'src/modules/account/admin/entities/admin';
-import { UserCompany } from 'src/modules/account/user/entities/user-company';
-import { Like, MoreThanOrEqual, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Company } from '../entities/company.entity';
 import { GetAllCompanyQuery } from './get-all-company.query';
 
@@ -17,8 +15,6 @@ import { GetAllCompanyQuery } from './get-all-company.query';
 export class GetAllCompanyQueryHandler implements IQueryHandler<GetAllCompanyQuery> {
   constructor(
     @InjectRepository(Company) private companyRepository: Repository<Company>,
-    @InjectRepository(UserCompany) private userCompanyRepository: Repository<UserCompany>,
-    @InjectRepository(Admin) private adminRepository: Repository<Admin>,
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
@@ -28,29 +24,43 @@ export class GetAllCompanyQueryHandler implements IQueryHandler<GetAllCompanyQue
    * @returns : DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 회원사 리스트 반환
    */
   async execute(query: GetAllCompanyQuery) {
+    const { searchWord } = query;
     const company = await this.companyRepository.find({});
 
     if (!company) {
       return this.convertException.notFoundError('회원사', 404);
     }
 
-    // 회원사에 속한 사용자 수, 관리자 수 구하기
-    const count = await this.companyRepository
+    // 회원사에 속한 사용자 수, 관리자 수 구해서 리스트 반환
+    const companyList = await this.companyRepository
       .createQueryBuilder('company')
       .select([
-        `DISTINCT(company.company_id) AS company_id, 
-        company.company_name AS company_name, 
-       company.company_code AS company_code, 
-       company.business_number AS business_number, 
-       company.reg_date AS reg_date`,
+        `DISTINCT(company.companyId) AS companyId, 
+        company.companyName AS companyName, 
+       company.companyCode AS companyCode, 
+       company.businessNumber AS businessNumber, 
+       company.regDate AS regDate`,
       ])
       .leftJoin('company.userCompany', 'userCompany')
       .leftJoin('company.admin', 'admin')
-      .addSelect('COUNT(userCompany.companyId) AS user_count')
-      .addSelect('COUNT(admin.adminId) AS admin_count')
-      .groupBy('company.companyId, userCompany.companyId, admin.adminId')
-      .getRawMany();
+      .addSelect('COUNT(userCompany.companyId) AS userCount')
+      .addSelect('COUNT(admin.adminId) AS adminCount');
 
-    return count;
+    // 검색 키워드가 있을 경우
+    if (searchWord) {
+      companyList.where('company.companyName like :companyName', {
+        companyName: `%${searchWord}%`,
+      });
+      companyList.groupBy('company.companyId, userCompany.companyId, admin.adminId');
+      companyList.getRawMany();
+      console.log('companyList', companyList);
+    }
+    companyList.groupBy('company.companyId, userCompany.companyId, admin.adminId');
+    const tempQuery = companyList;
+
+    // 최종 데이터 반환
+    const list = await tempQuery.getRawMany();
+
+    return list;
   }
 }

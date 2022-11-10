@@ -1,10 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { UpdateCompanyCommand } from './command/update-company.command';
 import { DeleteCompanyCommand } from './command/delete-company.command';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { GetCompanyInfoQuery } from './query/get-company-info.query';
 import { GetAllCompanyQuery } from './query/get-all-company.query';
+import { GetCompanyRequestDto } from './dto/get-company-request.dto';
 
 /**
  * 회원사 API controller
@@ -20,6 +21,17 @@ export class CompanyController {
   @Get()
   getAllCompany() {
     const getAllCompanyQuery = new GetAllCompanyQuery();
+    return this.queryBus.execute(getAllCompanyQuery);
+  }
+
+  /**
+   *  회원사 검색 결과 리스트 조회
+   * @return : 회원사 검색 시 검색어 조회 쿼리 전송
+   */
+  @Post()
+  getCompany(@Body() getCompanyRequestDto: GetCompanyRequestDto) {
+    const { searchWord } = getCompanyRequestDto;
+    const getAllCompanyQuery = new GetAllCompanyQuery(searchWord);
     return this.queryBus.execute(getAllCompanyQuery);
   }
 
