@@ -115,6 +115,11 @@ export class FileService {
       return this.convertException.notFoundError('신규 파일', 404);
     }
 
+    // 한글 파일명 인코딩
+    files.map((file) => {
+      file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf-8');
+    });
+
     files.map(async (file) => {
       const today = getToday();
       const time = getTime();

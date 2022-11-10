@@ -26,6 +26,8 @@ import { AuthService } from './auth.service';
 import { NaverSignUpAdminHandler } from './command/naver-signup-admin.handler';
 import { GoogleSignUpAdminHandler } from './command/google-signup-admin.handler';
 import { JwtRefreshStrategy } from 'src/guard/jwt/jwt-refresh.strategy';
+import { GetAuthInfoQueryHandler } from './query/get-auth-info-handler';
+import { AdminUpdateInfoHandler } from './command/admin-update-info-handler';
 
 @Module({
   imports: [
@@ -52,6 +54,8 @@ import { JwtRefreshStrategy } from 'src/guard/jwt/jwt-refresh.strategy';
     NaverSignUpAdminHandler,
     GoogleSignUpAdminHandler,
     SignUpUserHandler,
+    GetAuthInfoQueryHandler,
+    AdminUpdateInfoHandler,
     SignUpAdminHandler,
     SignInAdminHandler,
     SignInUserHandler,
