@@ -44,7 +44,8 @@ export class GetNoticeListHandler implements IQueryHandler<GetNoticeListQuery> {
       .createQueryBuilder('notice')
       .leftJoinAndSelect('notice.board', 'board')
       .where('notice.noticeGrant = :noticeGrant', { noticeGrant: param.noticeGrant })
-      .orderBy('notice.noticeId', 'DESC');
+      .orderBy('notice.isTop', 'DESC')
+      .addOrderBy('notice.noticeId', 'DESC');
 
     // 검색 키워드가 있을 경우
     if (param.searchWord) {

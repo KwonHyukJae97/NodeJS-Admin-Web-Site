@@ -1,5 +1,5 @@
-import { IsBoolean, IsNotEmpty, IsString, MaxLength } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { ToBoolean } from '../../../../common/decorator/boolean.decorator';
 
 /**
  * 공지사항 등록에 필요한 요청 Dto 정의
@@ -15,9 +15,7 @@ export class CreateNoticeDto {
   content: string;
 
   @IsNotEmpty()
-  // boolean 타입으로 변환
-  @Type(() => Boolean)
-  @IsBoolean()
+  @ToBoolean()
   isTop: boolean;
 
   @IsNotEmpty()

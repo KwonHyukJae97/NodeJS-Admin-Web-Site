@@ -24,6 +24,8 @@ async function bootstrap() {
     origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
+    // 프론트에서 파일 다운로드 시, 특정 헤더값 사용을 위한 설정
+    exposedHeaders: ['content-disposition'],
   });
   app.useGlobalFilters(new GlobalExceptionFilter());
   await app.listen(process.env.SERVER_PORT || 3000);
