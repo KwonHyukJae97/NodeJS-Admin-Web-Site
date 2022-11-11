@@ -379,7 +379,7 @@ export class SignController {
    * @param Dto: 입력한 이메일 주소
    * @returns : 이메일주소
    */
-  @Post('/find_password')
+  @Post('/temporary_password')
   async findPassword(@Body() Dto) {
     return this.authService.findPassword(Dto);
   }
