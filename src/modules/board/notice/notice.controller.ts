@@ -42,8 +42,6 @@ export class NoticeController {
     @UploadedFiles() files: Express.MulterS3.File[],
     // @GetUser() account: Account,
   ) {
-    console.log('Dto', createNoticeDto);
-    console.log('file', files);
     const { title, content, isTop, noticeGrant, role } = createNoticeDto;
     const command = new CreateNoticeCommand(title, content, isTop, noticeGrant, role, files);
     return this.commandBus.execute(command);

@@ -24,29 +24,16 @@ export class GetCategoryListHandler implements IQueryHandler<GetCategoryListQuer
   async execute(query: GetCategoryListQuery) {
     const { role } = query;
 
-    // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
-    // role = 본사 관리자일 경우 전체 데이터 조회
-    if (role === '본사 관리자') {
-      const category = await this.categoryRepository.find();
+    const category = await this.categoryRepository
+      .createQueryBuilder('category')
+      .orderBy('category.isUse', 'DESC');
 
-      if (!category) {
-        return this.convertException.notFoundError('카테고리', 404);
-      }
-
-      return category;
-
-      // role = 일반 사용자 && 회원사 관리자일 경우 isUse: true 인 데이터만 조회
-    } else {
-      const category = await this.categoryRepository
-        .createQueryBuilder('category')
-        .where('category.isUse = :isUse', { isUse: true })
-        .getMany();
-
-      if (!category) {
-        return this.convertException.notFoundError('카테고리', 404);
-      }
-
-      return category;
+    if (role !== '본사 관리자') {
+      category.where('category.isUse = :isUse', { isUse: true });
     }
+
+    const categoryList = await category.getMany();
+
+    return categoryList;
   }
 }

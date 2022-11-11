@@ -33,7 +33,8 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqListQuery> {
       .createQueryBuilder('faq')
       .leftJoinAndSelect('faq.board', 'board')
       .leftJoinAndSelect('faq.category', 'category')
-      .orderBy('faq.faqId', 'DESC');
+      .orderBy('category.isUse', 'DESC')
+      .addOrderBy('faq.faqId', 'DESC');
 
     if (param.role !== '본사 관리자' && '회원사 관리자') {
       faq.where('category.isUse = :isUse', { isUse: true });

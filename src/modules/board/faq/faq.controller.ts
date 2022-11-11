@@ -19,9 +19,7 @@ import { UpdateFaqCommand } from './command/update-faq.command';
 import { DeleteFaqCommand } from './command/delete-faq.command';
 import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/files.interceptor';
 import { GetFaqDetailCommand } from './command/get-faq-detail.command';
-import { GetFaqInfoDto } from './dto/get-faq-info.dto';
 import { GetCategoryListQuery } from './query/get-category-list.query';
-import { DeleteFaqInfoDto } from './dto/delete-faq-info.dto';
 import { GetFaqListQuery } from './query/get-faq-list.query';
 import { Account } from '../../account/entities/account';
 import { GetUser } from '../../account/decorator/account.decorator';
@@ -40,22 +38,20 @@ export class FaqController {
    * @returns : FAQ 등록 커맨드 전송
    */
   @Post()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   createFaq(
     @Body() createFaqDto: CreateFaqDto,
     @UploadedFiles() files: Express.MulterS3.File[],
-    @GetUser() account: Account,
+    // @GetUser() account: Account,
   ) {
     const { title, content, categoryName, role } = createFaqDto;
-    const command = new CreateFaqCommand(title, content, categoryName, role, account, files);
+    const command = new CreateFaqCommand(title, content, categoryName, role, files);
     return this.commandBus.execute(command);
   }
 
   /**
    * FAQ 전체 & 카테고리별 검색 결과 리스트 조회
-   * @query : category_name
-   * @query : keyword
    * @returns : FAQ 리스트 조회 쿼리 전송
    */
   @Get()
@@ -70,7 +66,7 @@ export class FaqController {
    * @returns : FAQ 카테고리 리스트 조회 쿼리 전송
    */
   @Get('category')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async getAllCategory(@Query('role') role: string) {
     const getCategoryListQuery = new GetCategoryListQuery(role);
     return this.queryBus.execute(getCategoryListQuery);
@@ -82,9 +78,8 @@ export class FaqController {
    * @returns : FAQ 상세 정보 조회 커맨드 전송
    */
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
-  async getFaqDetail(@Param('id') faqId: number, @Body() getFaqInfoDto: GetFaqInfoDto) {
-    const { role } = getFaqInfoDto;
+  // @UseGuards(JwtAuthGuard)
+  async getFaqDetail(@Param('id') faqId: number, @Query() role: string) {
     const command = new GetFaqDetailCommand(faqId, role);
     return this.commandBus.execute(command);
   }
@@ -95,16 +90,16 @@ export class FaqController {
    * @returns : FAQ 상세 정보 수정 커맨드 전송
    */
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   async updateFaq(
     @Param('id') faqId: number,
     @Body() updateFaqDto: UpdateFaqDto,
     @UploadedFiles() files: Express.MulterS3.File[],
-    @GetUser() account: Account,
+    // @GetUser() account: Account,
   ) {
     const { title, content, categoryName, role } = updateFaqDto;
-    const command = new UpdateFaqCommand(title, content, categoryName, role, account, faqId, files);
+    const command = new UpdateFaqCommand(title, content, categoryName, role, faqId, files);
     return this.commandBus.execute(command);
   }
 
@@ -114,14 +109,12 @@ export class FaqController {
    * @returns : FAQ 정보 삭제 커맨드 전송
    */
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async deleteFaq(
     @Param('id') faqId: number,
-    @Body() deleteFaqInfoDto: DeleteFaqInfoDto,
-    @GetUser() account: Account,
+    // @GetUser() account: Account,
   ) {
-    const { role } = deleteFaqInfoDto;
-    const command = new DeleteFaqCommand(faqId, role, account);
+    const command = new DeleteFaqCommand(faqId);
     return this.commandBus.execute(command);
   }
 }

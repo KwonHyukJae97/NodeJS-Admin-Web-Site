@@ -84,6 +84,7 @@ export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand>
       faq,
       writer: account.name + '(' + account.nickname + ')',
       fileList: files,
+      category: category,
     };
 
     return getFaqDetailDto;
