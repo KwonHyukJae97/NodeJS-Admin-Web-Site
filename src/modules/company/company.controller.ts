@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { UpdateCompanyCommand } from './command/update-company.command';
 import { DeleteCompanyCommand } from './command/delete-company.command';
@@ -19,19 +19,8 @@ export class CompanyController {
    * @return : 회원사 리스트 조회 쿼리 전송
    */
   @Get()
-  getAllCompany() {
-    const getAllCompanyQuery = new GetAllCompanyQuery();
-    return this.queryBus.execute(getAllCompanyQuery);
-  }
-
-  /**
-   *  회원사 검색 결과 리스트 조회
-   * @return : 회원사 검색 시 검색어 조회 쿼리 전송
-   */
-  @Post()
-  getCompany(@Body() getCompanyRequestDto: GetCompanyRequestDto) {
-    const { searchWord } = getCompanyRequestDto;
-    const getAllCompanyQuery = new GetAllCompanyQuery(searchWord);
+  getAllCompany(@Body() param: GetCompanyRequestDto) {
+    const getAllCompanyQuery = new GetAllCompanyQuery(param);
     return this.queryBus.execute(getAllCompanyQuery);
   }
 
@@ -64,9 +53,8 @@ export class CompanyController {
    * @return : 회원사 상세 정보 삭제 커맨드 전송
    */
   @Delete(':id')
-  deleteCompany(@Param('id') companyId: number, @Req() req) {
-    // TODO: 권한정보 확인용 테스트 (admin이 소유한 role_id)-> 권한 적용 후 삭제 해야함.
-    const roleId = req.rawHeaders[1];
+  deleteCompany(@Param('id') companyId: number, @Body() param: any) {
+    const roleId = param.roleId;
     const command = new DeleteCompanyCommand(companyId, roleId);
     return this.commandBus.execute(command);
   }
