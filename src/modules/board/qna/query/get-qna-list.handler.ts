@@ -5,6 +5,7 @@ import { Qna } from '../entities/qna';
 import { Repository } from 'typeorm';
 import { Inject } from '@nestjs/common';
 import { ConvertException } from '../../../../common/utils/convert-exception';
+import { Page } from '../../../../common/utils/page';
 
 /**
  * 1:1 문의 전체 리스트 조회용 쿼리 핸들러
@@ -22,20 +23,31 @@ export class GetQnaListHandler implements IQueryHandler<GetQnaListQuery> {
    * @returns : DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 1:1 문의 전체 리스트 반환
    */
   async execute(query: GetQnaListQuery) {
-    const { account } = query;
+    const { param } = query;
 
     // 본인이 작성한 문의 내역 전체 조회
     const qna = await this.qnaRepository
       .createQueryBuilder('qna')
       .leftJoinAndSelect('qna.board', 'board')
-      .where('board.accountId like :accountId', { accountId: `%${account.accountId}%` })
-      .orderBy('qna.qnaId', 'DESC')
-      .getMany();
+      // .where('board.accountId like :accountId', { accountId: `%${account.accountId}%` })
+      .where('board.accountId like :accountId', { accountId: `%${param.account}%` })
+      .orderBy('qna.qnaId', 'DESC');
 
-    if (qna.length === 0) {
+    let tempQuery = qna;
+
+    if (!param.totalData) {
+      tempQuery = tempQuery.take(param.getLimit()).skip(param.getOffset());
+    }
+
+    const list = await tempQuery.getMany();
+    const total = await tempQuery.getCount();
+    const pageNo = param.totalData ? 1 : param.pageNo;
+    const pageSize = param.totalData ? total : param.pageSize;
+
+    if (total === 0) {
       return this.convertException.notFoundError('QnA', 404);
     }
 
-    return qna;
+    return new Page(pageNo, pageSize, total, list);
   }
 }

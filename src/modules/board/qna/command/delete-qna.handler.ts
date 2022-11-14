@@ -47,9 +47,9 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
       return this.convertException.notFoundError('게시글', 404);
     }
 
-    if (account.accountId != board.accountId) {
-      return this.convertException.badRequestAccountError('작성자', 400);
-    }
+    // if (account.accountId != board.accountId) {
+    //   return this.convertException.badRequestAccountError('작성자', 400);
+    // }
 
     const boardFiles = await this.fileRepository.findBy({ boardId: board.boardId });
 

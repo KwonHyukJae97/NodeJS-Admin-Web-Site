@@ -40,9 +40,9 @@ export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand>
     });
 
     // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
-    if (!category.isUse && role !== '본사 관리자') {
-      throw new BadRequestException('본사 관리자만 접근 가능합니다.');
-    }
+    // if (!category.isUse && role !== '본사 관리자') {
+    //   throw new BadRequestException('본사 관리자만 접근 가능합니다.');
+    // }
 
     if (!faq) {
       return this.convertException.notFoundError('FAQ', 404);

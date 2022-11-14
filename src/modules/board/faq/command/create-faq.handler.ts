@@ -41,7 +41,7 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
 
     const board = this.boardRepository.create({
       accountId: 27,
-      fileTypeCode: '1',
+      boardTypeCode: '1',
       title,
       content,
       viewCount: 0,
