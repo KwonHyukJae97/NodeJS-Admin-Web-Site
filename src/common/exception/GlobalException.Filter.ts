@@ -7,7 +7,7 @@ import { QueryFailedError } from 'typeorm';
  */
 
 // ()를 공란으로 두어 모든 예외처리를 받음.
-@Catch()
+@Catch(HttpException)
 export class GlobalExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
