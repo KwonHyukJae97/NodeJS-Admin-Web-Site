@@ -20,11 +20,11 @@ import { DeleteNoticeCommand } from './command/delete-notice.command';
 import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/files.interceptor';
 import { GetNoticeDetailCommand } from './command/get-notice-detail.command';
 import { GetNoticeListQuery } from './query/get-notice-list.query';
-import { GetNoticeInfoDto } from './dto/get-notice-info.dto';
 import { GetNoticeRoleDto } from './dto/get-notice-role.dto';
 import { GetUser } from '../../account/decorator/account.decorator';
 import { Account } from '../../account/entities/account';
 import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
+import { GetNoticeRequestDto } from './dto/get-notice-request.dto';
 
 /**
  * 공지사항 API controller
@@ -38,40 +38,28 @@ export class NoticeController {
    * @returns : 공지사항 등록 커맨드 전송
    */
   @Post()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   createNotice(
     @Body() createNoticeDto: CreateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
-    @GetUser() account: Account,
+    // @GetUser() account: Account,
   ) {
-    console.log('요청 정보', account.accountId);
+    console.log('Dto', createNoticeDto);
+    console.log('file', files);
     const { title, content, isTop, noticeGrant, role } = createNoticeDto;
-    const command = new CreateNoticeCommand(
-      title,
-      content,
-      isTop,
-      noticeGrant,
-      role,
-      account,
-      files,
-    );
+    const command = new CreateNoticeCommand(title, content, isTop, noticeGrant, role, files);
     return this.commandBus.execute(command);
   }
 
   /**
    * 공지사항 전체 & 검색 결과 리스트 조회
-   * @query : keyword
    * @returns : 공지사항 리스트 조회 쿼리 전송
    */
   @Get()
-  @UseGuards(JwtAuthGuard)
-  async getAllSearchNotice(
-    @Query('keyword') keyword: string,
-    @Body() getNoticeInfoDto: GetNoticeInfoDto,
-  ) {
-    const { role, noticeGrant } = getNoticeInfoDto;
-    const getNoticeListSearchQuery = new GetNoticeListQuery(keyword, role, noticeGrant);
+  // @UseGuards(JwtAuthGuard)
+  async getAllSearchNotice(@Body() param: GetNoticeRequestDto) {
+    const getNoticeListSearchQuery = new GetNoticeListQuery(param);
     return this.queryBus.execute(getNoticeListSearchQuery);
   }
 
@@ -81,9 +69,8 @@ export class NoticeController {
    * @returns : 공지사항 상세 정보 조회 커맨드 전송
    */
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
-  async getNoticeDetail(@Param('id') noticeId: number, @Body() getNoticeRoleDto: GetNoticeRoleDto) {
-    const { role } = getNoticeRoleDto;
+  // @UseGuards(JwtAuthGuard)
+  async getNoticeDetail(@Param('id') noticeId: number, @Query() role: string) {
     const command = new GetNoticeDetailCommand(noticeId, role);
     return this.commandBus.execute(command);
   }

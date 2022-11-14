@@ -1,4 +1,12 @@
-import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { compare, hash } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -12,6 +20,10 @@ import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { FindIdDto } from './dto/findid.dto';
 import { UserKakaoDto } from './dto/user.kakao.dto';
 import { UserNaverDto } from './dto/user.naver.dto';
+import { UserGoogleDto } from './dto/user.google.dto';
+import { EmailService } from 'src/modules/email/email.service';
+import * as uuid from 'uuid';
+import { Connection } from 'typeorm';
 
 /**
  * Auth 관련 토큰, 검증, 카카오 서비스
@@ -25,6 +37,8 @@ export class AuthService {
     private accountRepository: Repository<Account>,
     private readonly configService: ConfigService,
     private readonly jwtManageService: JwtManageService,
+    private readonly emailService: EmailService,
+    private connection: Connection,
   ) {}
 
   /**
@@ -139,7 +153,7 @@ export class AuthService {
     if (isRefreshTokenMatching) {
       return { result: true };
     } else {
-      throw new UnauthorizedException('여기에서 접근에러입니다.');
+      throw new UnauthorizedException('접근에러입니다.');
     }
   }
 
@@ -160,15 +174,14 @@ export class AuthService {
    * @param refreshToken
    * @param id
    */
-  async setKakaoCurrentRefreshToken(refreshToken: string, snsId: string) {
+  async setSocialCurrentRefreshToken(refreshToken: string, snsId: string) {
     if (refreshToken) {
       refreshToken = await bcrypt.hash(refreshToken, 10);
     }
     await this.accountRepository.update({ snsId }, { currentHashedRefreshToken: refreshToken });
   }
 
-  async setKakaoToken(snsToken: string, snsId: string) {
-    console.log('sns토큰값 카카오', snsToken);
+  async setSocialToken(snsToken: string, snsId: string) {
     if (snsToken) {
       snsToken = await bcrypt.hash(snsToken, 10);
     }
@@ -206,7 +219,7 @@ export class AuthService {
    * @param snsType
    * @returns : 토큰과 토큰 옵션을 리턴
    */
-  public kakaoGetCookieWithJwtAccessToken(snsId: string, snsType: string) {
+  public socialGetCookieWithJwtAccessToken(snsId: string, snsType: string) {
     const payload = { snsId, snsType };
     const token = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
@@ -256,7 +269,7 @@ export class AuthService {
    * @param snsType
    * @returns : 카카오 리프레쉬 토큰과 카카오 리프레쉬 토큰 옵션을 리턴
    */
-  public kakaoGetCookieWithJwtRefreshToken(snsId: string, snsType: string) {
+  public socialGetCookieWithJwtRefreshToken(snsId: string, snsType: string) {
     const payload = { snsId, snsType };
     const token = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
@@ -464,9 +477,29 @@ export class AuthService {
     const snsId = userKakaoDto.snsId;
     const user = await this.accountRepository.findOne({ where: { snsId } });
 
-    console.log('카카오 정보 !!!!-------', snsId);
-    console.log('카카오 정보 !!!!-------', user);
-    // const snsTokenData = await this.accountRepository.update({snsId,})
+    if (user) {
+      const loginDto = {
+        loginSuccess: true,
+      };
+      // loginSuccess (true) 값을 리턴
+      return loginDto;
+    } else {
+      const sencondDataDto = {
+        loginSuccess: false,
+      };
+      // loginSuccess (false) 값을 리턴
+      return sencondDataDto;
+    }
+  }
+
+  /**
+   * 네이버 유저정보 확인 후 FE에 결과값 알려주는 메소드
+   * @param userNaverDto
+   * @returns : DB에서 snsId 조회 후 결과 값을 리턴
+   */
+  async naverUserInfos(userNaverDto: UserNaverDto) {
+    const snsId = userNaverDto.snsId;
+    const user = await this.accountRepository.findOne({ where: { snsId } });
 
     if (user) {
       const loginDto = {
@@ -483,13 +516,14 @@ export class AuthService {
     }
   }
 
-  async naverUserInfos(userNaverDto: UserNaverDto) {
-    const snsId = userNaverDto.snsId;
+  /**
+   * 구글 유저정보 확인 후 FE에 결과값 알려주는 메소드
+   * @param userGoogleDto
+   * @returns : DB에서 snsId 조회 후 결과 값을 리턴
+   */
+  async googleUserInfos(userGoogleDto: UserGoogleDto) {
+    const snsId = userGoogleDto.snsId;
     const user = await this.accountRepository.findOne({ where: { snsId } });
-
-    console.log('네이버 정보 !!!!-------', snsId);
-    console.log('네이버 정보 !!!!-------', user);
-    // const snsTokenData = await this.accountRepository.update({snsId,})
 
     if (user) {
       const loginDto = {
@@ -503,6 +537,41 @@ export class AuthService {
       };
       // loginSuccess (false) 값을 리턴
       return sencondDataDto;
+    }
+  }
+
+  /**
+   * 임시 비밀번호 발급 메소드
+   * @param Dto
+   * @returns: 기존 비밀번호 -> 새로 발급해주는 임시비밀번호로 변경 후 결과 값 리턴
+   */
+  async findPassword(Dto) {
+    const { email } = Dto;
+    const user = await this.accountRepository.findOne({ where: { email } });
+
+    if (!user) {
+      throw new BadRequestException('메일 정보가 정확하지 않습니다.');
+    }
+    const tempUUID = uuid.v4();
+    const tempPassword = tempUUID.split('-')[0];
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(tempPassword, salt);
+    console.log('수정된 비밀번호 확인', hashedPassword);
+    const accountId = user.accountId;
+    const queryRunner = this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      await this.accountRepository.update(accountId, { password: hashedPassword });
+      await this.emailService.sendTempPassword(email, tempPassword);
+      console.log('임시 코드 확인', tempPassword);
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+      throw new ConflictException({ message: '비밀번호 찾기 오류입니다. 다시 시도해주세요.' });
+    } finally {
+      await queryRunner.release();
+      return { success: true, message: '이메일을 확인해주세요.' };
     }
   }
 }

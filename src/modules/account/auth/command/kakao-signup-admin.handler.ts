@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
+import { string } from 'joi';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { Company } from 'src/modules/company/entities/company.entity';
 import { Repository } from 'typeorm';
@@ -33,13 +34,6 @@ export class KakaoSignUpAdminHandler implements ICommandHandler<KakaoSignUpAdmin
     let { name, phone, nickname, birth, gender, snsId, snsToken, companyName, companyCode } =
       command;
     console.log('kakao command', command.snsToken);
-
-    //카카오에서 넘어오는 성별 값을 account 형식에 맞게 변경하여 저장
-    if (gender == 'male') {
-      gender = '1';
-    } else {
-      gender = '0';
-    }
 
     const accountKakaoAdmin = this.accountRepository.create({
       name,
@@ -90,7 +84,8 @@ export class KakaoSignUpAdminHandler implements ICommandHandler<KakaoSignUpAdmin
 
     const adminKakao = this.adminRepository.create({
       accountId: accountKakaoAdmin.accountId,
-      companyId: 0,
+      companyId: company.companyId,
+      //임의값 입력
       roleId: 0,
       isSuper: true,
     });

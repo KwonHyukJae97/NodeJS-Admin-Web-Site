@@ -22,7 +22,7 @@ export class UpdateCompanyHandler implements ICommandHandler<UpdateCompanyComman
    * @returns : DB처리 실패 시 에러 메시지 반환 / 수정 성공 시 회원사 정보 반환
    */
   async execute(command: UpdateCompanyCommand) {
-    const { companyName, companyCode, companyId } = command;
+    const { companyName, businessNumber, companyId } = command;
 
     const company = await this.companyRepository.findOneBy({ companyId: companyId });
 
@@ -31,7 +31,7 @@ export class UpdateCompanyHandler implements ICommandHandler<UpdateCompanyComman
     }
 
     company.companyName = companyName;
-    company.companyCode = companyCode;
+    company.businessNumber = businessNumber;
 
     //회원사 정보 DB저장
     try {
