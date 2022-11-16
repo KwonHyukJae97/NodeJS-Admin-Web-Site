@@ -108,9 +108,9 @@ export class QnaController {
   async deleteQna(
     @Param('id') qnaId: number,
     // @GetUser() account: Account,
-    @Query() account: number,
+    @Query() accountId: number,
   ) {
-    const command = new DeleteQnaCommand(qnaId, account);
+    const command = new DeleteQnaCommand(qnaId, accountId);
     return this.commandBus.execute(command);
   }
 }

@@ -33,7 +33,7 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
    * @returns : DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 완료 메시지 반환
    */
   async execute(command: DeleteQnaCommand) {
-    const { qnaId, account } = command;
+    const { qnaId, accountId } = command;
 
     const qna = await this.qnaRepository.findOneBy({ qnaId });
 

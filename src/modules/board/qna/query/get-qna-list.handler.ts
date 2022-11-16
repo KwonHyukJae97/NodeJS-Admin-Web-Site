@@ -30,7 +30,7 @@ export class GetQnaListHandler implements IQueryHandler<GetQnaListQuery> {
       .createQueryBuilder('qna')
       .leftJoinAndSelect('qna.board', 'board')
       // .where('board.accountId like :accountId', { accountId: `%${account.accountId}%` })
-      .where('board.accountId like :accountId', { accountId: `%${param.account}%` })
+      .where('board.accountId like :accountId', { accountId: `%${param.accountId}%` })
       .orderBy('qna.qnaId', 'DESC');
 
     let tempQuery = qna;
