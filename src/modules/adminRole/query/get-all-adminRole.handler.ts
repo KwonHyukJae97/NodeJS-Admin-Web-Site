@@ -30,6 +30,17 @@ export class GetAllAdminRoleQueryHandler implements IQueryHandler<GetAllAdminRol
       return this.convertException.notFoundError('역할', 404);
     }
 
-    return adminrole;
+    // 회원사에 속한 사용자 수, 관리자 수 구하기
+
+    const count = await this.adminrolesRepository
+      .createQueryBuilder('adminRole')
+      .select(['DISTINCT(adminRole.roleId) AS roleId, adminRole.roleName AS roleName'])
+      .leftJoin('adminRole.admin', 'admin')
+      .leftJoin('adminRole.account', 'account')
+      .addSelect('COUNT(admin.roleId) AS adminCount')
+      .groupBy('adminRole.roleId, admin.roleId')
+      .getRawMany();
+
+    return count;
   }
 }

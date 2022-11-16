@@ -1,4 +1,5 @@
 import { Account } from 'src/modules/account/entities/account';
+import { AdminRole } from 'src/modules/adminRole/entities/adminRole.entity';
 import { RolePermission } from 'src/modules/adminRole/entities/rolePermission.entity';
 import { Company } from 'src/modules/company/entities/company.entity';
 import {
@@ -58,13 +59,13 @@ export class Admin extends BaseEntity {
   @JoinColumn({ name: 'role_id' })
   rolePermission: RolePermission;
 
-  // //회원사 정보 가져오기
-  // @OneToOne(() => Company)
-  // @JoinColumn({ name: 'company_id' })
-  // company: Company;
-
   //회원사 정보 가져오기
   @ManyToOne(() => Company)
   @JoinColumn({ name: 'company_id' })
   company: Company;
+
+  //역할 정보 가져오기
+  @ManyToOne(() => AdminRole)
+  @JoinColumn({ name: 'role_id' })
+  adminRole: AdminRole;
 }
