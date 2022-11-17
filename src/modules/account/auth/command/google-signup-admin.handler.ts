@@ -30,8 +30,18 @@ export class GoogleSignUpAdminHandler implements ICommandHandler<GoogleSignUpAdm
 
   //구글 2차 정보 저장 메소드
   async execute(command: GoogleSignUpAdminCommand) {
-    let { name, phone, nickname, birth, gender, snsId, snsToken, companyName, companyCode } =
-      command;
+    let {
+      name,
+      phone,
+      nickname,
+      birth,
+      gender,
+      snsId,
+      snsToken,
+      companyName,
+      companyCode,
+      businessNumber,
+    } = command;
     console.log('google command', command.snsToken);
 
     const accountGoogleAdmin = this.accountRepository.create({
@@ -73,6 +83,7 @@ export class GoogleSignUpAdminHandler implements ICommandHandler<GoogleSignUpAdm
     const company = this.companyRepository.create({
       companyName,
       companyCode,
+      businessNumber,
     });
     try {
       await this.companyRepository.save(company);

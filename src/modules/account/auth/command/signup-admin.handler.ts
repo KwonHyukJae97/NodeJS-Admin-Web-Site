@@ -31,8 +31,19 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
   //중복 또는 유효성검사에 통과하지 못한 요청의 FE에서 에러처리 필요
   //네이버 로그인 BackEnd 로직 생성
   async execute(command: SignUpAdminCommand) {
-    let { id, password, name, email, phone, nickname, birth, gender, companyName, companyCode } =
-      command;
+    let {
+      id,
+      password,
+      name,
+      email,
+      phone,
+      nickname,
+      birth,
+      gender,
+      companyName,
+      companyCode,
+      businessNumber,
+    } = command;
 
     if (gender == 'male') {
       gender = '1';
@@ -62,6 +73,9 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
     const isEmailExist = await this.accountRepository.findOne({ where: { email } });
     const isPhoneExist = await this.accountRepository.findOne({ where: { phone } });
     const isNicknameExist = await this.accountRepository.findOne({ where: { nickname } });
+    const isBusinessNumberExist = await this.companyRepository.findOne({
+      where: { businessNumber },
+    });
 
     if (isIdExist) {
       throw new UnauthorizedException('이미 존재하는 아이디입니다.');
@@ -71,7 +85,10 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
       throw new UnauthorizedException('이미 존재하는 연락처입니다.');
     } else if (isNicknameExist) {
       throw new UnauthorizedException('이미 존재하는 닉네임입니다.');
-    } else {
+    } else if (isBusinessNumberExist) {
+      throw new UnauthorizedException('이미 존재하는 사업자번호입니다.');
+    }
+    {
       //Account 저장
       try {
         await this.accountRepository.save(accountAdmin);
@@ -85,7 +102,17 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
     const company = this.companyRepository.create({
       companyName,
       companyCode,
+      businessNumber,
     });
+
+    // const isBusinessNumberExist = await this.companyRepository.findOne({
+    //   where: { businessNumber },
+    // });
+
+    // if (isBusinessNumberExist) {
+    //   throw new UnauthorizedException('이미 존재하는 사업자번호입니다.');
+    // }
+
     try {
       await this.companyRepository.save(company);
     } catch (err) {

@@ -111,8 +111,18 @@ export class SignController {
   async kakaoSignUpAdmin(
     @Body(ValidationPipe) kakaoSignUpAdminDto: KakaoSignUpAdminDto,
   ): Promise<string> {
-    const { name, phone, nickname, birth, gender, snsId, snsToken, companyName, companyCode } =
-      kakaoSignUpAdminDto;
+    const {
+      name,
+      phone,
+      nickname,
+      birth,
+      gender,
+      snsId,
+      snsToken,
+      companyName,
+      companyCode,
+      businessNumber,
+    } = kakaoSignUpAdminDto;
     console.log('Kakao 2차 정보 컨트롤러', kakaoSignUpAdminDto.snsToken);
 
     const command = new KakaoSignUpAdminCommand(
@@ -125,6 +135,7 @@ export class SignController {
       snsToken,
       companyName,
       companyCode,
+      businessNumber,
     );
 
     return this.commandBus.execute(command);
@@ -139,8 +150,18 @@ export class SignController {
   async naverSignUpAdmin(
     @Body(ValidationPipe) naverSignUpAdminDto: NaverSignUpAdminDto,
   ): Promise<string> {
-    const { name, phone, nickname, birth, gender, snsId, snsToken, companyName, companyCode } =
-      naverSignUpAdminDto;
+    const {
+      name,
+      phone,
+      nickname,
+      birth,
+      gender,
+      snsId,
+      snsToken,
+      companyName,
+      companyCode,
+      businessNumber,
+    } = naverSignUpAdminDto;
     console.log('Naver 2차 정보 컨트롤러', naverSignUpAdminDto);
 
     const command = new NaverSignUpAdminCommand(
@@ -153,6 +174,7 @@ export class SignController {
       snsToken,
       companyName,
       companyCode,
+      businessNumber,
     );
 
     return this.commandBus.execute(command);
@@ -167,8 +189,18 @@ export class SignController {
   async googleSignUpAdmin(
     @Body(ValidationPipe) googleSignUpAdminDto: GoogleSignUpAdminDto,
   ): Promise<string> {
-    const { name, phone, nickname, birth, gender, snsId, snsToken, companyName, companyCode } =
-      googleSignUpAdminDto;
+    const {
+      name,
+      phone,
+      nickname,
+      birth,
+      gender,
+      snsId,
+      snsToken,
+      companyName,
+      companyCode,
+      businessNumber,
+    } = googleSignUpAdminDto;
     console.log('Naver 2차 정보 컨트롤러', googleSignUpAdminDto);
 
     const command = new GoogleSignUpAdminCommand(
@@ -181,9 +213,37 @@ export class SignController {
       snsToken,
       companyName,
       companyCode,
+      businessNumber,
     );
 
     return this.commandBus.execute(command);
+  }
+
+  /**
+   * 사용자 정보(이메일) 조회
+   * @returns : 해당이메일이 DB에 존재유무
+   */
+  @Post('/get_email/:id')
+  getByEmail(@Param('id') email: string) {
+    return this.authService.getByEmail(email);
+  }
+
+  /**
+   * 사용자 정보(연락쳐) 조회
+   * @returns : 해당연락처가 DB에 존재유무
+   */
+  @Post('/get_phone/:id')
+  getByPhone(@Param('id') phone: string) {
+    return this.authService.getByPhone(phone);
+  }
+
+  /**
+   * 사용자 정보(넥네임) 조회
+   * @returns : 해당닉네임이 DB에 존재유무
+   */
+  @Post('/get_nickname/:id')
+  getByNickname(@Param('id') nickname: string) {
+    return this.authService.getByNickname(nickname);
   }
 
   /**
@@ -209,6 +269,7 @@ export class SignController {
       division,
       companyName,
       companyCode,
+      businessNumber,
     } = signUpAdminDto;
     console.log('Admin 컨트롤러 로그', signUpAdminDto);
     const command = new SignUpAdminCommand(
@@ -226,6 +287,7 @@ export class SignController {
       division,
       companyName,
       companyCode,
+      businessNumber,
     );
     return this.commandBus.execute(command);
   }

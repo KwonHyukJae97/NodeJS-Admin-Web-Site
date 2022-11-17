@@ -30,8 +30,18 @@ export class NaverSignUpAdminHandler implements ICommandHandler<NaverSignUpAdmin
 
   //네이버 2차 정보 저장 메소드
   async execute(command: NaverSignUpAdminCommand) {
-    let { name, phone, nickname, birth, gender, snsId, snsToken, companyName, companyCode } =
-      command;
+    let {
+      name,
+      phone,
+      nickname,
+      birth,
+      gender,
+      snsId,
+      snsToken,
+      companyName,
+      companyCode,
+      businessNumber,
+    } = command;
     console.log('naver command', command.snsToken);
 
     const accountNaverAdmin = this.accountRepository.create({
@@ -73,6 +83,7 @@ export class NaverSignUpAdminHandler implements ICommandHandler<NaverSignUpAdmin
     const company = this.companyRepository.create({
       companyName,
       companyCode,
+      businessNumber,
     });
     try {
       await this.companyRepository.save(company);

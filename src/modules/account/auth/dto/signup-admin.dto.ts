@@ -2,6 +2,7 @@ import {
   IsEmail,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   Matches,
   MaxLength,
@@ -23,6 +24,10 @@ export class SignUpAdminDto {
   @MinLength(8)
   @MaxLength(16)
   readonly password: string;
+
+  @IsOptional()
+  @IsString()
+  readonly confirmPassword: string;
 
   @IsNotEmpty()
   @IsString()
@@ -70,4 +75,7 @@ export class SignUpAdminDto {
   @IsNotEmpty()
   @IsNumber()
   readonly companyCode: number;
+
+  @IsString()
+  readonly businessNumber: string;
 }

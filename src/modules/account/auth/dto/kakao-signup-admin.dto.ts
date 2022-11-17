@@ -41,4 +41,8 @@ export class KakaoSignUpAdminDto {
   @IsNotEmpty()
   @IsNumber()
   readonly companyCode: number;
+
+  @IsNotEmpty()
+  @IsString()
+  readonly businessNumber: string;
 }
