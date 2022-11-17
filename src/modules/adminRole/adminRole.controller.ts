@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateAdminRoleCommand } from './command/create-adminRole.command';
 import { DeleteAdminRoleCommand } from './command/delete-adminRole.command';
@@ -21,7 +21,6 @@ export class AdminRoleController {
    */
   @Post()
   async createAdminRole(@Body() createAdminRoleDto: CreateAdminRoleDto): Promise<void> {
-    console.log(createAdminRoleDto);
     const { roleName, companyId, roleDto } = createAdminRoleDto;
     const command = new CreateAdminRoleCommand(roleName, companyId, roleDto);
     return this.commandBus.execute(command);
@@ -40,11 +39,13 @@ export class AdminRoleController {
   /**
    * 역할 상세 정보 조회
    * @Param : role_id
+   * @Req : get메소드 query -> Y or null (등록된 관리자 계정정보 가져오기)
    * @return : 역할 상세 정보 조회 쿼리 전송
    */
   @Get(':id')
-  getAdminRoleInfo(@Param('id') roleId: number) {
-    const getAdminRoleInfoQuery = new GetAdminRoleInfoQuery(roleId);
+  getAdminRoleInfo(@Param('id') roleId: number, @Req() req: any) {
+    const getAdminInfo = req.query.getInfo;
+    const getAdminRoleInfoQuery = new GetAdminRoleInfoQuery(roleId, getAdminInfo);
     return this.queryBus.execute(getAdminRoleInfoQuery);
   }
 
