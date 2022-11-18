@@ -71,7 +71,7 @@ export class GetQnaDetailHandler implements ICommandHandler<GetQnaDetailCommand>
         'board.viewCount AS viewCount',
         'board.regDate AS regDate',
       ])
-      .addSelect(['IF(comment.commentId IS NOT NULL, true, false) AS is_comment'])
+      .addSelect(['IF(comment.commentId IS NOT NULL, true, false) AS isComment'])
       .getRawOne();
 
     // 업데이트된 조회수 저장

@@ -10,6 +10,7 @@ import { GetCommentInfoDto } from './dto/get-comment-info.dto';
 import { Account } from '../../account/entities/account';
 import { GetUser } from '../../account/decorator/account.decorator';
 import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
+import { GetCommentRequestDto } from './dto/get-comment-request.dto';
 
 /**
  * 답변 API controller
@@ -24,14 +25,14 @@ export class CommentController {
    * @returns : 답변 등록 커맨드 전송
    */
   @Post(':id')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   createComment(
     @Param('id') qnaId: number,
     @Body() createCommentDto: CreateCommentDto,
-    @GetUser() account: Account,
+    // @GetUser() account: Account,
   ) {
     const { comment } = createCommentDto;
-    const command = new CreateCommentCommand(qnaId, comment, account);
+    const command = new CreateCommentCommand(qnaId, comment);
     return this.commandBus.execute(command);
   }
 
@@ -43,16 +44,12 @@ export class CommentController {
    * @returns : 답변 리스트 조회 쿼리 전송
    */
   @Get()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async getAllComment(
-    @Body() getCommentInfoDto: GetCommentInfoDto,
-    @GetUser() account: Account,
-    @Query('writer') writer: string,
-    @Query('commenter') commenter: number,
-    @Query('regDate') regDate: string,
+    @Body() param: GetCommentRequestDto,
+    // @GetUser() account: Account
   ) {
-    const { role } = getCommentInfoDto;
-    const getCommentListQuery = new GetCommentListQuery(role, account, writer, commenter, regDate);
+    const getCommentListQuery = new GetCommentListQuery(param);
     return this.queryBus.execute(getCommentListQuery);
   }
 
@@ -62,7 +59,7 @@ export class CommentController {
    * @returns : 답변 상세 정보 조회 커맨드 전송
    */
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async getCommentDetail(@Param('id') qnaId: number, @Body() getCommentInfoDto: GetCommentInfoDto) {
     const { role } = getCommentInfoDto;
     const command = new GetCommentDetailCommand(qnaId, role);
@@ -75,14 +72,14 @@ export class CommentController {
    * @returns : 답변 상세 정보 수정 커맨드 전송
    */
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async updateComment(
     @Param('id') commentId: number,
     @Body() updateCommentDto: UpdateCommentDto,
-    @GetUser() account: Account,
+    // @GetUser() account: Account,
   ) {
     const { comment } = updateCommentDto;
-    const command = new UpdateCommentCommand(commentId, comment, account);
+    const command = new UpdateCommentCommand(commentId, comment);
     return this.commandBus.execute(command);
   }
 }

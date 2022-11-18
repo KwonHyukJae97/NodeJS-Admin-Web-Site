@@ -27,7 +27,7 @@ export class UpdateCommentHandler implements ICommandHandler<UpdateCommentComman
    * @returns : DB처리 실패 시 에러 메시지 반환 / 수정 성공 시 답변 정보 반환
    */
   async execute(command: UpdateCommentCommand) {
-    const { commentId, comment, account } = command;
+    const { commentId, comment } = command;
 
     // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
     // 본사 관리자만 접근 가능
@@ -49,9 +49,9 @@ export class UpdateCommentHandler implements ICommandHandler<UpdateCommentComman
       return this.convertException.notFoundError('관리자 계정', 404);
     }
 
-    if (account.accountId != admin.accountId) {
-      return this.convertException.badRequestAccountError('작성자', 400);
-    }
+    // if (account.accountId != admin.accountId) {
+    //   return this.convertException.badRequestAccountError('작성자', 400);
+    // }
 
     commentDetail.comment = comment;
 
