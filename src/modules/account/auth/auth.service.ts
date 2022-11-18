@@ -24,6 +24,7 @@ import { UserGoogleDto } from './dto/user.google.dto';
 import { EmailService } from 'src/modules/email/email.service';
 import * as uuid from 'uuid';
 import { Connection } from 'typeorm';
+import { ConvertException } from 'src/common/utils/convert-exception';
 
 /**
  * Auth 관련 토큰, 검증, 카카오 서비스
@@ -39,6 +40,7 @@ export class AuthService {
     private readonly jwtManageService: JwtManageService,
     private readonly emailService: EmailService,
     private connection: Connection,
+    @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
   /**
@@ -64,6 +66,51 @@ export class AuthService {
   }
 
   /**
+   * email 조회하는 메소드
+   * @param email : DB에 조회시 입력한 email
+   * @returns : DB에 조회한 email
+   */
+  async getByEmail(email: string) {
+    const isEmailExist = await this.accountRepository.findOne({ where: { email } });
+
+    if (isEmailExist) {
+      return this.convertException.badRequestAccountError('사용중인 이메일입니다.', 400);
+    } else {
+      return '사용가능한 이메일입니다.';
+    }
+  }
+
+  /**
+   * phone 조회하는 메소드
+   * @param phone : DB에 조회시 입력한 phone
+   * @returns : DB에 조회한 phone
+   */
+  async getByPhone(phone: string) {
+    const isPhoneExist = await this.accountRepository.findOne({ where: { phone } });
+
+    if (isPhoneExist) {
+      return this.convertException.badRequestAccountError('사용중인 연락처입니다.', 400);
+    } else {
+      return '사용가능한 연락처입니다.';
+    }
+  }
+
+  /**
+   * nickname 조회하는 메소드
+   * @param nickname : DB에 조회시 입력한 nickname
+   * @returns : DB에 조회한 nickname
+   */
+  async getByNickname(nickname: string) {
+    const isNikcnameExist = await this.accountRepository.findOne({ where: { nickname } });
+
+    if (isNikcnameExist) {
+      return this.convertException.badRequestAccountError('사용중인 닉네임입니다.', 400);
+    } else {
+      return '사용가능한 닉네임입니다.';
+    }
+  }
+
+  /**
    * 회원가입의 유무를 검증하는 메소드
    * @param id
    * @param plainTextPassword
@@ -76,7 +123,7 @@ export class AuthService {
       const { password, ...result } = account;
       return result;
     } catch (error) {
-      throw new HttpException('잘못된 인증 정보입니다.', HttpStatus.BAD_REQUEST);
+      return this.convertException.badRequestError('관리자 로그인에 ', 400);
     }
   }
 
@@ -89,7 +136,7 @@ export class AuthService {
     const isPasswordMatching = await bcrypt.compare(plainTextPassword, hashedPassword);
 
     if (!isPasswordMatching) {
-      throw new HttpException('잘못된 인증 정보12입니다.', HttpStatus.BAD_REQUEST);
+      return this.convertException.badRequestError('관리자 로그인에 ', 400);
     }
   }
 
@@ -296,11 +343,11 @@ export class AuthService {
   async loginAdmin({ id, password }: SignInAdminDto) {
     const account = await this.accountRepository.findOne({ where: { id } });
     if (!account) {
-      throw new UnauthorizedException('존재하지 않는 관리자입니다.');
+      return this.convertException.badRequestAccountError('입력한 계정', 400);
     }
     const match = await bcrypt.compare(password, account.password);
     if (!match) {
-      throw new UnauthorizedException('비밀번호가 틀립니다. 다시 시도해주세요.');
+      return this.convertException.badRequestAccountError('입력한 비밀번호', 400);
     }
 
     //division 값 확인 후 관리자만 로그인 가능
@@ -357,11 +404,11 @@ export class AuthService {
   async loginUser({ id, password }: SignInUserDto) {
     const account = await this.accountRepository.findOne({ where: { id } });
     if (!account) {
-      throw new UnauthorizedException('존재하지 않는 사용자입니다.');
+      return this.convertException.badRequestAccountError('입력한 계정', 400);
     }
     const match = await bcrypt.compare(password, account.password);
     if (!match) {
-      throw new UnauthorizedException('비밀번호가 틀립니다. 다시 시도해주세요.');
+      return this.convertException.badRequestAccountError('입력한 비밀번호', 400);
     }
 
     //division 값 확인 후 사용자만 로그인 가능
@@ -447,7 +494,7 @@ export class AuthService {
 
     const id = await this.accountRepository.findOne({ where: { name, phone } });
     if (!id) {
-      throw new UnauthorizedException('입력한 정보에 대한 일치하는 아이디가 없습니다.');
+      return this.convertException.badRequestAccountError('입력한', 400);
     }
     const returnId = await this.accountRepository
       .createQueryBuilder('account')

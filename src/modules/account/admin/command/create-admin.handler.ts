@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -6,6 +6,7 @@ import { Account } from '../../entities/account';
 import { Admin } from '../entities/admin';
 import { CreateAdminCommand } from './create-admin.command';
 import * as bcrypt from 'bcryptjs';
+import { ConvertException } from 'src/common/utils/convert-exception';
 
 /**
  * 관리자 정보 등록 커맨드 핸들러
@@ -19,6 +20,8 @@ export class CreateAdminhandler implements ICommandHandler<CreateAdminCommand> {
 
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
+
+    @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
   async execute(command: CreateAdminCommand) {
@@ -69,8 +72,11 @@ export class CreateAdminhandler implements ICommandHandler<CreateAdminCommand> {
     } else if (isNicknameExist) {
       throw new UnauthorizedException('이미 존재하는 닉네임입니다.');
     } else {
-      //Account 저장
-      await this.accountRepository.save(accountAdmin);
+      try {
+        await this.accountRepository.save(accountAdmin);
+      } catch (err) {
+        return this.convertException.badRequestError('관리자 정보 등록에', 400);
+      }
     }
 
     const admin = this.adminRepository.create({

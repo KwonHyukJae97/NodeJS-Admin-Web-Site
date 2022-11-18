@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -6,6 +12,7 @@ import { Account } from '../../entities/account';
 import * as bcrypt from 'bcrypt';
 import { SignInUserCommand } from './signin-user.command';
 import { AuthService } from '../auth.service';
+import { ConvertException } from 'src/common/utils/convert-exception';
 
 /**
  * 사용자 로그인 핸들러
@@ -17,6 +24,7 @@ export class SignInUserHandler implements ICommandHandler<SignInUserCommand> {
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
     private readonly authService: AuthService,
+    @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
   async execute(command: SignInUserCommand) {
@@ -24,13 +32,13 @@ export class SignInUserHandler implements ICommandHandler<SignInUserCommand> {
 
     const account = await this.accountRepository.findOne({ where: { id } });
     if (!account) {
-      throw new UnauthorizedException('존재하지 않는 관리자입니다.');
+      return this.convertException.badRequestAccountError('사용자 로그인에 ', 400);
     }
 
     const match = await bcrypt.compare(password, account.password);
 
     if (!match) {
-      throw new UnauthorizedException('비밀번호가 틀립니다. 다시 시도해주세요.');
+      return this.convertException.badRequestAccountError('입력한 비밀번호 ', 400);
     }
 
     if (account.division === true) {

@@ -31,8 +31,18 @@ export class KakaoSignUpAdminHandler implements ICommandHandler<KakaoSignUpAdmin
 
   //카카오 2차 정보 저장 메소드
   async execute(command: KakaoSignUpAdminCommand) {
-    let { name, phone, nickname, birth, gender, snsId, snsToken, companyName, companyCode } =
-      command;
+    let {
+      name,
+      phone,
+      nickname,
+      birth,
+      gender,
+      snsId,
+      snsToken,
+      companyName,
+      companyCode,
+      businessNumber,
+    } = command;
     console.log('kakao command', command.snsToken);
 
     const accountKakaoAdmin = this.accountRepository.create({
@@ -74,6 +84,7 @@ export class KakaoSignUpAdminHandler implements ICommandHandler<KakaoSignUpAdmin
     const company = this.companyRepository.create({
       companyName,
       companyCode,
+      businessNumber,
     });
     try {
       await this.companyRepository.save(company);
