@@ -1,3 +1,5 @@
+import { Admin } from 'src/modules/account/admin/entities/admin';
+import { Account } from 'src/modules/account/entities/account';
 import { Permission } from 'src/modules/permission/entities/permission.entity';
 import {
   BaseEntity,
@@ -61,8 +63,13 @@ export class RolePermission extends BaseEntity {
   })
   regDate: Date;
 
-  //user 정보 가져오기
+  //권한 정보 가져오기
   @OneToOne(() => Permission)
   @JoinColumn({ name: 'permission_id' })
   permission: Permission;
+
+  //관리자 정보 가져오기
+  @OneToOne(() => Admin)
+  @JoinColumn({ name: 'role_id' })
+  admin: Admin;
 }

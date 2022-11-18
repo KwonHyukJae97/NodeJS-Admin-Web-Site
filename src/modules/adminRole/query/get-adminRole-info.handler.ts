@@ -2,6 +2,7 @@ import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
+import { Admin } from 'src/modules/account/admin/entities/admin';
 import { Repository } from 'typeorm';
 import { RolePermission } from '../entities/RolePermission.entity';
 import { GetAdminRoleInfoQuery } from './get-adminRole-info.query';
@@ -13,6 +14,7 @@ import { GetAdminRoleInfoQuery } from './get-adminRole-info.query';
 export class GetAdminRoleInfoQueryHandler implements IQueryHandler<GetAdminRoleInfoQuery> {
   constructor(
     @InjectRepository(RolePermission) private rolePermissionRepository: Repository<RolePermission>,
+    @InjectRepository(Admin) private AdminRepository: Repository<Admin>,
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
@@ -22,7 +24,7 @@ export class GetAdminRoleInfoQueryHandler implements IQueryHandler<GetAdminRoleI
    * @returns : DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 역할 상세 정보 반환
    */
   async execute(query: GetAdminRoleInfoQuery) {
-    const { roleId } = query;
+    const { roleId, getAdminInfo } = query;
 
     const rolePermission = await this.rolePermissionRepository
       .createQueryBuilder('RP')
@@ -33,6 +35,17 @@ export class GetAdminRoleInfoQueryHandler implements IQueryHandler<GetAdminRoleI
 
     if (!rolePermission) {
       return this.convertException.notFoundError('역할', 404);
+    }
+
+    // 등록된 사용자 계정 정보 가져오기
+    if (getAdminInfo === 'Y') {
+      const accountInfo = await this.AdminRepository.createQueryBuilder('admin')
+        .select(['admin.admin_id AS adminId, account.name AS adminName, account.id AS id'])
+        .leftJoin('admin.account', 'account')
+        .where('admin.roleId = :roleId', { roleId: roleId })
+        .getRawMany();
+
+      return accountInfo;
     }
 
     // 역할_권한 정보를 권한(화면이름)으로 묶음 처리
@@ -59,7 +72,6 @@ export class GetAdminRoleInfoQueryHandler implements IQueryHandler<GetAdminRoleI
     permissionMap.forEach((data) => {
       permissionList.push(data);
     });
-
     return permissionList;
   }
 }

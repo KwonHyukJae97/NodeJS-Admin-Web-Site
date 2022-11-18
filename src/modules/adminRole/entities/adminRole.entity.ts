@@ -1,3 +1,4 @@
+import { Admin } from 'src/modules/account/admin/entities/admin';
 import {
   BaseEntity,
   Column,
@@ -5,11 +6,10 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
-  OneToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { RolePermission } from './rolePermission.entity';
 
 /**
  * 역할에 대한 엔티티 정의
@@ -60,4 +60,9 @@ export class AdminRole extends BaseEntity {
     nullable: true,
   })
   deleteDate: Date;
+
+  //관리자 정보 가져오기
+  @OneToMany(() => Admin, (admin) => admin.adminRole)
+  @JoinColumn({ name: 'role_id' })
+  admin: Admin[];
 }
