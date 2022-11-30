@@ -22,6 +22,8 @@ import { UpdateAdminDto } from './dto/update-admin.dto';
 import { GetAdminInfoQuery } from './query/get-admin-info.query';
 import { GetAllAdminQuery } from './query/get-all-admin.query';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { AdminUpdateInfoDto } from '../auth/dto/admin-update-info.dto';
+import { AdminUpdateInfoCommand } from '../auth/command/admin-update-info.command';
 
 /**
  * 관리자 정보 조회, 수정, 삭제 처리 API Controller
@@ -52,11 +54,11 @@ export class AdminController {
   }
 
   /**
-   * 관리자 상세 정보 수정
+   * 관리자 전체 정보 수정
    * @param : adminId
    * @returns : 관리자 정보 수정 커맨드 전송
    */
-  @Patch(':id')
+  @Patch('/admin/:id')
   @UseInterceptors(FileInterceptor('file'))
   updateAdmin(
     @Param('id') adminId: number,
@@ -75,6 +77,26 @@ export class AdminController {
       file,
     );
 
+    return this.commandBus.execute(command);
+  }
+
+  /**
+   * 관리자 상세 내정보 수정
+   * @param : adminId
+   * @returns : 관리자 정보 수정 커맨드 전송
+   */
+  @Patch(':id')
+  @UseInterceptors(FileInterceptor('file'))
+  updateInfo(
+    @Param('id') accountId: number,
+    @Body() dto: AdminUpdateInfoDto,
+    @UploadedFile() file: Express.MulterS3.File,
+  ) {
+    const { email, phone, nickname } = dto;
+    console.log('수정 데이터111?', email);
+    console.log('수정 데이터222?', phone);
+    console.log('수정 데이터333?', nickname);
+    const command = new AdminUpdateInfoCommand(accountId, email, phone, nickname, file);
     return this.commandBus.execute(command);
   }
 

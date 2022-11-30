@@ -60,8 +60,11 @@ export class SignController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async getAuthInfo(@Req() req) {
+    //토큰정보 빼놓기 까지 완료, 뺴놓은 토큰을 넘겨 로컬스토리지에 담고 처리
     const authInfo = req.user;
-    console.log('소셜 로그인 정보', req.user);
+    const tokenInfo = req.cookies;
+    console.log('로그인 정보', req.user);
+    console.log('토큰 정보', req.cookies);
     return authInfo;
   }
 
@@ -78,15 +81,16 @@ export class SignController {
    * @Param : accountId
    * @return : 관리자 정보 수정 커맨드 전송
    */
-  @Patch(':id')
-  updateInfo(@Param('id') accountId: number, @Body() dto: AdminUpdateInfoDto) {
-    const { email, phone, nickname } = dto;
-    console.log('수정 데이터111?', email);
-    console.log('수정 데이터222?', phone);
-    console.log('수정 데이터333?', nickname);
-    const command = new AdminUpdateInfoCommand(accountId, email, phone, nickname);
-    return this.commandBus.execute(command);
-  }
+  // admin 컨트롤러로 이관 작업
+  // @Patch(':id')
+  // updateInfo(@Param('id') accountId: number, @Body() dto: AdminUpdateInfoDto) {
+  //   const { email, phone, nickname } = dto;
+  //   console.log('수정 데이터111?', email);
+  //   console.log('수정 데이터222?', phone);
+  //   console.log('수정 데이터333?', nickname);
+  //   const command = new AdminUpdateInfoCommand(accountId, email, phone, nickname);
+  //   return this.commandBus.execute(command);
+  // }
 
   /**
    * 비밀번호 수정
@@ -331,7 +335,6 @@ export class SignController {
 
     console.log('cqrs 방식 관리자 로그인 테스트', signInAdminDto);
 
-    const command = new SignInAdminCommand(id, password);
     const { accessToken, accessOption } = await this.authService.getCookieWithJwtAccessToken(
       id,
       null,
@@ -341,6 +344,7 @@ export class SignController {
       null,
     );
 
+    const command = new SignInAdminCommand(id, password, accessToken, refreshToken);
     await this.authService.setCurrentRefreshToken(refreshToken, id);
 
     response.cookie('authentication', accessToken, accessOption);
