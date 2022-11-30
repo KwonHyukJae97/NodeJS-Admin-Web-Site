@@ -27,7 +27,7 @@ export class CreateCommentHandler implements ICommandHandler<CreateCommentComman
    * @returns : DB처리 실패 시 에러 메시지 반환 / 등록 완료 시 답변 정보 반환
    */
   async execute(command: CreateCommentCommand) {
-    const { qnaId, comment, account } = command;
+    const { qnaId, comment } = command;
 
     // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
     // 본사 관리자만 접근 가능
@@ -43,7 +43,8 @@ export class CreateCommentHandler implements ICommandHandler<CreateCommentComman
       return this.convertException.notFoundError('QnA', 404);
     }
 
-    const admin = await this.adminRepository.findOneBy({ accountId: account.accountId });
+    // const admin = await this.adminRepository.findOneBy({ accountId: account.accountId });
+    const admin = await this.adminRepository.findOneBy({ accountId: 27 });
 
     if (!admin) {
       return this.convertException.notFoundError('관리자', 404);

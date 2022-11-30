@@ -12,7 +12,7 @@ export class UpdateNoticeCommand implements ICommand {
     readonly noticeGrant: string,
     readonly noticeId: number,
     readonly role: string,
-    readonly account: Account,
+    // readonly account: Account,
     readonly files: Express.MulterS3.File[],
   ) {}
 }

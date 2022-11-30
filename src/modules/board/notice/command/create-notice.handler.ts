@@ -39,7 +39,7 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
 
     const board = this.boardRepository.create({
       accountId: 27,
-      fileTypeCode: '0',
+      boardTypeCode: '0',
       title,
       content,
       viewCount: 0,

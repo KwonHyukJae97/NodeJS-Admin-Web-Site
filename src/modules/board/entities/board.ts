@@ -31,7 +31,7 @@ export class Board {
     name: 'board_type_code',
     type: 'char',
   })
-  fileTypeCode: string;
+  boardTypeCode: string;
 
   // 제목
   @Column({
