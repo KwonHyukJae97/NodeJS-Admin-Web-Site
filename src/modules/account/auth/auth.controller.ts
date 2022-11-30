@@ -81,7 +81,7 @@ export class SignController {
    * @Param : accountId
    * @return : 관리자 정보 수정 커맨드 전송
    */
-  // admin 컨트롤러로 이관
+  // admin 컨트롤러로 이관 작업
   // @Patch(':id')
   // updateInfo(@Param('id') accountId: number, @Body() dto: AdminUpdateInfoDto) {
   //   const { email, phone, nickname } = dto;
