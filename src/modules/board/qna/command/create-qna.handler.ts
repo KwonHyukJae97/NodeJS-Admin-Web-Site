@@ -30,11 +30,11 @@ export class CreateQnaHandler implements ICommandHandler<CreateQnaCommand> {
    * @returns : DB처리 실패 시 에러 메시지 반환 / 등록 완료 시 1:1 문의 정보 반환
    */
   async execute(command: CreateQnaCommand) {
-    const { title, content, account, files } = command;
+    const { title, content, files } = command;
 
     const board = this.boardRepository.create({
-      accountId: account.accountId,
-      fileTypeCode: '2',
+      accountId: 27,
+      boardTypeCode: '2',
       title,
       content,
       viewCount: 0,

@@ -10,7 +10,7 @@ export class CreateFaqCommand implements ICommand {
     readonly content: string,
     readonly categoryName: string,
     readonly role: string,
-    readonly account: Account,
+    // readonly account: Account,
     readonly files: Express.MulterS3.File[],
   ) {}
 }

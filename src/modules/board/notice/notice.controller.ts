@@ -20,11 +20,10 @@ import { DeleteNoticeCommand } from './command/delete-notice.command';
 import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/files.interceptor';
 import { GetNoticeDetailCommand } from './command/get-notice-detail.command';
 import { GetNoticeListQuery } from './query/get-notice-list.query';
-import { GetNoticeRoleDto } from './dto/get-notice-role.dto';
 import { GetUser } from '../../account/decorator/account.decorator';
 import { Account } from '../../account/entities/account';
-import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
 import { GetNoticeRequestDto } from './dto/get-notice-request.dto';
+import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
 
 /**
  * 공지사항 API controller
@@ -38,14 +37,13 @@ export class NoticeController {
    * @returns : 공지사항 등록 커맨드 전송
    */
   @Post()
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   createNotice(
     @Body() createNoticeDto: CreateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
     // @GetUser() account: Account,
   ) {
-    console.log('Dto', createNoticeDto);
     console.log('file', files);
     const { title, content, isTop, noticeGrant, role } = createNoticeDto;
     const command = new CreateNoticeCommand(title, content, isTop, noticeGrant, role, files);
@@ -57,7 +55,7 @@ export class NoticeController {
    * @returns : 공지사항 리스트 조회 쿼리 전송
    */
   @Get()
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async getAllSearchNotice(@Body() param: GetNoticeRequestDto) {
     const getNoticeListSearchQuery = new GetNoticeListQuery(param);
     return this.queryBus.execute(getNoticeListSearchQuery);
@@ -69,7 +67,7 @@ export class NoticeController {
    * @returns : 공지사항 상세 정보 조회 커맨드 전송
    */
   @Get(':id')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async getNoticeDetail(@Param('id') noticeId: number, @Query() role: string) {
     const command = new GetNoticeDetailCommand(noticeId, role);
     return this.commandBus.execute(command);
@@ -87,7 +85,7 @@ export class NoticeController {
     @Param('id') noticeId: number,
     @Body() updateNoticeDto: UpdateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
-    @GetUser() account: Account,
+    // @GetUser() account: Account,
   ) {
     const { title, content, isTop, noticeGrant, role } = updateNoticeDto;
     const command = new UpdateNoticeCommand(
@@ -97,7 +95,7 @@ export class NoticeController {
       noticeGrant,
       noticeId,
       role,
-      account,
+      // account,
       files,
     );
     return this.commandBus.execute(command);
@@ -112,11 +110,10 @@ export class NoticeController {
   @UseGuards(JwtAuthGuard)
   async deleteNotice(
     @Param('id') noticeId: number,
-    @Body() deleteNoticeInfoDto: GetNoticeRoleDto,
+    @Query() role: string,
     @GetUser() account: Account,
   ) {
-    const { role } = deleteNoticeInfoDto;
-    const command = new DeleteNoticeCommand(noticeId, role, account);
+    const command = new DeleteNoticeCommand(noticeId, role);
     return this.commandBus.execute(command);
   }
 }

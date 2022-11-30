@@ -31,12 +31,12 @@ export class DeleteFaqHandler implements ICommandHandler<DeleteFaqCommand> {
    * @returns : DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 완료 메시지 반환
    */
   async execute(command: DeleteFaqCommand) {
-    const { faqId, role, account } = command;
+    const { faqId } = command;
 
     // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
-    if (role !== '본사 관리자') {
-      throw new BadRequestException('본사 관리자만 접근 가능합니다.');
-    }
+    // if (role !== '본사 관리자') {
+    //   throw new BadRequestException('본사 관리자만 접근 가능합니다.');
+    // }
 
     const faq = await this.faqRepository.findOneBy({ faqId });
 
@@ -50,9 +50,9 @@ export class DeleteFaqHandler implements ICommandHandler<DeleteFaqCommand> {
       return this.convertException.notFoundError('게시글', 404);
     }
 
-    if (account.accountId != board.accountId) {
-      return this.convertException.badRequestAccountError('작성자', 400);
-    }
+    // if (account.accountId != board.accountId) {
+    //   return this.convertException.badRequestAccountError('작성자', 400);
+    // }
 
     const boardFiles = await this.fileRepository.findBy({ boardId: board.boardId });
 
