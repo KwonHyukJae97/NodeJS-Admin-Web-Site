@@ -25,7 +25,7 @@ export class CommentController {
    * @returns : 답변 등록 커맨드 전송
    */
   @Post(':id')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   createComment(
     @Param('id') qnaId: number,
     @Body() createCommentDto: CreateCommentDto,
@@ -44,7 +44,7 @@ export class CommentController {
    * @returns : 답변 리스트 조회 쿼리 전송
    */
   @Get()
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async getAllComment(
     @Body() param: GetCommentRequestDto,
     // @GetUser() account: Account
@@ -59,7 +59,7 @@ export class CommentController {
    * @returns : 답변 상세 정보 조회 커맨드 전송
    */
   @Get(':id')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async getCommentDetail(@Param('id') qnaId: number, @Body() getCommentInfoDto: GetCommentInfoDto) {
     const { role } = getCommentInfoDto;
     const command = new GetCommentDetailCommand(qnaId, role);
@@ -72,14 +72,14 @@ export class CommentController {
    * @returns : 답변 상세 정보 수정 커맨드 전송
    */
   @Patch(':id')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async updateComment(
     @Param('id') commentId: number,
     @Body() updateCommentDto: UpdateCommentDto,
-    // @GetUser() account: Account,
+    @GetUser() account: Account,
   ) {
     const { comment } = updateCommentDto;
-    const command = new UpdateCommentCommand(commentId, comment);
+    const command = new UpdateCommentCommand(commentId, comment, account);
     return this.commandBus.execute(command);
   }
 }

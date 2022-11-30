@@ -8,6 +8,7 @@ import {
   Post,
   Query,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { CreateNoticeDto } from './dto/create-notice.dto';
@@ -22,6 +23,7 @@ import { GetNoticeListQuery } from './query/get-notice-list.query';
 import { GetUser } from '../../account/decorator/account.decorator';
 import { Account } from '../../account/entities/account';
 import { GetNoticeRequestDto } from './dto/get-notice-request.dto';
+import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
 
 /**
  * 공지사항 API controller
@@ -35,13 +37,14 @@ export class NoticeController {
    * @returns : 공지사항 등록 커맨드 전송
    */
   @Post()
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   createNotice(
     @Body() createNoticeDto: CreateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
     // @GetUser() account: Account,
   ) {
+    console.log('file', files);
     const { title, content, isTop, noticeGrant, role } = createNoticeDto;
     const command = new CreateNoticeCommand(title, content, isTop, noticeGrant, role, files);
     return this.commandBus.execute(command);
@@ -52,7 +55,7 @@ export class NoticeController {
    * @returns : 공지사항 리스트 조회 쿼리 전송
    */
   @Get()
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async getAllSearchNotice(@Body() param: GetNoticeRequestDto) {
     const getNoticeListSearchQuery = new GetNoticeListQuery(param);
     return this.queryBus.execute(getNoticeListSearchQuery);
@@ -64,7 +67,7 @@ export class NoticeController {
    * @returns : 공지사항 상세 정보 조회 커맨드 전송
    */
   @Get(':id')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async getNoticeDetail(@Param('id') noticeId: number, @Query() role: string) {
     const command = new GetNoticeDetailCommand(noticeId, role);
     return this.commandBus.execute(command);
@@ -76,13 +79,13 @@ export class NoticeController {
    * @returns : 공지사항 상세 정보 수정 커맨드 전송
    */
   @Patch(':id')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   async updateNotice(
     @Param('id') noticeId: number,
     @Body() updateNoticeDto: UpdateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
-    @GetUser() account: Account,
+    // @GetUser() account: Account,
   ) {
     const { title, content, isTop, noticeGrant, role } = updateNoticeDto;
     const command = new UpdateNoticeCommand(
@@ -104,7 +107,7 @@ export class NoticeController {
    * @returns : 공지사항 정보 삭제 커맨드 전송
    */
   @Delete(':id')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async deleteNotice(
     @Param('id') noticeId: number,
     @Query() role: string,

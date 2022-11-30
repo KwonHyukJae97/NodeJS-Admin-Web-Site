@@ -34,9 +34,9 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
     const { noticeId, role } = command;
 
     // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
-    // if (role !== '본사 관리자' && role !== '회원사 관리자') {
-    //   throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
-    // }
+    if (role !== '본사 관리자' && role !== '회원사 관리자') {
+      throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
+    }
 
     const notice = await this.noticeRepository.findOneBy({ noticeId });
 

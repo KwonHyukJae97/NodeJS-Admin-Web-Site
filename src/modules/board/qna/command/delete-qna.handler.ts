@@ -33,7 +33,7 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
    * @returns : DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 완료 메시지 반환
    */
   async execute(command: DeleteQnaCommand) {
-    const { qnaId, accountId } = command;
+    const { qnaId, account } = command;
 
     const qna = await this.qnaRepository.findOneBy({ qnaId });
 
@@ -47,9 +47,9 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
       return this.convertException.notFoundError('게시글', 404);
     }
 
-    // if (account.accountId != board.accountId) {
-    //   return this.convertException.badRequestAccountError('작성자', 400);
-    // }
+    if (account.accountId != board.accountId) {
+      return this.convertException.badRequestAccountError('작성자', 400);
+    }
 
     const boardFiles = await this.fileRepository.findBy({ boardId: board.boardId });
 

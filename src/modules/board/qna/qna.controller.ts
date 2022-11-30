@@ -37,7 +37,7 @@ export class QnaController {
    * @returns : 1:1 문의 등록 커맨드 전송
    */
   @Post()
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   createQna(
     @Body() createQnaDto: CreateQnaDto,
@@ -55,7 +55,7 @@ export class QnaController {
    * @returns : 1:1 문의 상세 정보 조회 커맨드 전송
    */
   @Get(':id')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async getQnaDetail(
     @Param('id') qnaId: number,
     // @GetUser() account: Account,
@@ -69,7 +69,7 @@ export class QnaController {
    * @returns : 1:1 문의 리스트 조회 쿼리 전송
    */
   @Get()
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async getAllQna(
     // @GetUser() account: Account,
     @Body() param: GetQnaRequestDto,
@@ -84,7 +84,7 @@ export class QnaController {
    * @returns : 1:1 문의 상세 정보 수정 커맨드 전송
    */
   @Patch(':id')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   async updateQna(
     @Param('id') qnaId: number,
@@ -104,13 +104,13 @@ export class QnaController {
    * @returns : 1:1 문의 정보 삭제 커맨드 전송
    */
   @Delete(':id')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async deleteQna(
     @Param('id') qnaId: number,
-    // @GetUser() account: Account,
-    @Query() accountId: number,
+    @GetUser() account: Account,
+    // @Query() accountId: number,
   ) {
-    const command = new DeleteQnaCommand(qnaId, accountId);
+    const command = new DeleteQnaCommand(qnaId, account);
     return this.commandBus.execute(command);
   }
 }
