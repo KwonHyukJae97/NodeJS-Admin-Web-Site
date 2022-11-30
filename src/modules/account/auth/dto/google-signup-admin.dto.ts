@@ -41,4 +41,8 @@ export class GoogleSignUpAdminDto {
   @IsNotEmpty()
   @IsNumber()
   readonly companyCode: number;
+
+  @IsNotEmpty()
+  @IsString()
+  readonly businessNumber: string;
 }

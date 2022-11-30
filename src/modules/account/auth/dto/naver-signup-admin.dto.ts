@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { string } from 'joi';
 
 /**
  * 네이버 (관리자) 로그인 시 2차 정보를 입력을 위한 dto 정의
@@ -41,4 +42,8 @@ export class NaverSignUpAdminDto {
   @IsNotEmpty()
   @IsNumber()
   readonly companyCode: number;
+
+  @IsNotEmpty()
+  @IsString()
+  readonly businessNumber: string;
 }

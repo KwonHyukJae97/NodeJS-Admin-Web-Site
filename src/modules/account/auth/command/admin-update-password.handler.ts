@@ -33,7 +33,7 @@ export class AdminUpdatePasswordHandler implements ICommandHandler<AdminUpdatePa
       console.log('비밀번호 변경 결과', updatePassword);
     } catch (err) {
       console.log(err);
-      return this.convertException.badRequestError('비밀번호 변경에', 400);
+      return this.convertException.badRequestError('비밀번호 변경', 400);
     }
 
     return '비밀번호 변경 완료';

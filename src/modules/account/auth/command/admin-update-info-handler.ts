@@ -27,17 +27,113 @@ export class AdminUpdateInfoHandler implements ICommandHandler<AdminUpdateInfoCo
   async execute(command: AdminUpdateInfoCommand) {
     const { accountId, email, phone, nickname } = command;
     const account = await this.accountRepository.findOneBy({ accountId: accountId });
+    // const isEmailExist = await this.accountRepository.findOne({ where: { email } });
+    // const isPhoneExist = await this.accountRepository.findOne({ where: { phone } });
+    // const isNicknameExist = await this.accountRepository.findOne({ where: { nickname } });
 
-    try {
-      account.email = email;
-      account.phone = phone;
-      account.nickname = nickname;
-      await this.accountRepository.save(account);
-    } catch (err) {
-      console.log(err);
-      //저장 실패 에러 메시지 반환
-      return this.convertException.CommonError(500);
+    if (email) {
+      try {
+        // const isEmailExist = this.accountRepository.findOneBy( {email} )
+        const isEmailExist = await this.accountRepository.findOne({ where: { email } });
+        if (isEmailExist) {
+          return this.convertException.badRequestAccountError(
+            '이미 존재하는 이메일이므로 수정',
+            400,
+          );
+        } else {
+          const updateEmail = this.accountRepository.update(
+            { accountId },
+            {
+              email: email,
+            },
+          );
+          console.log(updateEmail);
+        }
+      } catch (err) {
+        console.log(err);
+      }
     }
+
+    if (phone) {
+      try {
+        const isPhoneExist = await this.accountRepository.findOne({ where: { phone } });
+        if (isPhoneExist) {
+          return this.convertException.badRequestAccountError(
+            '이미 존재하는 연락처이므로 수정',
+            400,
+          );
+        } else {
+          const updatePhone = this.accountRepository.update(
+            {
+              accountId,
+            },
+            {
+              phone: phone,
+            },
+          );
+          console.log(updatePhone);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
+    if (nickname) {
+      try {
+        const isNicknameExist = await this.accountRepository.findOne({ where: { nickname } });
+        if (isNicknameExist) {
+          return this.convertException.badRequestAccountError(
+            '이미 존재하는 닉네임이므로 수정',
+            400,
+          );
+        } else {
+          const updateNickname = this.accountRepository.update(
+            {
+              accountId,
+            },
+            {
+              nickname: nickname,
+            },
+          );
+          console.log(updateNickname);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
+    // const eemail = await this.accountRepository
+    //   .createQueryBuilder('account')
+    //   .select(['account.email', 'account.phone', 'account.nickname'])
+    //   .where('NOT account.accountId = :accountId', { accountId })
+    //   .getMany();
+    // console.log('eeeeeemmmmaaaaiiill', eemail);
+
+    // console.log('어카운트 이메이이잉일', account.email);
+    // console.log('어카운트 이메이이잉222222일', email);
+
+    // const isEmailExist = await this.accountRepository.findOne({ where: { email } });
+    // // const isPhoneExist = await this.accountRepository.findOne({ where: { phone } });
+    // // const isNicknameExist = await this.accountRepository.findOne({ where: { nickname } });
+
+    // if (email == account.email) {
+    //   return this.convertException.badRequestAccountError('지금 이메일이랑 똑같음', 400);
+    // } {
+    //   try {
+    //     account.email = email;
+    //     account.phone = phone;
+    //     account.nickname = nickname;
+    //     // await this.accountRepository.save(account);
+    //     await this.accountRepository.update(
+    //       { accountId },
+    //       { email: email, phone: phone, nickname: nickname },
+    //     );
+    //   } catch (err) {
+    //     console.log(err);
+    //     //저장 실패 에러 메시지 반환
+    //     return this.convertException.CommonError(500);
+    //   }
+    // }
 
     return account;
   }

@@ -33,7 +33,6 @@ export class UpdateAdminRoleHandler implements ICommandHandler<UpdateAdminRoleCo
     }
 
     adminrole.roleName = roleName;
-    console.log('roleDto', roleDto);
 
     // 역할 정보(역할이름) DB저장
     try {
@@ -57,7 +56,6 @@ export class UpdateAdminRoleHandler implements ICommandHandler<UpdateAdminRoleCo
         .andWhere('rolePermission.grantType=:grantType', { grantType: value.grantType })
         .getOne();
 
-      console.log('정보 존재?', findRolePermission);
       // 역할_권한 정보가 존재하지 않을 경우 데이터 추가
       if (!findRolePermission) {
         // 역할_권한 정보 DB저장

@@ -6,7 +6,7 @@ import { ICommand } from '@nestjs/cqrs';
 export class UpdateCompanyCommand implements ICommand {
   constructor(
     readonly companyName: string,
-    readonly companyCode: number,
+    readonly businessNumber: string,
     readonly companyId: number,
   ) {}
 }
