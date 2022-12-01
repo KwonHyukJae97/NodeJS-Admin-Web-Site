@@ -1,25 +1,33 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CreateAdminRoleHandler } from './create-adminRole.handler';
 import { Repository } from 'typeorm';
 import { AdminRole } from '../entities/adminRole.entity';
 import { RolePermission } from '../entities/rolePermission.entity';
 import { ConvertException } from '../../../common/utils/convert-exception';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
-import { CreateAdminRoleCommand } from './create-adminRole.command';
+import { UpdateAdminRoleHandler } from './update-adminRole.handler';
+import { UpdateAdminRoleCommand } from './update-adminRole.command';
 
 // Repository에서 사용되는 함수 복제
 const mockRepository = () => ({
   save: jest.fn(),
   create: jest.fn(),
+  findOneBy: jest.fn(),
+  findBy: jest.fn(),
+  update: jest.fn(),
   insert: jest.fn(),
+  createQueryBuilder: jest.fn().mockReturnValue({
+    where: jest.fn().mockReturnThis(),
+    andWhere: jest.fn().mockReturnThis(),
+    getOne: jest.fn().mockReturnThis(),
+  }),
 });
 
 // MockRepository 타입 정의
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
-describe('CreateAdminRole', () => {
-  let createAdminRoleHandler: CreateAdminRoleHandler;
+describe('UpdateAdminRole', () => {
+  let updateAdminRoleHandler: UpdateAdminRoleHandler;
   let adminRoleRepository: MockRepository<AdminRole>;
   let rolePermissionRepository: MockRepository<RolePermission>;
 
@@ -33,7 +41,7 @@ describe('CreateAdminRole', () => {
         }),
       ],
       providers: [
-        CreateAdminRoleHandler,
+        UpdateAdminRoleHandler,
         ConvertException,
         {
           provide: getRepositoryToken(AdminRole),
@@ -46,48 +54,59 @@ describe('CreateAdminRole', () => {
       ],
     }).compile();
 
-    createAdminRoleHandler = module.get(CreateAdminRoleHandler);
+    updateAdminRoleHandler = module.get(UpdateAdminRoleHandler);
     adminRoleRepository = module.get(getRepositoryToken(AdminRole));
     rolePermissionRepository = module.get(getRepositoryToken(RolePermission));
   });
 
-  describe('역할 정보 정상 등록 여부', () => {
-    it('등록 성공', async () => {
+  describe('역할 정보 정상 수정 여부', () => {
+    it('수정 성공', async () => {
       // Given
       const roleName = '공지사항 관리자';
-      const companyId = 2;
+      const updateRoleName = 'FAQ 관리자';
+      const roleId = { roleId: 1 };
       const roleDto = [
         {
-          permissionId: 4,
-          grantType: '1',
+          permissionId: 2,
+          grantType: '2',
         },
       ];
 
-      const adminRole = {
+      const newAdminRole = {
         roleId: 1,
-        roleName: roleName,
-        companyId: companyId,
+        roleName: updateRoleName,
+        companyId: 1,
       };
 
       const rolePermission = {
-        roleId: adminRole.roleId,
+        roleId: newAdminRole.roleId,
         permissionId: roleDto[0].permissionId,
         grantType: roleDto[0].grantType,
       };
 
       // 반환값 설정 (mockResolvedValue = 비동기 반환값 / mockReturnValue = 일반 반환값 반환 시 사용)
-      adminRoleRepository.create.mockResolvedValue(adminRole);
-      adminRoleRepository.save.mockResolvedValue(adminRole);
-      rolePermissionRepository.create.mockResolvedValue(rolePermission);
-      rolePermissionRepository.insert.mockResolvedValue(rolePermission);
+      adminRoleRepository.findOneBy.mockResolvedValue(roleId);
+      adminRoleRepository.save.mockResolvedValue(newAdminRole);
+      rolePermissionRepository.findBy.mockResolvedValue(roleId);
+      // jest.requireMock(<모듈 이름>) 을 사용하면 해당 모듈을 mocking 할 수 있음
+      jest.spyOn(rolePermissionRepository, 'createQueryBuilder').mockImplementation(() => {
+        const mockModule = jest.requireMock('typeorm');
+        return {
+          ...mockModule,
+          where: jest.fn().mockReturnThis(),
+          andWhere: jest.fn().mockReturnThis(),
+          getOne: () => rolePermission,
+        };
+      });
+      rolePermissionRepository.update.mockResolvedValue(rolePermission);
 
       // When
-      const result = await createAdminRoleHandler.execute(
-        new CreateAdminRoleCommand(roleName, companyId, roleDto),
+      const result = await updateAdminRoleHandler.execute(
+        new UpdateAdminRoleCommand(updateRoleName, roleDto, roleId.roleId),
       );
 
       // Then
-      expect(result).toEqual('등록이 완료 되었습니다.');
+      expect(result).toEqual(undefined);
     });
   });
 });

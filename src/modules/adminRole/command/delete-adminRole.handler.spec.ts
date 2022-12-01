@@ -7,19 +7,20 @@ import { ConvertException } from '../../../common/utils/convert-exception';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
 import { CreateAdminRoleCommand } from './create-adminRole.command';
+import { DeleteAdminRoleHandler } from './deleate-adminRole.handler';
+import { DeleteAdminRoleCommand } from './delete-adminRole.command';
 
 // Repository에서 사용되는 함수 복제
 const mockRepository = () => ({
-  save: jest.fn(),
-  create: jest.fn(),
-  insert: jest.fn(),
+  findOneBy: jest.fn(),
+  softDelete: jest.fn(),
 });
 
 // MockRepository 타입 정의
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
-describe('CreateAdminRole', () => {
-  let createAdminRoleHandler: CreateAdminRoleHandler;
+describe('DeleteAdminRole', () => {
+  let deleteAdminRoleHandler: DeleteAdminRoleHandler;
   let adminRoleRepository: MockRepository<AdminRole>;
   let rolePermissionRepository: MockRepository<RolePermission>;
 
@@ -33,7 +34,7 @@ describe('CreateAdminRole', () => {
         }),
       ],
       providers: [
-        CreateAdminRoleHandler,
+        DeleteAdminRoleHandler,
         ConvertException,
         {
           provide: getRepositoryToken(AdminRole),
@@ -46,48 +47,28 @@ describe('CreateAdminRole', () => {
       ],
     }).compile();
 
-    createAdminRoleHandler = module.get(CreateAdminRoleHandler);
+    deleteAdminRoleHandler = module.get(DeleteAdminRoleHandler);
     adminRoleRepository = module.get(getRepositoryToken(AdminRole));
     rolePermissionRepository = module.get(getRepositoryToken(RolePermission));
   });
 
-  describe('역할 정보 정상 등록 여부', () => {
-    it('등록 성공', async () => {
+  describe('역할 정보 정상 삭제 여부', () => {
+    it('삭제 성공', async () => {
       // Given
-      const roleName = '공지사항 관리자';
-      const companyId = 2;
-      const roleDto = [
-        {
-          permissionId: 4,
-          grantType: '1',
-        },
-      ];
-
-      const adminRole = {
-        roleId: 1,
-        roleName: roleName,
-        companyId: companyId,
-      };
-
-      const rolePermission = {
-        roleId: adminRole.roleId,
-        permissionId: roleDto[0].permissionId,
-        grantType: roleDto[0].grantType,
-      };
+      const roleId = 1;
+      const findOneRoleId = { roleId: 1 };
+      const softDeleteRoleId = { roleId: 1 };
 
       // 반환값 설정 (mockResolvedValue = 비동기 반환값 / mockReturnValue = 일반 반환값 반환 시 사용)
-      adminRoleRepository.create.mockResolvedValue(adminRole);
-      adminRoleRepository.save.mockResolvedValue(adminRole);
-      rolePermissionRepository.create.mockResolvedValue(rolePermission);
-      rolePermissionRepository.insert.mockResolvedValue(rolePermission);
+      adminRoleRepository.findOneBy.mockResolvedValue(findOneRoleId);
+      adminRoleRepository.softDelete.mockResolvedValue(softDeleteRoleId);
+      rolePermissionRepository.softDelete.mockResolvedValue(softDeleteRoleId);
 
       // When
-      const result = await createAdminRoleHandler.execute(
-        new CreateAdminRoleCommand(roleName, companyId, roleDto),
-      );
+      const result = await deleteAdminRoleHandler.execute(new DeleteAdminRoleCommand(roleId));
 
       // Then
-      expect(result).toEqual('등록이 완료 되었습니다.');
+      expect(result).toEqual('삭제가 완료 되었습니다.');
     });
   });
 });
