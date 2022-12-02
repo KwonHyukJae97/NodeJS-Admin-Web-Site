@@ -67,35 +67,33 @@ describe('GetDetailAdminRole', () => {
           roleId: 1,
           permissionId: 1,
           grantType: '0',
+          menuName: '메뉴1',
+          displayName: '화면1',
         },
         {
           roleId: 1,
           permissionId: 2,
           grantType: '1',
+          menuName: '메뉴2',
+          displayName: '화면2',
         },
       ];
 
-      const adminInfoList = [
+      const grantTypeList = [
         {
-          id: 1,
-          adminId: 1,
-          adminName: '공지사항 관리자',
+          grant_type: '0',
+        },
+        {
+          grant_type: '1',
         },
       ];
 
       const permissionList = [
         {
-          permission_id: undefined,
-          menu_name: undefined,
-          display_name: undefined,
-          grant_type_list: [
-            {
-              grant_type: undefined,
-            },
-            {
-              grant_type: undefined,
-            },
-          ],
+          permission_id: rolePermissionList[0].permissionId,
+          menu_name: rolePermissionList[0].menuName,
+          display_name: rolePermissionList[0].displayName,
+          grant_type_list: grantTypeList,
         },
       ];
 
@@ -111,17 +109,6 @@ describe('GetDetailAdminRole', () => {
           getRawMany: () => rolePermissionList,
         };
       });
-
-      // jest.spyOn(adminRepository, 'createQueryBuilder').mockImplementation(() => {
-      //   const mockModule = jest.requireMock('typeorm');
-      //   return {
-      //     ...mockModule,
-      //     select: jest.fn().mockReturnThis(),
-      //     leftJoin: jest.fn().mockReturnThis(),
-      //     where: jest.fn().mockReturnThis(),
-      //     getRawMany: () => adminInfoList,
-      //   };
-      // });
 
       // When
       const result = await getAdminRoleInfohanlder.execute(
