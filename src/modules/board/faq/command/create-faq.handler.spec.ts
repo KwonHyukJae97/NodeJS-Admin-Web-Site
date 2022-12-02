@@ -17,14 +17,6 @@ const mockRepository = () => ({
   save: jest.fn(),
   create: jest.fn(),
   findOneBy: jest.fn(),
-  findBy: jest.fn(),
-  update: jest.fn(),
-  insert: jest.fn(),
-  createQueryBuilder: jest.fn().mockReturnValue({
-    where: jest.fn().mockReturnThis(),
-    andWhere: jest.fn().mockReturnThis(),
-    getOne: jest.fn().mockReturnThis(),
-  }),
 });
 
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
@@ -80,6 +72,7 @@ describe('createFaq', () => {
 
     createFaqHandler = module.get(CreateFaqHandler);
     faqRepository = module.get(getRepositoryToken(Faq));
+    categoryRepository = module.get(getRepositoryToken(FaqCategory));
     boardRepository = module.get(getRepositoryToken(Board));
     fileRepository = module.get(getRepositoryToken(BoardFile));
   });
@@ -88,7 +81,7 @@ describe('createFaq', () => {
     it('FAQ 등록 성공', async () => {
       const title = 'FAQ입니다.';
       const content = 'FAQ 내용';
-      const categoryName = '카테고리 이름';
+      const categoryName = '카테고리 제목';
       const role = '본사 관리자';
       const files = [];
 
@@ -119,7 +112,7 @@ describe('createFaq', () => {
       const result = await createFaqHandler.execute(
         new CreateFaqCommand(title, content, categoryName, role, files),
       );
-      expect(result).toEqual(undefined);
+      expect(result).toEqual(faq);
     });
   });
 });

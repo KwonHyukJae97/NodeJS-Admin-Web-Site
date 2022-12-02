@@ -52,7 +52,7 @@ describe('DeleteFaq', () => {
           useValue: mockRepository(),
         },
         {
-          provide: 'noticeFile',
+          provide: 'faqFile',
           useClass: BoardFileDb,
         },
         {
