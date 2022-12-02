@@ -351,8 +351,6 @@ export class SignController {
     response.cookie('Refresh', refreshToken, refreshOption);
 
     console.log('쿠키 값 조회 command', command);
-    console.log('쿠키 값 조회 accessToken', accessToken);
-    console.log('쿠키 값 조회 refreshToken', refreshToken);
 
     return this.commandBus.execute(command);
   }
@@ -543,19 +541,24 @@ export class SignController {
 
   //리프레쉬 토큰 유효성 검사 후 통과되면 엑세스 토큰 재발급
   @UseGuards(JwtRefreshAuthGuard)
-  @Get('/refresh')
-  refresh(@Req() req, @Res({ passthrough: true }) res) {
-    const account = req.user;
+  @Post('/refresh')
+  async refresh(@Req() req, @Res({ passthrough: true }) res) {
+    const account = req.body;
+    console.log('아이디', req.body);
     const id = account.id;
-    const { accessToken, ...accessOption } = this.authService.getCookieWithJwtAccessToken(id, null);
+    const { accessToken, ...accessOption } = await this.authService.getCookieWithJwtAccessToken(
+      id,
+      null,
+    );
+    console.log('갱신된 엑세스: ', accessToken);
     res.cookie('authentication', accessToken, accessOption);
 
-    return account;
+    return { id, accessToken };
   }
 
   // TODO: 리프레쉬 토큰
   @UseGuards(JwtRefreshAuthGuard)
-  @Post('/refresh')
+  @Post('/refresh22')
   async refreshToken(@Req() request, @Res() response) {
     const account: Account = request.user;
 
