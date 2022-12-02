@@ -14,7 +14,7 @@ const mockRepository = () => ({
   createQueryBuilder: jest.fn().mockReturnValue({
     select: jest.fn().mockReturnThis(),
     leftJoin: jest.fn().mockReturnThis(),
-    andSelect: jest.fn().mockReturnThis(),
+    addSelect: jest.fn().mockReturnThis(),
     groupBy: jest.fn().mockReturnThis(),
     getRawMany: jest.fn().mockReturnThis(),
   }),
@@ -74,7 +74,7 @@ describe('GetAllAdminRole', () => {
           ...mockModule,
           select: jest.fn().mockReturnThis(),
           leftJoin: jest.fn().mockReturnThis(),
-          andSelect: jest.fn().mockReturnThis(),
+          addSelect: jest.fn().mockReturnThis(),
           groupBy: jest.fn().mockReturnThis(),
           getRawMany: () => adminRoleList,
         };

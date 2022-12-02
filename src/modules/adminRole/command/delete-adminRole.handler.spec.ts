@@ -1,12 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CreateAdminRoleHandler } from './create-adminRole.handler';
 import { Repository } from 'typeorm';
 import { AdminRole } from '../entities/adminRole.entity';
 import { RolePermission } from '../entities/rolePermission.entity';
 import { ConvertException } from '../../../common/utils/convert-exception';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
-import { CreateAdminRoleCommand } from './create-adminRole.command';
 import { DeleteAdminRoleHandler } from './deleate-adminRole.handler';
 import { DeleteAdminRoleCommand } from './delete-adminRole.command';
 
