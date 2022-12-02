@@ -9,7 +9,6 @@ import { AccountFile } from '../../../file/entities/account-file';
 import { AccountFileDb } from '../../account-file-db';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { EventBus } from '@nestjs/cqrs';
-import { DeleteCompanyCommand } from '../../../company/command/delete-company.command';
 import { UpdateUserCommand } from './update-user.command';
 
 // Repository에서 사용되는 함수 복제
@@ -124,7 +123,6 @@ describe('UpdateUser', () => {
         accountId: 1,
       };
 
-      // 수정 내용 반영시 예상 결과 값(user)
       const updateAccountInfo = {
         accountId: 1,
         id: 'test',
