@@ -87,13 +87,22 @@ describe('UpdateNotice', () => {
       const role = '본사 관리자';
       const files = [];
       const noticeId = 1;
+      const boardId = 1;
 
       const board = {
-        accountId: 1,
+        // accountId: 1,
         boardTypeCode: '0',
         title: title,
         content: content,
         viewCount: 0,
+      };
+
+      const updateBoard = {
+        boardId: boardId,
+        boardTypeCode: '1',
+        title: 'title',
+        content: 'content',
+        viewCount: 1,
       };
 
       const notice = {
@@ -103,30 +112,48 @@ describe('UpdateNotice', () => {
         board: board,
       };
 
-      const file = {
-        boardFileId: 1,
+      const updateNotice = {
+        noticeGrant: 'noticeGrant',
+        isTop: isTop,
         boardId: 1,
-        fileName: 'fileName',
-        fileExt: 'fileExt',
-        filePath: 'filePath',
-        fileSize: 100,
+        board: updateBoard,
       };
 
-      // 반환값 설정 (mockResolvedValue = 비동기 반환값 / mockReturnValue = 일반 반환값 반환 시 사용)
+      // const file = {
+      //   boardFileId: 1,
+      //   boardId: 1,
+      //   fileName: 'fileName',
+      //   fileExt: 'fileExt',
+      //   filePath: 'filePath',
+      //   fileSize: 100,
+      // };
+
       noticeRepository.findOneBy.mockResolvedValue(notice);
-      noticeRepository.save.mockResolvedValue(notice);
       boardRepository.findOneBy.mockResolvedValue(board);
-      boardRepository.save.mockResolvedValue(board);
-      fileRepository.findOneBy.mockResolvedValue(file);
-      // jest.requireMock(<모듈 이름>) 을 사용하면 해당 모듈을 mocking 할 수 있음
+      fileRepository.findBy.mockResolvedValue(boardId);
+      boardRepository.save.mockResolvedValue(updateBoard);
+      noticeRepository.save.mockResolvedValue(updateNotice);
 
       // When
       const result = await updateNoticeHandler.execute(
-        new UpdateNoticeCommand(title, content, isTop, noticeGrant, noticeId, role, files),
+        new UpdateNoticeCommand(
+          updateBoard.title,
+          updateBoard.content,
+          isTop,
+          noticeGrant,
+          noticeId,
+          role,
+          files,
+        ),
       );
 
       // Then
-      expect(result).toEqual(undefined);
+      if (result instanceof Board) {
+        expect(result.title).toEqual(updateBoard.title);
+      }
+      if (result instanceof Notice) {
+        expect(result.board).toEqual(updateNotice.board);
+      }
     });
   });
 });
