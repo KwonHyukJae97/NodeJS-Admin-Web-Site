@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
@@ -23,6 +24,7 @@ const mockRepository = () => ({
     addSelect: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     getOne: jest.fn().mockReturnThis(),
+    getMany: jest.fn().mockReturnThis(),
     getRawOne: jest.fn().mockReturnThis(),
   }),
 });
@@ -92,19 +94,24 @@ describe('GetDetailAdmin', () => {
       // Given
       const qnaId = 1;
       const accountId = 27;
+      const viewCount = 0;
+      const boardId = 11;
+      const files = [];
 
       const board = {
-        boardId: 11,
-        accountId: 2,
+        boardId: boardId,
+        accountId: accountId,
         boardTypeCode: '2',
         title: 'title',
         content: 'content',
-        viewCount: 0,
+        viewCount: viewCount,
       };
+
+      // 답변 작성자 정보
       const commentList = [
         {
-          qnaId: 1,
-          accountId: 2,
+          qnaId: qnaId,
+          accountId: accountId,
           title: '100001',
           viewCount: 4,
           regDate: '2022-12-02 14:54:45',
@@ -112,22 +119,50 @@ describe('GetDetailAdmin', () => {
         },
       ];
 
+      // 답변 정보
+      const commentDetail = [
+        {
+          qnaId: qnaId,
+          accountId: accountId,
+          title: '100001',
+          viewCount: viewCount,
+          regDate: '2022-12-02 14:54:45',
+          isComment: 1,
+        },
+      ];
+
+      // qna 정보
       const qna = {
         boardId: board.boardId,
         board: board,
       };
-      const files = [];
 
+      // 반환되는 qna 정보
       const resultQnaInfo = {
-        user: {
-          boardId: 11,
-          accountId: 2,
-          boardTypeCode: '2',
-          title: 'title',
-          content: 'content',
-          viewCount: 0,
+        qna: {
+          boardId: board.boardId,
+          fileList: [],
+          writer: 'undefined(undefined)',
+          board: {
+            boardId: board.boardId,
+            accountId: accountId,
+            boardTypeCode: '2',
+            title: 'title',
+            content: 'content',
+            viewCount: 1,
+          },
         },
-        file: files,
+        comment: [
+          {
+            qnaId: qnaId,
+            accountId: accountId,
+            title: '100001',
+            viewCount: viewCount,
+            regDate: '2022-12-02 14:54:45',
+            isComment: 1,
+            writer: 'undefined(undefined)',
+          },
+        ],
       };
 
       // jest.requireMock(<모듈 이름>) 을 사용하면 해당 모듈을 mocking 할 수 있음
@@ -175,8 +210,8 @@ describe('GetDetailAdmin', () => {
           select: jest.fn().mockReturnThis(),
           where: jest.fn().mockReturnThis(),
           orderBy: jest.fn().mockReturnThis(),
-          getMany: () => commentList,
-          //getRawOne() => commentList;
+          getMany: () => commentDetail,
+          getRawOne: () => commentList,
         };
       });
 

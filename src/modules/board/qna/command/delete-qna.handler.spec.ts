@@ -100,11 +100,17 @@ describe('DeleteQna', () => {
         boardId: 11,
       };
 
+      const commentDetail = [
+        {
+          comment: 'test Content',
+          commentId: 11,
+        },
+      ];
+
       qnaRepository.findOneBy.mockResolvedValue(qnaId);
       boardRepository.findOneBy.mockResolvedValue(boardDetail);
       boardFileRepository.findBy.mockResolvedValue(boardId);
-      commentRepository.findOneBy.mockResolvedValue(qnaId);
-      commentRepository.softDelete.mockReturnValue(commentId);
+      commentRepository.findBy.mockResolvedValue(commentDetail);
       qnaRepository.delete.mockResolvedValue(qnaId);
 
       // When

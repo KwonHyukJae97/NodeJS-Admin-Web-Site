@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
 import { ConvertException } from '../../../../common/utils/convert-exception';
@@ -85,6 +86,7 @@ describe('GetCommentList', () => {
         getOffset: () => 10,
       };
 
+      // 답변 리스트
       const commentList = [
         {
           qnaId: 1,
@@ -96,6 +98,7 @@ describe('GetCommentList', () => {
         },
       ];
 
+      // 반환되는 답변 리스트 (페이징 처리)
       const resultCommentList = {
         currentPage: 1,
         pageSize: 10,
