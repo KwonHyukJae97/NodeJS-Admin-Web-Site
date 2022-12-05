@@ -185,10 +185,7 @@ export class AuthService {
    * @param id
    * @returns : 검증 후 결과값을 리턴
    */
-  async getAccountRefreshTokenMatches(
-    refreshToken: string,
-    id: string,
-  ): Promise<{ result: boolean }> {
+  async getAccountRefreshTokenMatches(refreshToken: string, id: string) {
     const account = await this.accountRepository.findOne({ where: { id } });
 
     if (!account) {
@@ -198,7 +195,8 @@ export class AuthService {
     const isRefreshTokenMatching = await compare(refreshToken, account.currentHashedRefreshToken);
 
     if (isRefreshTokenMatching) {
-      return { result: true };
+      // return { result: true };
+      return { isRefreshTokenMatching, refreshToken };
     } else {
       throw new UnauthorizedException('접근에러입니다.');
     }
