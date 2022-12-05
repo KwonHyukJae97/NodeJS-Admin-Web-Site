@@ -98,7 +98,6 @@ describe('GetFaqDetail', () => {
         title: 'title',
         content: 'content',
         viewCount: 0,
-        // writer: '권혁재',
       };
       const category = {
         categoryId: 1,
