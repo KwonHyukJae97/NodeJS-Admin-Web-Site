@@ -90,6 +90,7 @@ describe('GetCommentDetail', () => {
     accountRepository = module.get(getRepositoryToken(Account));
     boardFileRepository = module.get(getRepositoryToken(BoardFile));
     companyRepository = module.get(getRepositoryToken(Company));
+    boardRepository = module.get(getRepositoryToken(Board));
   });
 
   describe(' 코멘트 상세 정보 정상 조회 여부', () => {
@@ -98,33 +99,101 @@ describe('GetCommentDetail', () => {
       const boardId = 1;
       const accountId = 1;
       const companyId = 1;
-      const file = [];
       const role = '본사 관리자';
+      const viewCount = 0;
 
+      // 게시글 정보
       const board = {
         title: 'Update Title',
         content: 'Update Content',
-        boardId: 11,
-        viewCount: 1,
+        boardId: boardId,
+        viewCount: viewCount,
       };
 
+      // qna 정보
       const qna = {
         boardId: boardId,
         board: board,
-        qnaId: 1,
+        qnaId: qnaId,
       };
 
-      const resultCommentInfo = {
-        user: {
-          boardId: 11,
-          accountId: 2,
-          boardTypeCode: '2',
-          title: 'title',
-          content: 'content',
-          viewCount: 0,
+      // 답변 정보
+      const comment = [
+        {
+          qnaId: qnaId,
+          accountId: accountId,
+          title: '100001',
+          viewCount: viewCount,
+          regDate: '2022-12-02 14:54:45',
+          isComment: 1,
         },
-        file: file,
+      ];
+
+      // 계정 정보
+      const adminAccount = {
+        admin_admin_id: 2,
+        admin_company_id: 1,
+        admin_role_id: 7,
+        admin_is_super: 0,
+        admin_account_id: '4',
+        account_account_id: null,
+        account_id: null,
+        account_password: null,
+        account_name: null,
+        account_email: null,
+        account_phone: null,
+        account_nickname: null,
+        account_birth: null,
+        account_gender: null,
+        account_current_hashed_refresh_token: null,
+        account_ci: null,
+        account_sns_id: null,
+        account_sns_type: null,
+        account_sns_token: null,
+        account_reg_date: null,
+        account_update_date: null,
+        account_del_date: null,
+        account_login_date: null,
+        account_division: null,
       };
+
+      // 반환되는 답변 정보
+      const resultCommentInfo = {
+        qna: {
+          qnaId: qnaId,
+          boardId: board.boardId,
+          board: {
+            boardId: board.boardId,
+            title: board.title,
+            content: board.content,
+            viewCount: 1,
+          },
+        },
+        writer: 'undefined(undefined)',
+        fileList: 1,
+        commentListInfo: [
+          {
+            comment: {
+              qnaId: qnaId,
+              accountId: accountId,
+              title: '100001',
+              viewCount: viewCount,
+              regDate: '2022-12-02 14:54:45',
+              isComment: 1,
+            },
+            writer: 'null(null)',
+          },
+        ],
+      };
+
+      qnaRepository.findOneBy.mockResolvedValue(qna);
+      boardRepository.findOneBy.mockResolvedValue(board);
+      boardRepository.save.mockResolvedValue(board);
+      qnaRepository.save.mockResolvedValue(qna);
+      accountRepository.findOneBy.mockResolvedValue(accountId);
+      boardFileRepository.findBy.mockResolvedValue(boardId);
+      commentRepository.find.mockResolvedValue(comment);
+      companyRepository.findOneBy.mockResolvedValue(companyId);
 
       // jest.requireMock(<모듈 이름>) 을 사용하면 해당 모듈을 mocking 할 수 있음
       jest.spyOn(adminRepository, 'createQueryBuilder').mockImplementation(() => {
@@ -133,17 +202,10 @@ describe('GetCommentDetail', () => {
           ...mockModule,
           leftJoinAndSelect: jest.fn().mockReturnThis(),
           where: jest.fn().mockReturnThis(),
-          getRawOne: jest.fn().mockReturnThis(),
+          getRawOne: () => adminAccount,
         };
       });
-      qnaRepository.findOneBy.mockResolvedValue(qnaId);
-      boardRepository.findOneBy.mockResolvedValue(boardId);
-      boardRepository.save.mockResolvedValue(board);
-      qnaRepository.save.mockResolvedValue(qna);
-      accountRepository.findOneBy.mockResolvedValue(accountId);
-      boardFileRepository.findBy.mockResolvedValue(boardId);
-      commentRepository.find.mockResolvedValue(qnaId);
-      companyRepository.findOneBy.mockResolvedValue(companyId);
+
       // When
       const result = await getCommentDetailHandler.execute(
         new GetCommentDetailCommand(qnaId, role),
