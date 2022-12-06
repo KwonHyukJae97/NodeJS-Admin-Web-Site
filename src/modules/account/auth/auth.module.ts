@@ -9,9 +9,7 @@ import { User } from '../user/entities/user';
 import { Admin } from '../admin/entities/admin';
 import { Account } from '../entities/account';
 import { JwtModule } from '@nestjs/jwt';
-
 import { PassportModule } from '@nestjs/passport';
-import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { SignInAdminHandler } from './command/signin-admin.handler';
 import { SignInUserHandler } from './command/signin-user.handler';
 import { AccountFileDb } from '../account-file-db';
@@ -19,7 +17,6 @@ import { AccountFile } from '../../file/entities/account-file';
 import { ConvertException } from '../../../common/utils/convert-exception';
 import { JwtStrategy } from 'src/guard/jwt/jwt.strategy';
 import { LocalStrategy } from 'src/guard/local/local.strategy';
-
 import { Company } from 'src/modules/company/entities/company.entity';
 import { KakaoSignUpAdminHandler } from './command/kakao-signup-admin.handler';
 import { AuthService } from './auth.service';
@@ -30,6 +27,7 @@ import { GetAuthInfoQueryHandler } from './query/get-auth-info-handler';
 import { AdminUpdateInfoHandler } from '../admin/command/admin-update-info-handler';
 import { EmailService } from 'src/modules/email/email.service';
 import { AdminUpdatePasswordHandler } from './command/admin-update-password.handler';
+import { GetFindIdQueryHandler } from './query/get-findId.handler';
 
 @Module({
   imports: [
@@ -56,6 +54,7 @@ import { AdminUpdatePasswordHandler } from './command/admin-update-password.hand
     NaverSignUpAdminHandler,
     GoogleSignUpAdminHandler,
     SignUpUserHandler,
+    GetFindIdQueryHandler,
     GetAuthInfoQueryHandler,
     AdminUpdateInfoHandler,
     SignUpAdminHandler,
@@ -64,7 +63,6 @@ import { AdminUpdatePasswordHandler } from './command/admin-update-password.hand
     AdminUpdatePasswordHandler,
     AuthService,
     EmailService,
-    JwtManageService,
     ConvertException,
     JwtStrategy,
     JwtRefreshStrategy,
