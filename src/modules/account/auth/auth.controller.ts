@@ -12,7 +12,6 @@ import {
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { JwtAuthGuard } from 'src/guard/jwt/jwt-auth.guard';
-import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { LocalAuthGuard } from 'src/guard/local/local-auth.guard';
 import { AuthService } from './auth.service';
 import { SignUpAdminCommand } from './command/signup-admin.command';
@@ -35,6 +34,7 @@ import { GoogleSignUpAdminDto } from './dto/google-signup-admin.dto';
 import { GoogleSignUpAdminCommand } from './command/google-signup-admin.command';
 import { UserGoogleDto } from './dto/user.google.dto';
 import { GetAuthInfoQuery } from './query/get-auth-info.query';
+import { GetFindIdQuery } from './query/get-findId.query';
 import { AdminUpdatePasswordDto } from './dto/admin-update-password.dto';
 import { AdminUpdatePasswordCommand } from './command/admin-update-password.command';
 import { JwtService } from '@nestjs/jwt';
@@ -48,7 +48,6 @@ export class SignController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly authService: AuthService,
-    private readonly jwtManageService: JwtManageService,
     private queryBus: QueryBus,
     private readonly jwtService: JwtService,
   ) {}
@@ -393,10 +392,9 @@ export class SignController {
    * @returns : findIdDto(name, phone)을 findId라는 변수에 담아 리턴
    */
   @Post('/find_id')
-  async findId(@Body(ValidationPipe) findIdDto: FindIdDto) {
-    const findid = await this.authService.findId(findIdDto);
-    console.log('아이디찾는 값 추출', findIdDto);
-    return findid;
+  async findId(@Body(ValidationPipe) param: FindIdDto) {
+    const command = new GetFindIdQuery(param);
+    return this.queryBus.execute(command);
   }
 
   /**
@@ -497,7 +495,7 @@ export class SignController {
     response.cookie('authentication', accessToken, accessOption);
     response.cookie('Refresh', refreshToken, refreshOption);
 
-    return this.authService.kakaoUserInfos(userGoogleDto);
+    return this.authService.googleUserInfos(userGoogleDto);
   }
 
   //리프레쉬 토큰 유효성 검사 후 통과되면 엑세스 토큰 재발급

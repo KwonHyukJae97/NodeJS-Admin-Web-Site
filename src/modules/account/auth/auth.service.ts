@@ -16,7 +16,6 @@ import { Repository } from 'typeorm';
 import { SignInUserDto } from './dto/signin-user.dto';
 import { SignInAdminDto } from './dto/signin-admin.dto';
 import { ConfigService } from '@nestjs/config';
-import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { FindIdDto } from './dto/findid.dto';
 import { UserKakaoDto } from './dto/user.kakao.dto';
 import { UserNaverDto } from './dto/user.naver.dto';
@@ -25,6 +24,7 @@ import { EmailService } from 'src/modules/email/email.service';
 import * as uuid from 'uuid';
 import { Connection } from 'typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
+import moment from 'moment';
 
 /**
  * Auth 관련 토큰, 검증, 카카오 서비스
@@ -37,7 +37,6 @@ export class AuthService {
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
     private readonly configService: ConfigService,
-    private readonly jwtManageService: JwtManageService,
     private readonly emailService: EmailService,
     private connection: Connection,
     @Inject(ConvertException) private convertException: ConvertException,
@@ -454,7 +453,7 @@ export class AuthService {
   // * 신규 발급받은 token 정보 가져오기
   public async refreshTokenChange(id: string, payload: TokenPayload, refreshToken: string) {
     console.log('payload 값 추출:', refreshToken);
-    if (this.jwtManageService.isNeedRefreshTokenChange(refreshToken)) {
+    if (this.isNeedRefreshTokenChange(refreshToken)) {
       const newRefreshToken = this.getCookieWithJwtRefreshToken(id, null);
       await this.setCurrentRefreshToken(id, newRefreshToken.refreshToken);
 
@@ -584,20 +583,42 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(tempPassword, salt);
     console.log('수정된 비밀번호 확인', hashedPassword);
     const accountId = user.accountId;
-    const queryRunner = this.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    // const queryRunner = this.connection.createQueryRunner();
+    // await queryRunner.connect();
+    // await queryRunner.startTransaction();
 
     try {
       await this.accountRepository.update(accountId, { password: hashedPassword });
       await this.emailService.sendTempPassword(email, tempPassword);
       console.log('임시 코드 확인', tempPassword);
     } catch (e) {
-      await queryRunner.rollbackTransaction();
+      // await queryRunner.rollbackTransaction();
       throw new ConflictException({ message: '비밀번호 찾기 오류입니다. 다시 시도해주세요.' });
     } finally {
-      await queryRunner.release();
+      // await queryRunner.release();
       return { success: true, message: '이메일을 확인해주세요.' };
     }
+  }
+
+  /**
+   * jwt refresh token 갱신 필요한지 여부 가져오기
+   * @param refreshToken
+   */
+  public isNeedRefreshTokenChange(refreshToken: string) {
+    // 만약, refresh token 갱신이 필요하면 갱신 처리
+    console.log('expexpexpe', refreshToken);
+    const jwtRefreshToken = this.jwtService.decode(refreshToken);
+    const exp = jwtRefreshToken['exp'];
+
+    const currentTime = moment();
+    const expTime = moment(exp * 1000);
+
+    const diffSeconds = Math.floor(moment.duration(expTime.diff(currentTime)).asSeconds());
+
+    if (diffSeconds < this.configService.get('JWT_REFRESH_TOKEN_CHANGE_TIME')) {
+      return true;
+    }
+
+    return false;
   }
 }
