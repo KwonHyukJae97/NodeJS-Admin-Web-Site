@@ -73,11 +73,13 @@ export class JwtManageService {
    */
   public isNeedRefreshTokenChange(refreshToken: string) {
     // 만약, refresh token 갱신이 필요하면 갱신 처리
+    console.log('expexpexpe', refreshToken);
     const jwtRefreshToken = this.jwtService.decode(refreshToken);
     const exp = jwtRefreshToken['exp'];
 
     const currentTime = moment();
     const expTime = moment(exp * 1000);
+    console.log('이엑스피타임', expTime);
 
     const diffSeconds = Math.floor(moment.duration(expTime.diff(currentTime)).asSeconds());
 

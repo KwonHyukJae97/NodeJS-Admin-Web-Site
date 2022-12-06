@@ -1,4 +1,13 @@
-import { IsEmail, IsNotEmpty, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 /**
  * 관리자 등록을 위한 dto 정의
  */
@@ -14,6 +23,10 @@ export class CreateAdminDto {
   @MinLength(8)
   @MaxLength(16)
   readonly password: string;
+
+  @IsOptional()
+  @IsString()
+  readonly confirmPassword: string;
 
   @IsNotEmpty()
   @IsString()
@@ -45,16 +58,23 @@ export class CreateAdminDto {
   @IsNotEmpty()
   readonly gender: string;
 
-  @IsNotEmpty()
   readonly companyId: number;
 
-  @IsNotEmpty()
   readonly roleId: number;
 
-  @IsNotEmpty()
   readonly isSuper: boolean;
 
   //관리자 사용자 구분 (true: 1(관리자), false: 0(사용자))
-  @IsNotEmpty()
   readonly division: boolean;
+
+  @IsNotEmpty()
+  @IsString()
+  readonly companyName: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  readonly companyCode: number;
+
+  @IsString()
+  readonly businessNumber: string;
 }

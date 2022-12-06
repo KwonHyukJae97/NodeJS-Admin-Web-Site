@@ -27,9 +27,6 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
-  //관리자 회원가입 시 companyId, roleId, isSuper, division의 값을 어떤식으로 넣어줘야하는지 질문하기
-  //중복 또는 유효성검사에 통과하지 못한 요청의 FE에서 에러처리 필요
-  //네이버 로그인 BackEnd 로직 생성
   async execute(command: SignUpAdminCommand) {
     let {
       id,
