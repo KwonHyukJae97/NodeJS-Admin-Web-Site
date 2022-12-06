@@ -14,7 +14,6 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { JwtAuthGuard } from 'src/guard/jwt/jwt-auth.guard';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { LocalAuthGuard } from 'src/guard/local/local-auth.guard';
-import { Account } from '../entities/account';
 import { AuthService } from './auth.service';
 import { SignUpAdminCommand } from './command/signup-admin.command';
 import { SignUpUserCommand } from './command/signup-user.command';
@@ -36,10 +35,10 @@ import { GoogleSignUpAdminDto } from './dto/google-signup-admin.dto';
 import { GoogleSignUpAdminCommand } from './command/google-signup-admin.command';
 import { UserGoogleDto } from './dto/user.google.dto';
 import { GetAuthInfoQuery } from './query/get-auth-info.query';
-import { AdminUpdateInfoDto } from './dto/admin-update-info.dto';
-import { AdminUpdateInfoCommand } from './command/admin-update-info.command';
 import { AdminUpdatePasswordDto } from './dto/admin-update-password.dto';
 import { AdminUpdatePasswordCommand } from './command/admin-update-password.command';
+import { JwtService } from '@nestjs/jwt';
+import * as moment from 'moment';
 
 /**
  * 회원가입, 로그인 등 계정 관련 auth API controller
@@ -51,6 +50,7 @@ export class SignController {
     private readonly authService: AuthService,
     private readonly jwtManageService: JwtManageService,
     private queryBus: QueryBus,
+    private readonly jwtService: JwtService,
   ) {}
 
   /**
@@ -59,13 +59,18 @@ export class SignController {
    */
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  async getAuthInfo(@Req() req) {
+  async getAuthInfo(@Req() req, @Res({ passthrough: true }) res) {
     //토큰정보 빼놓기 까지 완료, 뺴놓은 토큰을 넘겨 로컬스토리지에 담고 처리
     const authInfo = req.user;
-    const tokenInfo = req.cookies;
-    console.log('로그인 정보', req.user);
-    console.log('토큰 정보', req.cookies);
-    return authInfo;
+    const accessToken = req.cookies.authentication;
+
+    //accessToken 만료 시간 추출 함수
+    const jwtAccessToken = this.jwtService.decode(accessToken);
+    const exp = jwtAccessToken['exp'];
+    const expireAt = moment(exp * 1000);
+    console.log('시간체크 테스트', expireAt);
+    res.cookie('authentication', accessToken);
+    return { authInfo, accessToken, expireAt };
   }
 
   //프로필 버튼 클릭 시 어카운트 아이디로 데이터 조회
@@ -75,22 +80,6 @@ export class SignController {
     console.log('프로필입니다', accountId);
     return this.queryBus.execute(getUserInfoQuery);
   }
-
-  /**
-   * 관리자 상세 정보 수정
-   * @Param : accountId
-   * @return : 관리자 정보 수정 커맨드 전송
-   */
-  // admin 컨트롤러로 이관 작업
-  // @Patch(':id')
-  // updateInfo(@Param('id') accountId: number, @Body() dto: AdminUpdateInfoDto) {
-  //   const { email, phone, nickname } = dto;
-  //   console.log('수정 데이터111?', email);
-  //   console.log('수정 데이터222?', phone);
-  //   console.log('수정 데이터333?', nickname);
-  //   const command = new AdminUpdateInfoCommand(accountId, email, phone, nickname);
-  //   return this.commandBus.execute(command);
-  // }
 
   /**
    * 비밀번호 수정
@@ -224,40 +213,12 @@ export class SignController {
   }
 
   /**
-   * 사용자 정보(이메일) 조회
-   * @returns : 해당이메일이 DB에 존재유무
-   */
-  @Post('/get_email/:id')
-  getByEmail(@Param('id') email: string) {
-    return this.authService.getByEmail(email);
-  }
-
-  /**
-   * 사용자 정보(연락쳐) 조회
-   * @returns : 해당연락처가 DB에 존재유무
-   */
-  @Post('/get_phone/:id')
-  getByPhone(@Param('id') phone: string) {
-    return this.authService.getByPhone(phone);
-  }
-
-  /**
-   * 사용자 정보(넥네임) 조회
-   * @returns : 해당닉네임이 DB에 존재유무
-   */
-  @Post('/get_nickname/:id')
-  getByNickname(@Param('id') nickname: string) {
-    return this.authService.getByNickname(nickname);
-  }
-
-  /**
    * 관리자 회원가입 메소드
    * @param SignUpAdminDto : 관리자 회원가입에 필요한 dto
    * @returns : 관리자 회원가입 커맨드 전송
    */
   @Post('/register/admin')
   async signUpAdmin(@Body(ValidationPipe) signUpAdminDto: SignUpAdminDto): Promise<string> {
-    console.log('company정보!!!');
     const {
       id,
       password,
@@ -388,7 +349,7 @@ export class SignController {
 
     console.log('쿠키 값 조회 command', command);
     console.log('쿠키 값 조회 accessToken', accessToken);
-    console.log('쿠키 값 조회 refreshTokn', refreshToken);
+    console.log('쿠키 값 조회 refreshToken', refreshToken);
     return this.commandBus.execute(command);
   }
 
@@ -541,27 +502,41 @@ export class SignController {
 
   //리프레쉬 토큰 유효성 검사 후 통과되면 엑세스 토큰 재발급
   @UseGuards(JwtRefreshAuthGuard)
-  @Post('/refresh')
+  @Get('/refresh/accessToken')
   async refresh(@Req() req, @Res({ passthrough: true }) res) {
-    const account = req.body;
-    console.log('아이디', req.body);
+    const account = req.user;
+    const refreshToken = req.user.refreshToken;
+
+    console.log('아이디', req.user.id);
+    console.log('토큰비교 값', req.user.isRefreshTokenMatching);
+    console.log('리프레쉬토큰', req.user.refreshToken);
     const id = account.id;
     const { accessToken, ...accessOption } = await this.authService.getCookieWithJwtAccessToken(
       id,
       null,
     );
+
+    //accessToken 만료 시간 추출 함수
+    const jwtAccessToken = this.jwtService.decode(accessToken);
+    const exp = jwtAccessToken['exp'];
+    const expireAt = moment(exp * 1000);
+
+    console.log('토큰 만료 시간', expireAt);
+    console.log('토큰 유효 시간', accessOption.accessOption.maxAge);
     console.log('갱신된 엑세스: ', accessToken);
+
     res.cookie('authentication', accessToken, accessOption);
 
-    return { id, accessToken };
+    return { id, accessToken, refreshToken, expireAt };
   }
 
-  // TODO: 리프레쉬 토큰
+  // 리프레쉬 토큰 만료시 리프레쉬 토큰 재발급
   @UseGuards(JwtRefreshAuthGuard)
-  @Post('/refresh22')
-  async refreshToken(@Req() request, @Res() response) {
-    const account: Account = request.user;
-
+  @Post('/refreshToken')
+  async refreshToken(@Req() req, @Res({ passthrough: true }) res) {
+    const account = req.user;
+    const refreshToken = req.user.refreshToken;
+    const id = account.id;
     if (account) {
       const payload: TokenPayload = {
         accountId: account.accountId,
@@ -569,22 +544,22 @@ export class SignController {
         snsType: account.snsType,
         snsId: account.snsId,
       };
-      const { accessToken, accessOption } =
-        this.jwtManageService.getCookieWithJwtAccessToken(payload);
-      response.cookie('authentication', accessToken, accessOption);
+      const { accessToken, ...accessOption } = await this.authService.getCookieWithJwtAccessToken(
+        id,
+        null,
+      );
+      res.cookie('authentication', accessToken, accessOption);
 
-      const refreshToken = request?.cookies?.refresh;
+      const refreshToken = req?.user.refreshToken;
       const newRefreshToken = await this.authService.refreshTokenChange(
         account.id,
         payload,
         refreshToken,
       );
       if (newRefreshToken) {
-        response.cookie('refresh', newRefreshToken.refreshToken, newRefreshToken.refreshOption);
+        res.cookie('Refresh', newRefreshToken.refreshToken, newRefreshToken.refreshOption);
       }
     }
-    return response.send({
-      userData: request.user,
-    });
+    return { refreshToken };
   }
 }

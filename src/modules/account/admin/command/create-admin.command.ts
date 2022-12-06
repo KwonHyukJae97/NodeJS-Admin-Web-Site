@@ -17,5 +17,8 @@ export class CreateAdminCommand implements ICommand {
     readonly roleId: number,
     readonly isSuper: boolean,
     readonly division: boolean,
+    readonly companyName: string,
+    readonly companyCode: number,
+    readonly businessNumber: string,
   ) {}
 }

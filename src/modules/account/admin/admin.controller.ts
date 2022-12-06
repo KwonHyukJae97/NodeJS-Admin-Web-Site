@@ -23,7 +23,7 @@ import { GetAdminInfoQuery } from './query/get-admin-info.query';
 import { GetAllAdminQuery } from './query/get-all-admin.query';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AdminUpdateInfoDto } from '../auth/dto/admin-update-info.dto';
-import { AdminUpdateInfoCommand } from '../auth/command/admin-update-info.command';
+import { AdminUpdateInfoCommand } from './command/admin-update-info.command';
 
 /**
  * 관리자 정보 조회, 수정, 삭제 처리 API Controller
@@ -93,9 +93,9 @@ export class AdminController {
     @UploadedFile() file: Express.MulterS3.File,
   ) {
     const { email, phone, nickname } = dto;
-    console.log('수정 데이터111?', email);
-    console.log('수정 데이터222?', phone);
-    console.log('수정 데이터333?', nickname);
+    console.log('수정 데이터 email?', email);
+    console.log('수정 데이터 phone?', phone);
+    console.log('수정 데이터 nickname?', nickname);
     const command = new AdminUpdateInfoCommand(accountId, email, phone, nickname, file);
     return this.commandBus.execute(command);
   }
@@ -120,6 +120,9 @@ export class AdminController {
       roleId,
       isSuper,
       division,
+      companyName,
+      companyCode,
+      businessNumber,
     } = dto;
     console.log('Admin 등록 로그', dto);
     const command = new CreateAdminCommand(
@@ -135,6 +138,9 @@ export class AdminController {
       roleId,
       isSuper,
       division,
+      companyName,
+      companyCode,
+      businessNumber,
     );
     return this.commandBus.execute(command);
   }
