@@ -82,7 +82,7 @@ export class SignInUserHandler implements ICommandHandler<SignInUserCommand> {
       const { password, ...result } = account;
       return result;
     } catch (error) {
-      throw new HttpException('잘못된 인증 유저123정보입니다.', HttpStatus.BAD_REQUEST);
+      throw new HttpException('잘못된 인증 유저정보입니다.', HttpStatus.BAD_REQUEST);
     }
   }
   //비밀번호 체크

@@ -196,7 +196,7 @@ export class AuthService {
 
     if (isRefreshTokenMatching) {
       // return { result: true };
-      return { isRefreshTokenMatching, refreshToken };
+      return { isRefreshTokenMatching, refreshToken, id };
     } else {
       throw new UnauthorizedException('접근에러입니다.');
     }
@@ -498,8 +498,9 @@ export class AuthService {
   // jwt refresh token 갱신이 필요한지 확인하여 갱신 처리 후
   // * 신규 발급받은 token 정보 가져오기
   public async refreshTokenChange(id: string, payload: TokenPayload, refreshToken: string) {
+    console.log('payload 값 추출:', refreshToken);
     if (this.jwtManageService.isNeedRefreshTokenChange(refreshToken)) {
-      const newRefreshToken = this.jwtManageService.getCookieWithJwtRefreshToken(payload);
+      const newRefreshToken = this.getCookieWithJwtRefreshToken(id, null);
       await this.setCurrentRefreshToken(id, newRefreshToken.refreshToken);
 
       return newRefreshToken;

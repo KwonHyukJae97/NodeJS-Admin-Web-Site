@@ -120,6 +120,9 @@ export class AdminController {
       roleId,
       isSuper,
       division,
+      companyName,
+      companyCode,
+      businessNumber,
     } = dto;
     console.log('Admin 등록 로그', dto);
     const command = new CreateAdminCommand(
@@ -135,6 +138,9 @@ export class AdminController {
       roleId,
       isSuper,
       division,
+      companyName,
+      companyCode,
+      businessNumber,
     );
     return this.commandBus.execute(command);
   }
