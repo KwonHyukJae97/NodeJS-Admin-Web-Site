@@ -3,7 +3,7 @@ import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { Repository } from 'typeorm';
-import { Admin } from '../../admin/entities/admin';
+import { Admin } from '../entities/admin';
 import { Account } from '../../entities/account';
 import { AdminUpdateInfoCommand } from './admin-update-info.command';
 import { FileUpdateEvent } from '../../../file/event/file-update-event';
@@ -13,7 +13,7 @@ import { AccountFile } from '../../../file/entities/account-file';
 import { AccountFileDb } from '../../account-file-db';
 
 /**
- * 관리자 내정보 수정용 커맨드 핸들러
+ * 관리자 상세 정보 수정용 커맨드 핸들러
  */
 @Injectable()
 @CommandHandler(AdminUpdateInfoCommand)
@@ -35,9 +35,6 @@ export class AdminUpdateInfoHandler implements ICommandHandler<AdminUpdateInfoCo
   async execute(command: AdminUpdateInfoCommand) {
     const { accountId, email, phone, nickname, file } = command;
     const account = await this.accountRepository.findOneBy({ accountId: accountId });
-    // const isEmailExist = await this.accountRepository.findOne({ where: { email } });
-    // const isPhoneExist = await this.accountRepository.findOne({ where: { phone } });
-    // const isNicknameExist = await this.accountRepository.findOne({ where: { nickname } });
 
     if (email) {
       try {

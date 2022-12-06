@@ -14,7 +14,6 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { JwtAuthGuard } from 'src/guard/jwt/jwt-auth.guard';
 import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { LocalAuthGuard } from 'src/guard/local/local-auth.guard';
-import { Account } from '../entities/account';
 import { AuthService } from './auth.service';
 import { SignUpAdminCommand } from './command/signup-admin.command';
 import { SignUpUserCommand } from './command/signup-user.command';
@@ -36,8 +35,6 @@ import { GoogleSignUpAdminDto } from './dto/google-signup-admin.dto';
 import { GoogleSignUpAdminCommand } from './command/google-signup-admin.command';
 import { UserGoogleDto } from './dto/user.google.dto';
 import { GetAuthInfoQuery } from './query/get-auth-info.query';
-import { AdminUpdateInfoDto } from './dto/admin-update-info.dto';
-import { AdminUpdateInfoCommand } from './command/admin-update-info.command';
 import { AdminUpdatePasswordDto } from './dto/admin-update-password.dto';
 import { AdminUpdatePasswordCommand } from './command/admin-update-password.command';
 import { JwtService } from '@nestjs/jwt';
@@ -83,22 +80,6 @@ export class SignController {
     console.log('프로필입니다', accountId);
     return this.queryBus.execute(getUserInfoQuery);
   }
-
-  /**
-   * 관리자 상세 정보 수정
-   * @Param : accountId
-   * @return : 관리자 정보 수정 커맨드 전송
-   */
-  // admin 컨트롤러로 이관 작업
-  // @Patch(':id')
-  // updateInfo(@Param('id') accountId: number, @Body() dto: AdminUpdateInfoDto) {
-  //   const { email, phone, nickname } = dto;
-  //   console.log('수정 데이터111?', email);
-  //   console.log('수정 데이터222?', phone);
-  //   console.log('수정 데이터333?', nickname);
-  //   const command = new AdminUpdateInfoCommand(accountId, email, phone, nickname);
-  //   return this.commandBus.execute(command);
-  // }
 
   /**
    * 비밀번호 수정
@@ -229,33 +210,6 @@ export class SignController {
     );
 
     return this.commandBus.execute(command);
-  }
-
-  /**
-   * 사용자 정보(이메일) 조회
-   * @returns : 해당이메일이 DB에 존재유무
-   */
-  @Post('/get_email/:id')
-  getByEmail(@Param('id') email: string) {
-    return this.authService.getByEmail(email);
-  }
-
-  /**
-   * 사용자 정보(연락쳐) 조회
-   * @returns : 해당연락처가 DB에 존재유무
-   */
-  @Post('/get_phone/:id')
-  getByPhone(@Param('id') phone: string) {
-    return this.authService.getByPhone(phone);
-  }
-
-  /**
-   * 사용자 정보(넥네임) 조회
-   * @returns : 해당닉네임이 DB에 존재유무
-   */
-  @Post('/get_nickname/:id')
-  getByNickname(@Param('id') nickname: string) {
-    return this.authService.getByNickname(nickname);
   }
 
   /**
