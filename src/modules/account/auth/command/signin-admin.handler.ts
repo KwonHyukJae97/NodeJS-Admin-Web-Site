@@ -28,7 +28,7 @@ export class SignInAdminHandler implements ICommandHandler<SignInAdminCommand> {
   ) {}
 
   async execute(command: SignInAdminCommand) {
-    const { id, password } = command;
+    const { id, password, accessToken, refreshToken } = command;
 
     const account = await this.accountRepository.findOne({ where: { id } });
     if (!account) {
@@ -71,7 +71,7 @@ export class SignInAdminHandler implements ICommandHandler<SignInAdminCommand> {
       .where('account.id = :id', { id })
       .getOne();
 
-    return { account: returnAdmin };
+    return { account: returnAdmin, accessToken, refreshToken };
   }
 
   //회원가입 유무

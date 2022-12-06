@@ -185,11 +185,34 @@ export class AuthService {
    * @param id
    * @returns : 검증 후 결과값을 리턴
    */
-  async getAccountRefreshTokenMatches(
-    refreshToken: string,
-    id: string,
-  ): Promise<{ result: boolean }> {
+  async getAccountRefreshTokenMatches(refreshToken: string, id: string) {
     const account = await this.accountRepository.findOne({ where: { id } });
+
+    if (!account) {
+      throw new UnauthorizedException('존재하지 않는 사용자입니다.');
+    }
+
+    const isRefreshTokenMatching = await compare(refreshToken, account.currentHashedRefreshToken);
+
+    if (isRefreshTokenMatching) {
+      // return { result: true };
+      return { isRefreshTokenMatching, refreshToken };
+    } else {
+      throw new UnauthorizedException('접근에러입니다.');
+    }
+  }
+
+  /**
+   * 리프레쉬 토큰이 유효한지 검증하는 메소드
+   * @param refreshToken
+   * @param snsId
+   * @returns : 검증 후 결과값을 리턴
+   */
+  async getSnsIdRefreshTokenMatches(
+    refreshToken: string,
+    snsId: string,
+  ): Promise<{ result: boolean }> {
+    const account = await this.accountRepository.findOne({ where: { snsId } });
 
     if (!account) {
       throw new UnauthorizedException('존재하지 않는 사용자입니다.');

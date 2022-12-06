@@ -10,5 +10,6 @@ export class AdminUpdateInfoCommand implements ICommand {
     readonly email: string,
     readonly phone: string,
     readonly nickname: string,
+    readonly file: Express.MulterS3.File,
   ) {}
 }
