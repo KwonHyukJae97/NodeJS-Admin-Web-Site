@@ -1,4 +1,6 @@
-interface TokenPayload3 {
+interface TokenPayload {
   accountId: number;
-  email: string;
+  id: string;
+  snsType: string;
+  snsId: string;
 }

@@ -37,7 +37,7 @@ export class NoticeController {
    * @returns : 공지사항 등록 커맨드 전송
    */
   @Post()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   createNotice(
     @Body() createNoticeDto: CreateNoticeDto,

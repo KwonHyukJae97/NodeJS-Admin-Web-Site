@@ -66,51 +66,6 @@ export class AuthService {
   }
 
   /**
-   * email 조회하는 메소드
-   * @param email : DB에 조회시 입력한 email
-   * @returns : DB에 조회한 email
-   */
-  async getByEmail(email: string) {
-    const isEmailExist = await this.accountRepository.findOne({ where: { email } });
-
-    if (isEmailExist) {
-      return this.convertException.badRequestAccountError('사용중인 이메일입니다.', 400);
-    } else {
-      return '사용가능한 이메일입니다.';
-    }
-  }
-
-  /**
-   * phone 조회하는 메소드
-   * @param phone : DB에 조회시 입력한 phone
-   * @returns : DB에 조회한 phone
-   */
-  async getByPhone(phone: string) {
-    const isPhoneExist = await this.accountRepository.findOne({ where: { phone } });
-
-    if (isPhoneExist) {
-      return this.convertException.badRequestAccountError('사용중인 연락처입니다.', 400);
-    } else {
-      return '사용가능한 연락처입니다.';
-    }
-  }
-
-  /**
-   * nickname 조회하는 메소드
-   * @param nickname : DB에 조회시 입력한 nickname
-   * @returns : DB에 조회한 nickname
-   */
-  async getByNickname(nickname: string) {
-    const isNikcnameExist = await this.accountRepository.findOne({ where: { nickname } });
-
-    if (isNikcnameExist) {
-      return this.convertException.badRequestAccountError('사용중인 닉네임입니다.', 400);
-    } else {
-      return '사용가능한 닉네임입니다.';
-    }
-  }
-
-  /**
    * 회원가입의 유무를 검증하는 메소드
    * @param id
    * @param plainTextPassword
@@ -196,7 +151,7 @@ export class AuthService {
 
     if (isRefreshTokenMatching) {
       // return { result: true };
-      return { isRefreshTokenMatching, refreshToken };
+      return { isRefreshTokenMatching, refreshToken, id };
     } else {
       throw new UnauthorizedException('접근에러입니다.');
     }
@@ -498,8 +453,9 @@ export class AuthService {
   // jwt refresh token 갱신이 필요한지 확인하여 갱신 처리 후
   // * 신규 발급받은 token 정보 가져오기
   public async refreshTokenChange(id: string, payload: TokenPayload, refreshToken: string) {
+    console.log('payload 값 추출:', refreshToken);
     if (this.jwtManageService.isNeedRefreshTokenChange(refreshToken)) {
-      const newRefreshToken = this.jwtManageService.getCookieWithJwtRefreshToken(payload);
+      const newRefreshToken = this.getCookieWithJwtRefreshToken(id, null);
       await this.setCurrentRefreshToken(id, newRefreshToken.refreshToken);
 
       return newRefreshToken;
