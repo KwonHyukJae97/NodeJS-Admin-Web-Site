@@ -28,7 +28,7 @@ export class CreateAdminRoleHandler implements ICommandHandler<CreateAdminRoleCo
   async execute(command: CreateAdminRoleCommand) {
     const { roleName, companyId, roleDto } = command;
 
-    const adminrole = this.adminroleRepository.create({
+    const adminrole = await this.adminroleRepository.create({
       roleName,
       companyId,
     });
