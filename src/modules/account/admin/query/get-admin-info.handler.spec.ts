@@ -8,7 +8,6 @@ import { AccountFile } from '../../../file/entities/account-file';
 import { GetAdminInfoQuery } from './get-admin-info.query';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 
-// Repository에서 사용되는 함수 복제
 const mockRepository = () => ({
   findOneBy: jest.fn(),
   createQueryBuilder: jest.fn().mockReturnValue({
@@ -18,7 +17,6 @@ const mockRepository = () => ({
   }),
 });
 
-// MockRepository 타입 정의
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
 describe('GetDetailAdmin', () => {
@@ -56,7 +54,6 @@ describe('GetDetailAdmin', () => {
 
   describe('관리자 상세 정보 정상 조회 여부', () => {
     it('조회 성공', async () => {
-      // Given
       const adminId = 1;
 
       const account = {
@@ -101,7 +98,6 @@ describe('GetDetailAdmin', () => {
         file: accountFile,
       };
 
-      // jest.requireMock(<모듈 이름>) 을 사용하면 해당 모듈을 mocking 할 수 있음
       jest.spyOn(adminRepository, 'createQueryBuilder').mockImplementation(() => {
         const mockModule = jest.requireMock('typeorm');
         return {
@@ -113,11 +109,31 @@ describe('GetDetailAdmin', () => {
       });
       accountFileRepository.findOneBy.mockResolvedValue(accountFile);
 
-      // When
       const result = await getAdminInfoHandler.execute(new GetAdminInfoQuery(adminId));
 
-      // Then
       expect(result).toEqual(resultAdminInfo);
+    });
+
+    it('해당 관리자 정보가 없을 경우 404 에러 발생', async () => {
+      const adminId = 1;
+
+      jest.spyOn(adminRepository, 'createQueryBuilder').mockImplementation(() => {
+        const mockModule = jest.requireMock('typeorm');
+        return {
+          ...mockModule,
+          leftJoinAndSelect: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          getOne: () => undefined,
+        };
+      });
+
+      try {
+        const result = await getAdminInfoHandler.execute(new GetAdminInfoQuery(adminId));
+        expect(result).toBeDefined();
+      } catch (err) {
+        expect(err.status).toBe(404);
+        expect(err.response).toBe('관리자 정보를 찾을 수 없습니다.');
+      }
     });
   });
 });

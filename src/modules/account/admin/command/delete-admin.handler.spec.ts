@@ -9,10 +9,9 @@ import { AccountFileDb } from '../../account-file-db';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { DeleteAdminHandler } from './delete-admin.handler';
 import { Admin } from '../entities/admin';
-import { DeleteUserCommand } from '../../user/command/delete-user.command';
 import { DeleteAdminCommand } from './delete-admin.command';
+import { GetAdminInfoQuery } from '../query/get-admin-info.query';
 
-// Repository에서 사용되는 함수 복제
 const mockRepository = () => ({
   softDelete: jest.fn(),
   findOneBy: jest.fn(),
@@ -25,7 +24,6 @@ const mockRepository = () => ({
   }),
 });
 
-// MockRepository 타입 정의
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
 describe('DeleteAdmin', () => {
@@ -81,11 +79,10 @@ describe('DeleteAdmin', () => {
   });
 
   describe('관리자 정보 정상 삭제 여부', () => {
-    it('삭제 성공', async () => {
-      // Given
-      const adminId = 1;
-      const delDate = new Date();
+    const adminId = 1;
+    const delDate = new Date();
 
+    it('삭제 성공', async () => {
       const adminInfo = {
         accountId: 1,
         companyId: 1,
@@ -126,6 +123,26 @@ describe('DeleteAdmin', () => {
       // Then
       expect(eventBus.publish).toHaveBeenCalledTimes(1);
       expect(result).toEqual('관리자 삭제 완료');
+    });
+
+    it('해당 관리자 계정 정보가 없을 경우 404 에러 발생', async () => {
+      const adminInfo = {
+        accountId: 0,
+        companyId: 1,
+        roleId: 1,
+        isSuper: false,
+      };
+
+      adminRepository.findOneBy.mockResolvedValue(adminInfo);
+      accountRepository.findOneBy.mockResolvedValue(undefined);
+
+      try {
+        const result = await deleteAdminHandler.execute(new DeleteAdminCommand(adminId, delDate));
+        expect(result).toBeDefined();
+      } catch (err) {
+        expect(err.status).toBe(404);
+        expect(err.response).toBe('관리자 정보를 찾을 수 없습니다.');
+      }
     });
   });
 });
