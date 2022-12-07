@@ -11,7 +11,6 @@ import { AccountFileDb } from '../../account-file-db';
 import { DeleteUserCommand } from './delete-user.command';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 
-// Repository에서 사용되는 함수 복제
 const mockRepository = () => ({
   softDelete: jest.fn(),
   findOneBy: jest.fn(),
@@ -24,7 +23,6 @@ const mockRepository = () => ({
   }),
 });
 
-// MockRepository 타입 정의
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
 describe('DeleteUser', () => {
@@ -80,11 +78,11 @@ describe('DeleteUser', () => {
   });
 
   describe('사용자 정보 정상 삭제 여부', () => {
+    const userId = 1;
+    const delDate = new Date();
+
     it('삭제 성공', async () => {
       // Given
-      const userId = 1;
-      const delDate = new Date();
-
       const userInfo = {
         userId: 1,
         grade: 0,
@@ -103,7 +101,6 @@ describe('DeleteUser', () => {
         gender: '0',
       };
 
-      // 반환값 설정 (mockResolvedValue = 비동기 반환값 / mockReturnValue = 일반 반환값 반환 시 사용)
       userRepository.findOneBy.mockResolvedValue(userInfo);
       accountRepository.findOneBy.mockResolvedValue(accountInfo);
       acccountFileRepository.findOneBy.mockResolvedValue(accountInfo.accountId);
@@ -118,12 +115,29 @@ describe('DeleteUser', () => {
         };
       });
 
-      // When
       const result = await deleteUserHandler.execute(new DeleteUserCommand(userId, delDate));
 
-      // Then
       expect(eventBus.publish).toHaveBeenCalledTimes(1);
       expect(result).toEqual('삭제가 완료 되었습니다.');
+    });
+
+    it('해당 사용자 계정 정보가 없을 경우 404 에러 발생', async () => {
+      const userInfo = {
+        userId: 1,
+        grade: 0,
+        accountId: 0,
+      };
+
+      userRepository.findOneBy.mockResolvedValue(userInfo);
+      accountRepository.findOneBy.mockResolvedValue(undefined);
+
+      try {
+        const result = await deleteUserHandler.execute(new DeleteUserCommand(userId, delDate));
+        expect(result).toBeDefined();
+      } catch (err) {
+        expect(err.status).toBe(404);
+        expect(err.response).toBe('사용자 정보를 찾을 수 없습니다.');
+      }
     });
   });
 });

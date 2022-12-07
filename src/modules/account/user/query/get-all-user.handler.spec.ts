@@ -63,5 +63,17 @@ describe('GetAllUser', () => {
 
       expect(result).toEqual([]);
     });
+
+    it('유저리스트가 없을 경우 404 에러 발생', async () => {
+      userRepository.find.mockResolvedValue(undefined);
+
+      try {
+        const result = await getAllUserHandler.execute(GetAllUserQuery);
+        expect(result).toBeDefined();
+      } catch (err) {
+        expect(err.status).toBe(404);
+        expect(err.response).toBe('사용자 정보를 찾을 수 없습니다.');
+      }
+    });
   });
 });

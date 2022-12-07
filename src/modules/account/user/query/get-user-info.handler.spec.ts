@@ -8,6 +8,8 @@ import { User } from '../entities/user';
 import { AccountFile } from '../../../file/entities/account-file';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { GetUserInfoQuery } from './get-user-info.query';
+import { GetAllAdminQuery } from '../../admin/query/get-all-admin.query';
+import { GetAdminInfoQuery } from '../../admin/query/get-admin-info.query';
 
 // Repository mocking
 const mockRepository = () => ({
@@ -112,6 +114,28 @@ describe('GetUserInfo', () => {
       });
       const result = await getUserInfoHandler.execute(new GetUserInfoQuery(1));
       expect(result).toEqual(mockedUser);
+    });
+
+    it('해당 사용자 정보가 없을 경우 404 에러 발생', async () => {
+      const userId = 1;
+
+      jest.spyOn(userRepository, 'createQueryBuilder').mockImplementation(() => {
+        const mockModule = jest.requireMock('typeorm');
+        return {
+          ...mockModule,
+          leftJoinAndSelect: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          getOne: () => undefined,
+        };
+      });
+
+      try {
+        const result = await getUserInfoHandler.execute(new GetUserInfoQuery(userId));
+        expect(result).toBeDefined();
+      } catch (err) {
+        expect(err.status).toBe(404);
+        expect(err.response).toBe('사용자 정보를 찾을 수 없습니다.');
+      }
     });
   });
 });
