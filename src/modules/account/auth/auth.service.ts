@@ -1,12 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { compare, hash } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -143,7 +135,7 @@ export class AuthService {
     const account = await this.accountRepository.findOne({ where: { id } });
 
     if (!account) {
-      throw new UnauthorizedException('존재하지 않는 사용자입니다.');
+      return this.convertException.notFoundError('사용자 ', 404);
     }
 
     const isRefreshTokenMatching = await compare(refreshToken, account.currentHashedRefreshToken);
@@ -152,7 +144,7 @@ export class AuthService {
       // return { result: true };
       return { isRefreshTokenMatching, refreshToken, id };
     } else {
-      throw new UnauthorizedException('접근에러입니다.');
+      return this.convertException.badRequestAccountError('입력한 ', 400);
     }
   }
 
@@ -162,22 +154,19 @@ export class AuthService {
    * @param snsId
    * @returns : 검증 후 결과값을 리턴
    */
-  async getSnsIdRefreshTokenMatches(
-    refreshToken: string,
-    snsId: string,
-  ): Promise<{ result: boolean }> {
+  async getSnsIdRefreshTokenMatches(refreshToken: string, snsId: string) {
     const account = await this.accountRepository.findOne({ where: { snsId } });
 
     if (!account) {
-      throw new UnauthorizedException('존재하지 않는 사용자입니다.');
+      return this.convertException.notFoundError('사용자 ', 404);
     }
 
     const isRefreshTokenMatching = await compare(refreshToken, account.currentHashedRefreshToken);
 
     if (isRefreshTokenMatching) {
-      return { result: true };
+      return { isRefreshTokenMatching, refreshToken, snsId };
     } else {
-      throw new UnauthorizedException('접근에러입니다.');
+      return this.convertException.badRequestAccountError('입력한 ', 400);
     }
   }
 
@@ -329,7 +318,7 @@ export class AuthService {
 
     //division 값 확인 후 관리자만 로그인 가능
     if (account.division === false) {
-      throw new UnauthorizedException('로그인 정보를 확인해주세요.');
+      return this.convertException.badInput('관리자 로그인 정보가 아닙니다. ', 400);
     }
     const { accessToken, accessOption } = await this.getCookieWithJwtAccessToken(id, null);
 
@@ -390,7 +379,7 @@ export class AuthService {
 
     //division 값 확인 후 사용자만 로그인 가능
     if (account.division === true) {
-      throw new UnauthorizedException('로그인 정보를 확인해주세요.');
+      return this.convertException.badInput('사용자 로그인 정보가 아닙니다. ', 400);
     }
     const { accessToken, accessOption } = await this.getCookieWithJwtAccessToken(id, null);
 

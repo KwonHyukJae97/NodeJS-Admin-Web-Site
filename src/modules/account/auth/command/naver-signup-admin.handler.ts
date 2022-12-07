@@ -42,7 +42,6 @@ export class NaverSignUpAdminHandler implements ICommandHandler<NaverSignUpAdmin
       companyCode,
       businessNumber,
     } = command;
-    console.log('naver command', command.snsToken);
 
     const accountNaverAdmin = this.accountRepository.create({
       name,

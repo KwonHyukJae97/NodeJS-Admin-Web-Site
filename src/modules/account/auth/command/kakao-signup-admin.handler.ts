@@ -43,7 +43,6 @@ export class KakaoSignUpAdminHandler implements ICommandHandler<KakaoSignUpAdmin
       companyCode,
       businessNumber,
     } = command;
-    console.log('kakao command', command.snsToken);
 
     const accountKakaoAdmin = this.accountRepository.create({
       name,

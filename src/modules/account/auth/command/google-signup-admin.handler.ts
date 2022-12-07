@@ -42,7 +42,6 @@ export class GoogleSignUpAdminHandler implements ICommandHandler<GoogleSignUpAdm
       companyCode,
       businessNumber,
     } = command;
-    console.log('google command', command.snsToken);
 
     const accountGoogleAdmin = this.accountRepository.create({
       name,
