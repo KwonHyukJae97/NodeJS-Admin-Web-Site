@@ -69,30 +69,30 @@ describe('CreateQna', () => {
   });
 
   describe('qna 정상 등록 여부', () => {
-    it('등록 성공', async () => {
-      // Given
-      const accountId = 27;
-      const boardTypeCode = '2';
-      const title = 'test';
-      const content = 'test Content';
-      const viewCount = 0;
+    // Given
+    const accountId = 27;
+    const boardTypeCode = '2';
+    const title = 'test';
+    const content = 'test Content';
+    const viewCount = 0;
 
-      const board = {
-        boardId: 11,
-        accountId: accountId,
-        boardTypeCode: boardTypeCode,
-        title: title,
-        content: content,
-        viewCount: viewCount,
-      };
+    const board = {
+      boardId: 11,
+      accountId: accountId,
+      boardTypeCode: boardTypeCode,
+      title: title,
+      content: content,
+      viewCount: viewCount,
+    };
 
-      const qna = {
-        boardId: board.boardId,
-        board: board,
-      };
+    const qna = {
+      boardId: board.boardId,
+      board: board,
+    };
 
-      const files = [];
+    const files = [];
 
+    it('QNA 등록 성공', async () => {
       boardRepository.create.mockResolvedValue(board);
       boardRepository.save.mockResolvedValue(board);
       qnaRepository.create.mockResolvedValue(qna);
@@ -103,6 +103,33 @@ describe('CreateQna', () => {
 
       // Then
       expect(result).toEqual(qna);
+    });
+
+    it('게시글 정보 필수 작성 체크 후 등록 실패 처리', async () => {
+      try {
+        boardRepository.save.mockRejectedValue(board);
+
+        const result = await createQnaHandler.execute(new CreateQnaCommand(title, content, files));
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(400);
+        expect(err.response).toBe('게시글 정보에입력된 내용을 확인해주세요.');
+      }
+    });
+
+    it('QNA 정보 필수 작성 체크 후 등록 실패 처리', async () => {
+      try {
+        boardRepository.create.mockReturnValue(board);
+        boardRepository.save.mockReturnValue(board);
+        qnaRepository.create.mockResolvedValue(qna);
+        qnaRepository.save.mockRejectedValue(qna);
+
+        const result = await createQnaHandler.execute(new CreateQnaCommand(title, content, files));
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(400);
+        expect(err.response).toBe('QnA 정보에입력된 내용을 확인해주세요.');
+      }
     });
   });
 });
