@@ -49,7 +49,7 @@ describe('GetAllAdmin', () => {
   });
 
   describe('전체 관리자 정보 정상 조회 여부', () => {
-    it('조회 성공', async () => {
+    it('관리자 리스트 조회 성공', async () => {
       const adminInfo = [
         {
           adminId: 1,
@@ -97,9 +97,10 @@ describe('GetAllAdmin', () => {
       const result = await getAllAdminHandler.execute(new GetAllAdminQuery());
 
       expect(result).toEqual(adminList);
+      expect(accountFileRepository.findOneBy).toHaveBeenCalledTimes(1);
     });
 
-    it('관리자리스트가 없을 경우 404 에러 발생', async () => {
+    it('관리자 리스트가 없을 경우 404 에러 발생', async () => {
       adminRepository.find.mockResolvedValue(undefined);
 
       try {

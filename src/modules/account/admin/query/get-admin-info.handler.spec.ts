@@ -53,7 +53,7 @@ describe('GetDetailAdmin', () => {
   });
 
   describe('관리자 상세 정보 정상 조회 여부', () => {
-    it('조회 성공', async () => {
+    it('관리자 상세정보 조회 성공', async () => {
       const adminId = 1;
 
       const account = {
@@ -112,6 +112,56 @@ describe('GetDetailAdmin', () => {
       const result = await getAdminInfoHandler.execute(new GetAdminInfoQuery(adminId));
 
       expect(result).toEqual(resultAdminInfo);
+      expect(accountFileRepository.findOneBy).toHaveBeenCalledTimes(1);
+    });
+
+    it('계정 파일 없을 경우 관리자 상세정보 조회 성공', async () => {
+      const adminId = 1;
+
+      const account = {
+        accountId: 1,
+        id: 'test',
+        name: '이름',
+        email: 'test@email.com',
+        phone: '010-0000-0000',
+        nickname: '닉네임 변경',
+        birth: '20221202',
+        gender: '0',
+      };
+
+      const admin = {
+        adminId: 1,
+        companyId: 1,
+        roleId: 1,
+        accountId: 1,
+        isSuper: false,
+        account: account,
+      };
+
+      const resultAdminInfo = {
+        adminId: 1,
+        companyId: 1,
+        roleId: 1,
+        accountId: 1,
+        isSuper: false,
+        account: account,
+      };
+
+      jest.spyOn(adminRepository, 'createQueryBuilder').mockImplementation(() => {
+        const mockModule = jest.requireMock('typeorm');
+        return {
+          ...mockModule,
+          leftJoinAndSelect: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          getOne: () => admin,
+        };
+      });
+      accountFileRepository.findOneBy.mockResolvedValue(undefined);
+
+      const result = await getAdminInfoHandler.execute(new GetAdminInfoQuery(adminId));
+
+      expect(result).toEqual(resultAdminInfo);
+      expect(accountFileRepository.findOneBy).toHaveBeenCalledTimes(1);
     });
 
     it('해당 관리자 정보가 없을 경우 404 에러 발생', async () => {

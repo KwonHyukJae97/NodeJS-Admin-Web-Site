@@ -10,7 +10,7 @@ import { EventBus } from '@nestjs/cqrs';
 import { UpdateAdminHandler } from './update-admin.handler';
 import { Admin } from '../entities/admin';
 import { UpdateAdminCommand } from './update-admin.command';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 const mockRepository = () => ({
   save: jest.fn(),
@@ -84,8 +84,7 @@ describe('UpdateAdmin', () => {
     // 수정하고자 하는 값
     const newAdminInfo = {
       roleId: 1,
-      // password: 'password',
-      password: bcrypt.hashSync('10671', 10),
+      password: 'password',
       email: 'test@email.com',
       phone: '010-0000-0000',
       nickname: '닉네임 변경',
@@ -147,18 +146,13 @@ describe('UpdateAdmin', () => {
       gender: '0',
     };
 
-    const passwordInfo = {
-      salt: bcrypt.genSaltSync(10671),
-      hashedPassword: bcrypt.hashSync('10671', 10),
-    };
-
-    it('수정 성공', async () => {
+    it('관리자 정보 수정 성공', async () => {
       adminRepository.findOneBy.mockResolvedValue(adminInfo);
       accountRepository.findOneBy.mockResolvedValue(accountInfo);
-      adminRepository.save.mockResolvedValue(updateAdminInfo);
-      const saltPassword = jest
-        .spyOn(bcrypt, 'genSalt')
-        .mockImplementation(() => Promise.resolve(''));
+      adminRepository.save.mockResolvedValueOnce(updateAdminInfo);
+      adminRepository.save.mockResolvedValueOnce(updateAdminInfo);
+      jest.spyOn(bcrypt, 'genSalt');
+      jest.spyOn(bcrypt, 'hash');
       accountRepository.save.mockResolvedValue(updateAccountInfo);
       accountFileRepository.findOneBy(adminInfo.accountId);
 
@@ -182,6 +176,8 @@ describe('UpdateAdmin', () => {
         expect(result.nickname).toEqual(resultAdminInfo.nickname);
         expect(result.phone).toEqual(resultAdminInfo.phone);
       }
+      expect(bcrypt.genSalt).toHaveBeenCalled();
+      expect(bcrypt.hash).toHaveBeenCalled();
       expect(eventBus.publish).toHaveBeenCalledTimes(1);
     });
 
