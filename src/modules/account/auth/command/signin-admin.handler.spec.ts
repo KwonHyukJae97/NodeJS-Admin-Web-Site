@@ -59,27 +59,51 @@ describe('SignIn Admin', () => {
   });
 
   describe('관리자 로그인 성공 여부', () => {
+    const adminInput = {
+      id: 'admin',
+      password: 'admin',
+      accessToken: '',
+      refreshToken: '',
+    };
+
+    const findAccountFalse = {
+      id: 'admin',
+      password: 'admin',
+      name: '관리자',
+      email: 'admin@email.com',
+      phone: '010-1111-1111',
+      nickname: '별명',
+      birth: '20000203',
+      gender: '0',
+      division: false,
+    };
+
+    const findAccountTrue = {
+      id: 'admin',
+      password: 'admin',
+      name: '관리자',
+      email: 'admin@email.com',
+      phone: '010-1111-1111',
+      nickname: '별명',
+      birth: '20000203',
+      gender: '0',
+      division: true,
+    };
+
+    const returnAdmin = {
+      accountId: 1,
+      id: 'admin',
+      name: '관리자',
+      email: 'admin@email.com',
+      phone: '010-1111-1111',
+      nickname: '별명',
+      birth: '20000203',
+      gender: '0',
+    };
+
     it('관리자 로그인 성공', async () => {
-      const adminInput = {
-        id: 'admin',
-        password: 'admin',
-        accessToken: '',
-        refreshToken: '',
-      };
-
-      const returnAdmin = {
-        accountId: 1,
-        id: 'admin',
-        name: '관리자',
-        email: 'admin@email.com',
-        phone: '010-1111-1111',
-        nickname: '별명',
-        birth: '20000203',
-        gender: '0',
-      };
-
-      accountRepository.findOne.mockResolvedValue(adminInput.id);
-      jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(adminInput.password));
+      accountRepository.findOne.mockResolvedValue(findAccountTrue);
+      jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(true));
       jest.spyOn(accountRepository, 'createQueryBuilder').mockImplementation(() => {
         const mockModule = jest.requireMock('typeorm');
         return {
@@ -99,11 +123,80 @@ describe('SignIn Admin', () => {
         ),
       );
 
+      console.log(result);
       expect(result).toEqual({
         account: returnAdmin,
         accessToken: adminInput.accessToken,
         refreshToken: adminInput.refreshToken,
       });
+    });
+
+    it('계정 정보가 없을 경우 400 에러 발생', async () => {
+      accountRepository.findOne.mockResolvedValue(undefined);
+
+      try {
+        const result = await signInAdminHandler.execute(
+          new SignInAdminCommand(
+            adminInput.id,
+            adminInput.password,
+            adminInput.accessToken,
+            adminInput.refreshToken,
+          ),
+        );
+        expect(result).toBeDefined();
+      } catch (err) {
+        expect(err.status).toBe(400);
+        expect(err.message).toBe('관리자 로그인에  정보를 확인해주세요.');
+      }
+    });
+
+    it('비밀번호가 일치하지 않을 경우 400 에러 발생', async () => {
+      accountRepository.findOne.mockResolvedValue(findAccountTrue);
+      jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(false));
+
+      try {
+        const result = await signInAdminHandler.execute(
+          new SignInAdminCommand(
+            adminInput.id,
+            adminInput.password,
+            adminInput.accessToken,
+            adminInput.refreshToken,
+          ),
+        );
+        expect(result).toBeDefined();
+      } catch (err) {
+        expect(err.status).toBe(400);
+        expect(err.message).toBe('비밀번호에  정보를 확인해주세요.');
+      }
+    });
+
+    it('관리자 계정이 아닐 경우 401 에러 발생', async () => {
+      accountRepository.findOne.mockResolvedValue(findAccountFalse);
+      jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(true));
+      jest.spyOn(accountRepository, 'createQueryBuilder').mockImplementation(() => {
+        const mockModule = jest.requireMock('typeorm');
+        return {
+          ...mockModule,
+          select: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          getOne: () => returnAdmin,
+        };
+      });
+
+      try {
+        const result = await signInAdminHandler.execute(
+          new SignInAdminCommand(
+            adminInput.id,
+            adminInput.password,
+            adminInput.accessToken,
+            adminInput.refreshToken,
+          ),
+        );
+        expect(result).toBeDefined();
+      } catch (err) {
+        expect(err.status).toBe(401);
+        expect(err.message).toBe('관리자 로그인 정보를 확인해주세요.');
+      }
     });
   });
 });
