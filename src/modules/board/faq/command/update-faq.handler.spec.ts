@@ -85,39 +85,39 @@ describe('UpdateFaq', () => {
   });
 
   describe('Faq 정상 수정 여부', () => {
+    // Given
+    const title = 'Faq제목.';
+    const content = 'faq 내용';
+    const categoryName = '카테고리 제목';
+    const role = '본사 관리자';
+    const faqId = 1;
+    const files = [];
+    const boardId = 1;
+
+    const board = {
+      boardId: boardId,
+      boardTypeCode: '0',
+      title: title,
+      content: content,
+      viewCount: 0,
+    };
+
+    const updateBoard = {
+      boardId: boardId,
+      boardTypeCode: '1',
+      title: 'title',
+      content: 'content',
+    };
+
+    const faq = {
+      board: board,
+    };
+
+    const updateFaq = {
+      board: updateBoard,
+    };
+
     it('Faq 수정 성공', async () => {
-      // Given
-      const title = 'Faq제목.';
-      const content = 'faq 내용';
-      const categoryName = '카테고리 제목';
-      const role = '본사 관리자';
-      const faqId = 1;
-      const files = [];
-      const boardId = 1;
-
-      const board = {
-        boardId: boardId,
-        boardTypeCode: '0',
-        title: title,
-        content: content,
-        viewCount: 0,
-      };
-
-      const updateBoard = {
-        boardId: boardId,
-        boardTypeCode: '1',
-        title: 'title',
-        content: 'content',
-      };
-
-      const faq = {
-        board: board,
-      };
-
-      const updateFaq = {
-        board: updateBoard,
-      };
-
       faqRepository.findOneBy.mockResolvedValue(faq);
       boardRepository.findOneBy.mockResolvedValue(board);
       fileRepository.findBy.mockResolvedValue(boardId);
@@ -145,6 +145,46 @@ describe('UpdateFaq', () => {
         expect(result.board).toEqual(updateFaq.board);
       }
       // expect(result).toEqual(undefined);
+    });
+
+    it('faq 조회 실패', async () => {
+      try {
+        const faqId = 999;
+        const result = await updateFaqHandler.execute(
+          new UpdateFaqCommand(
+            updateBoard.title,
+            updateBoard.content,
+            categoryName,
+            role,
+            faqId,
+            files,
+          ),
+        );
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(404);
+        expect(err.response).toBe('FAQ 정보를 찾을 수 없습니다.');
+      }
+    });
+
+    it('role 필수 작성 체크', async () => {
+      try {
+        const role = '';
+        const result = await updateFaqHandler.execute(
+          new UpdateFaqCommand(
+            updateBoard.title,
+            updateBoard.content,
+            categoryName,
+            role,
+            faqId,
+            files,
+          ),
+        );
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(400);
+        expect(err.message).toBe('본사 관리자만 접근 가능합니다.');
+      }
     });
   });
 });

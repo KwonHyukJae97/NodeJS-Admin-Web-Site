@@ -56,35 +56,61 @@ describe('GetNoticeList', () => {
   });
 
   describe('FAQ 리스트 조회', () => {
-    it('FAQ 리스트 반환', async () => {
-      const role = '본사 관리자';
+    const role = '본사 관리자';
+    const searchWord = '';
+    const searchKey = '';
 
-      const param = {
+    const param = {
+      role: role,
+      searchWord: null,
+      searchKey: null,
+      pageNo: 1,
+      pageSize: 10,
+      totalData: false,
+      getLimit: () => 1,
+      getOffset: () => 10,
+    };
+
+    const board = {
+      boardId: 1,
+      accountId: 2,
+      boardTypeCode: '2',
+      title: searchWord,
+      content: 'content',
+      viewCount: 0,
+    };
+
+    const searchWordBoard = {
+      boardId: 1,
+      accountId: 2,
+      boardTypeCode: '2',
+      title: 'searchWord',
+      content: 'content',
+      viewCount: 0,
+    };
+
+    const category = {
+      categoryId: 1,
+      categoryName: 'categoryName',
+      isUse: true,
+    };
+
+    const faqList = [
+      {
+        faqId: 1,
+        category: category,
+        isTop: true,
+        board: board,
         role: role,
-        searchWord: null,
-        searchKey: null,
-        pageNo: 1,
-        pageSize: 10,
-        totalData: false,
-        getLimit: () => 1,
-        getOffset: () => 10,
-      };
+      },
+    ];
 
-      const board = {
-        boardId: 1,
-        accountId: 2,
-        boardTypeCode: '2',
-        title: 'title',
-        content: 'content',
-        viewCount: 0,
-      };
-
-      const category = {
-        categoryId: 1,
-        categoryName: 'categoryName',
-        isUse: true,
-      };
-      const faqList = [
+    const resultFaqList = {
+      currentPage: 1,
+      pageSize: 10,
+      totalCount: 1,
+      totalPage: 1,
+      items: [
         {
           faqId: 1,
           category: category,
@@ -92,24 +118,41 @@ describe('GetNoticeList', () => {
           board: board,
           role: role,
         },
-      ];
+      ],
+    };
 
-      const resultFaqList = {
-        currentPage: 1,
-        pageSize: 10,
-        totalCount: 1,
-        totalPage: 1,
-        items: [
-          {
-            faqId: 1,
-            category: category,
-            isTop: true,
-            board: board,
-            role: role,
-          },
-        ],
-      };
+    const resultSearchWordFaqList = {
+      currentPage: 1,
+      pageSize: 10,
+      totalCount: 1,
+      totalPage: 1,
+      items: [
+        {
+          faqId: 1,
+          category: category,
+          isTop: true,
+          board: searchWordBoard,
+          role: role,
+        },
+      ],
+    };
 
+    const resultSearchWordWithKeyFaqList = {
+      currentPage: 1,
+      pageSize: 10,
+      totalCount: 1,
+      totalPage: 1,
+      items: [
+        {
+          faqId: 1,
+          category: category,
+          isTop: true,
+          board: searchWordBoard,
+          role: role,
+        },
+      ],
+    };
+    it('FAQ 전체 리스트 반환', async () => {
       jest.spyOn(faqRepository, 'createQueryBuilder').mockImplementation(() => {
         const mockModule = jest.requireMock('typeorm');
         return {
@@ -118,7 +161,6 @@ describe('GetNoticeList', () => {
           where: jest.fn().mockReturnThis(),
           orderBy: jest.fn().mockReturnThis(),
           addOrderBy: jest.fn().mockReturnThis(),
-          andWhere: jest.fn().mockReturnThis(),
           take: jest.fn().mockReturnThis(),
           skip: jest.fn().mockReturnThis(),
           getMany: () => faqList,
@@ -129,6 +171,139 @@ describe('GetNoticeList', () => {
       const result = await getFaqListHandler.execute(new GetFaqListQuery(param));
 
       expect(result).toEqual(resultFaqList);
+    });
+
+    it('카테고리별 FAQ 리스트 반환', async () => {
+      const searchKeyParam = {
+        role: role,
+        searchWord: null,
+        searchKey: 'categoryName',
+        pageNo: 1,
+        pageSize: 10,
+        totalData: false,
+        getLimit: () => 1,
+        getOffset: () => 10,
+      };
+
+      jest.spyOn(faqRepository, 'createQueryBuilder').mockImplementation(() => {
+        const mockModule = jest.requireMock('typeorm');
+        return {
+          ...mockModule,
+          leftJoinAndSelect: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          andWhere: jest.fn().mockReturnThis(),
+          orderBy: jest.fn().mockReturnThis(),
+          addOrderBy: jest.fn().mockReturnThis(),
+          take: jest.fn().mockReturnThis(),
+          skip: jest.fn().mockReturnThis(),
+          getMany: () => faqList,
+          getCount: () => resultFaqList.totalCount,
+        };
+      });
+
+      const result = await getFaqListHandler.execute(new GetFaqListQuery(searchKeyParam));
+
+      expect(resultFaqList.items[0].category.categoryName).toEqual(searchKeyParam.searchKey);
+      expect(faqRepository.createQueryBuilder).toBeCalledTimes(2);
+    });
+
+    it('검색어로 조회된 FAQ 리스트 반환', async () => {
+      const searchWordParam = {
+        role: role,
+        searchWord: 'searchWord',
+        searchKey: null,
+        pageNo: 1,
+        pageSize: 10,
+        totalData: false,
+        getLimit: () => 1,
+        getOffset: () => 10,
+      };
+
+      jest.spyOn(faqRepository, 'createQueryBuilder').mockImplementation(() => {
+        const mockModule = jest.requireMock('typeorm');
+        return {
+          ...mockModule,
+          leftJoinAndSelect: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          andWhere: jest.fn().mockReturnThis(),
+          orderBy: jest.fn().mockReturnThis(),
+          addOrderBy: jest.fn().mockReturnThis(),
+          take: jest.fn().mockReturnThis(),
+          skip: jest.fn().mockReturnThis(),
+          getMany: () => resultSearchWordFaqList,
+          getCount: () => resultSearchWordFaqList.totalCount,
+        };
+      });
+
+      const result = await getFaqListHandler.execute(new GetFaqListQuery(searchWordParam));
+
+      expect(resultSearchWordFaqList.items[0].board.title).toEqual(searchWordParam.searchWord);
+      expect(faqRepository.createQueryBuilder).toBeCalledTimes(3);
+    });
+
+    it('검색어+카테고리로 조회된 전체 FAQ 리스트 반환', async () => {
+      const searchKeyWithCategoryParam = {
+        role: role,
+        searchWord: 'searchWord',
+        searchKey: 'categoryName',
+        pageNo: 1,
+        pageSize: 10,
+        totalData: false,
+        getLimit: () => 1,
+        getOffset: () => 10,
+      };
+
+      jest.spyOn(faqRepository, 'createQueryBuilder').mockImplementation(() => {
+        const mockModule = jest.requireMock('typeorm');
+        return {
+          ...mockModule,
+          leftJoinAndSelect: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          andWhere: jest.fn().mockReturnThis(),
+          orderBy: jest.fn().mockReturnThis(),
+          addOrderBy: jest.fn().mockReturnThis(),
+          take: jest.fn().mockReturnThis(),
+          skip: jest.fn().mockReturnThis(),
+          getMany: () => resultSearchWordWithKeyFaqList,
+          getCount: () => resultSearchWordWithKeyFaqList.totalCount,
+        };
+      });
+
+      const result = await getFaqListHandler.execute(
+        new GetFaqListQuery(searchKeyWithCategoryParam),
+      );
+      expect(resultSearchWordWithKeyFaqList.items[0].category.categoryName).toEqual(
+        searchKeyWithCategoryParam.searchKey,
+      );
+      expect(resultSearchWordWithKeyFaqList.items[0].board.title).toEqual(
+        searchKeyWithCategoryParam.searchWord,
+      );
+      expect(faqRepository.createQueryBuilder).toBeCalledTimes(4);
+    });
+
+    it('FAQ 리스트 조회 실패', async () => {
+      try {
+        jest.spyOn(faqRepository, 'createQueryBuilder').mockImplementation(() => {
+          const mockModule = jest.requireMock('typeorm');
+          return {
+            ...mockModule,
+            leftJoinAndSelect: jest.fn().mockReturnThis(),
+            where: jest.fn().mockReturnThis(),
+            orderBy: jest.fn().mockReturnThis(),
+            addOrderBy: jest.fn().mockReturnThis(),
+            andWhere: jest.fn().mockReturnThis(),
+            take: jest.fn().mockReturnThis(),
+            skip: jest.fn().mockReturnThis(),
+            getMany: () => faqList,
+            getCount: () => 0,
+          };
+        });
+        const result = await getFaqListHandler.execute(new GetFaqListQuery(param));
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(404);
+        expect(err.response).toBe('FAQ 정보를 찾을 수 없습니다.');
+      }
     });
   });
 });

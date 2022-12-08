@@ -78,31 +78,31 @@ describe('createFaq', () => {
   });
 
   describe('FAQ 등록 여부', () => {
+    const title = 'FAQ입니다.';
+    const content = 'FAQ 내용';
+    const categoryName = '카테고리 제목';
+    const role = '본사 관리자';
+    const files = [];
+
+    const board = {
+      accountId: 27,
+      boardTypeCode: '1',
+      title: title,
+      content: content,
+      viewCount: 0,
+    };
+
+    const category = {
+      categoryName: categoryName,
+    };
+
+    const faq = {
+      boardId: 1,
+      categoryId: 1,
+      board: board,
+    };
+
     it('FAQ 등록 성공', async () => {
-      const title = 'FAQ입니다.';
-      const content = 'FAQ 내용';
-      const categoryName = '카테고리 제목';
-      const role = '본사 관리자';
-      const files = [];
-
-      const board = {
-        accountId: 27,
-        boardTypeCode: '1',
-        title: title,
-        content: content,
-        viewCount: 0,
-      };
-
-      const category = {
-        categoryName: categoryName,
-      };
-
-      const faq = {
-        boardId: 1,
-        categoryId: 1,
-        board: board,
-      };
-
       boardRepository.create.mockReturnValue(board);
       boardRepository.save.mockReturnValue(board);
       categoryRepository.findOneBy.mockReturnValue(category);
@@ -113,6 +113,51 @@ describe('createFaq', () => {
         new CreateFaqCommand(title, content, categoryName, role, files),
       );
       expect(result).toEqual(faq);
+    });
+
+    it('게시글 정보 필수 작성 체크 후 등록 실패 처리', async () => {
+      try {
+        boardRepository.save.mockRejectedValue(board);
+
+        const result = await createFaqHandler.execute(
+          new CreateFaqCommand(title, content, categoryName, role, files),
+        );
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(400);
+        expect(err.response).toBe('게시글 정보에입력된 내용을 확인해주세요.');
+      }
+    });
+
+    it('FAQ 카테고리 찾을 수 없을 경우 실패 처리', async () => {
+      try {
+        const categoryName = '';
+        categoryRepository.findOneBy.mockReturnValue(undefined);
+        const result = await createFaqHandler.execute(
+          new CreateFaqCommand(title, content, categoryName, role, files),
+        );
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(404);
+        expect(err.response).toBe('카테고리 정보를 찾을 수 없습니다.');
+      }
+    });
+
+    it('FAQ 정보 필수 작성 체크 후 등록 실패 처리', async () => {
+      try {
+        boardRepository.create.mockReturnValue(board);
+        boardRepository.save.mockReturnValue(board);
+        categoryRepository.findOneBy.mockReturnValue(category);
+        faqRepository.save.mockRejectedValue(faq);
+
+        const result = await createFaqHandler.execute(
+          new CreateFaqCommand(title, content, categoryName, role, files),
+        );
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(400);
+        expect(err.response).toBe('FAQ 정보에입력된 내용을 확인해주세요.');
+      }
     });
   });
 });

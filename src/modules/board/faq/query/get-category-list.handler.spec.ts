@@ -10,16 +10,9 @@ import { GetCategoryListQuery } from './get-category-list.query';
 
 const mockRepository = () => ({
   createQueryBuilder: jest.fn().mockReturnValue({
-    select: jest.fn().mockReturnThis(),
-    leftJoin: jest.fn().mockReturnThis(),
-    leftJoinAndSelect: jest.fn().mockReturnThis(),
-    addSelect: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
-    groupBy: jest.fn().mockReturnThis(),
-    getRawMany: jest.fn().mockReturnThis(),
-    getRawCount: jest.fn().mockReturnThis(),
-    limit: jest.fn().mockReturnThis(),
-    offset: jest.fn().mockReturnThis(),
+    orderBy: jest.fn().mockReturnThis(),
+    getMany: jest.fn().mockReturnThis(),
   }),
 });
 
@@ -54,39 +47,51 @@ describe('GetNoticeList', () => {
   });
 
   describe('FaqCategory 리스트 조회', () => {
+    const role = '본사 관리자';
+
+    const categoryList = {
+      categoryId: 1,
+      categoryName: 'categoryName',
+      isUse: true,
+    };
+
+    const resultCategoryList = {
+      categoryId: 1,
+      categoryName: 'categoryName',
+      isUse: true,
+    };
+
     it('FaqCategory 리스트 반환', async () => {
-      const role = '본사 관리자';
-
-      const categoryList = {
-        categoryId: 1,
-        categoryName: 'categoryName',
-        isUse: true,
-      };
-
-      const resultCategoryList = {
-        categoryId: 1,
-        categoryName: 'categoryName',
-        isUse: true,
-      };
-
       jest.spyOn(catogoryRepository, 'createQueryBuilder').mockImplementation(() => {
         const mockModule = jest.requireMock('typeorm');
         return {
           ...mockModule,
-          leftJoinAndSelect: jest.fn().mockReturnThis(),
           where: jest.fn().mockReturnThis(),
           orderBy: jest.fn().mockReturnThis(),
-          addOrderBy: jest.fn().mockReturnThis(),
-          andWhere: jest.fn().mockReturnThis(),
-          take: jest.fn().mockReturnThis(),
-          skip: jest.fn().mockReturnThis(),
           getMany: () => categoryList,
         };
       });
 
       const result = await getCategoryListHandler.execute(new GetCategoryListQuery(role));
-
       expect(result).toEqual(resultCategoryList);
+    });
+
+    it('FaqCategory 리스트 조회 실패', async () => {
+      try {
+        jest.spyOn(catogoryRepository, 'createQueryBuilder').mockImplementation(() => {
+          const mockModule = jest.requireMock('typeorm');
+          return {
+            ...mockModule,
+            where: jest.fn().mockReturnThis(),
+            orderBy: jest.fn().mockReturnThis(),
+            getMany: () => undefined,
+          };
+        });
+        const result = await getCategoryListHandler.execute(new GetCategoryListQuery(role));
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err).rejects.toThrowError('카테고리 정보를 찾을 수 없습니다.');
+      }
     });
   });
 });

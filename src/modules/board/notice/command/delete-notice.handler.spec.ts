@@ -106,5 +106,19 @@ describe('DeleteNotice', () => {
         expect(err.response).toBe('공지사항 정보를 찾을 수 없습니다.');
       }
     });
+
+    it('공지사항 삭제 처리 실패', async () => {
+      try {
+        noticeRepository.findOneBy.mockResolvedValue(findOneNoticeId);
+        boardRepository.findOneBy.mockResolvedValue(findOneBoardId);
+        fileRepository.findBy.mockResolvedValue(findOneBoardId);
+        noticeRepository.delete.mockRejectedValue(softDeleteNoticeId);
+        boardRepository.softDelete.mockRejectedValue(softDeleteBoardId);
+        const result = await deleteNoticeHandler.execute(new DeleteNoticeCommand(noticeId, role));
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(500);
+      }
+    });
   });
 });
