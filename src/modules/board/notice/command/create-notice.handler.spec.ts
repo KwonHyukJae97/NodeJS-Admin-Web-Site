@@ -2,7 +2,6 @@ import { EventBus } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
-import { async } from 'rxjs';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { BoardFile } from 'src/modules/file/entities/board-file';
 import { Repository } from 'typeorm';
@@ -23,6 +22,7 @@ describe('createNotice', () => {
   let noticeRepository: MockRepository<Notice>;
   let boardRepository: MockRepository<Board>;
   let fileRepository: MockRepository<BoardFile>;
+  let eventBus: jest.Mocked<EventBus>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -66,32 +66,32 @@ describe('createNotice', () => {
     noticeRepository = module.get(getRepositoryToken(Notice));
     boardRepository = module.get(getRepositoryToken(Board));
     fileRepository = module.get(getRepositoryToken(BoardFile));
+    eventBus = module.get(EventBus);
   });
 
   describe('공지사항 등록 여부', () => {
+    const content = '공지사항 내용';
+    const isTop = true;
+    const noticeGrant = 'noticeGrant';
+    const role = '본사 관리자';
+    const files = [];
+    const title = '공지사항입니다.';
+    const board = {
+      accountId: 1,
+      boardTypeCode: '0',
+      title: title,
+      content: content,
+      viewCount: 0,
+    };
+
+    const notice = {
+      noticeGrant: noticeGrant,
+      isTop: isTop,
+      boardId: 1,
+      board: board,
+    };
+
     it('공지사항 등록 성공', async () => {
-      const title = '공지사항입니다.';
-      const content = '공지사항 내용';
-      const isTop = true;
-      const noticeGrant = 'noticeGrant';
-      const role = '본사 관리자';
-      const files = [];
-
-      const board = {
-        accountId: 1,
-        boardTypeCode: '0',
-        title: title,
-        content: content,
-        viewCount: 0,
-      };
-
-      const notice = {
-        noticeGrant: noticeGrant,
-        isTop: isTop,
-        boardId: 1,
-        board: board,
-      };
-
       noticeRepository.create.mockReturnValue(notice);
       noticeRepository.save.mockReturnValue(notice);
       boardRepository.create.mockReturnValue(board);
@@ -101,6 +101,37 @@ describe('createNotice', () => {
         new CreateNoticeCommand(title, content, isTop, noticeGrant, role, files),
       );
       expect(result).toEqual(notice);
+      expect(eventBus.publish).toHaveBeenCalledTimes(0);
+    });
+
+    it('게시글 정보 필수 작성 체크 후 등록 실패 처리', async () => {
+      try {
+        boardRepository.save.mockRejectedValue(board);
+
+        const result = await createNoticeHandler.execute(
+          new CreateNoticeCommand(title, content, isTop, noticeGrant, role, files),
+        );
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(400);
+        expect(err.response).toBe('게시글 정보에입력된 내용을 확인해주세요.');
+      }
+    });
+
+    it('공지사항 정보 필수 작성 체크 후 등록 실패 처리', async () => {
+      try {
+        boardRepository.create.mockReturnValue(board);
+        boardRepository.save.mockReturnValue(board);
+        noticeRepository.save.mockRejectedValue(notice);
+
+        const result = await createNoticeHandler.execute(
+          new CreateNoticeCommand(title, content, isTop, noticeGrant, role, files),
+        );
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(400);
+        expect(err.response).toBe('공지사항 정보에입력된 내용을 확인해주세요.');
+      }
     });
   });
 });

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
@@ -73,40 +74,38 @@ describe('GetNoticeDetail', () => {
   });
 
   describe('공지사항 상세 정보 정상 조회 여부', () => {
+    // Given
+    const noticeId = 1;
+    const role = '본사 관리자';
+    const accountId = 27;
+    const boardId = 12;
+    //   const viewCount = 0;
+    //   const noticeGrant = '0';
+    const board = {
+      boardId: 11,
+      accountId: 2,
+      boardTypeCode: '2',
+      title: 'title',
+      content: 'content',
+      viewCount: 0,
+    };
+
+    const notice = {
+      noticeId: 1,
+      role: role,
+      board: board,
+      boardId: board.boardId,
+      noticeGrant: '0',
+      isTop: true,
+    };
+
+    const resultNoticeInfo = {
+      notice: notice,
+      fileList: 12,
+      writer: 'undefined(undefined)',
+      // board: board,
+    };
     it('공지사항 조회 성공', async () => {
-      // Given
-      const noticeId = 1;
-      const role = '본사 관리자';
-      const accountId = 27;
-      const boardId = 12;
-      //   const viewCount = 0;
-      //   const noticeGrant = '0';
-
-      const board = {
-        boardId: 11,
-        accountId: 2,
-        boardTypeCode: '2',
-        title: 'title',
-        content: 'content',
-        viewCount: 0,
-      };
-
-      const notice = {
-        noticeId: 1,
-        role: role,
-        board: board,
-        boardId: board.boardId,
-        noticeGrant: '0',
-        isTop: true,
-      };
-
-      const resultNoticeInfo = {
-        notice: notice,
-        fileList: 12,
-        writer: 'undefined(undefined)',
-        // board: board,
-      };
-
       noticeRepository.findOneBy.mockReturnValue(notice);
       boardRepository.findOneBy.mockReturnValue(board);
       boardRepository.save.mockReturnValue(board);
@@ -121,6 +120,34 @@ describe('GetNoticeDetail', () => {
 
       // Then
       expect(result).toEqual(resultNoticeInfo);
+    });
+
+    it('공지사항 조회 실패', async () => {
+      try {
+        const noticeId = 999;
+        const result = await getNoticeDetailHandler.execute(
+          new GetNoticeDetailCommand(noticeId, role),
+        );
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(404);
+        expect(err.response).toBe('공지사항 정보를 찾을 수 없습니다.');
+      }
+    });
+
+    it('게시글 조회 실패', async () => {
+      try {
+        const boardId = 999;
+        noticeRepository.findOneBy.mockReturnValue(notice);
+
+        const result = await getNoticeDetailHandler.execute(
+          new GetNoticeDetailCommand(noticeId, role),
+        );
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(404);
+        expect(err.response).toBe('게시글 정보를 찾을 수 없습니다.');
+      }
     });
   });
 });
