@@ -7,12 +7,10 @@ import { ConvertException } from '../../../../common/utils/convert-exception';
 import { AdminUpdatePasswordHandler } from './admin-update-password.handler';
 import { AdminUpdatePasswordCommand } from './admin-update-password.command';
 
-// Repository에서 사용되는 함수 복제
 const mockRepository = () => ({
   update: jest.fn(),
 });
 
-// MockRepository 타입 정의
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
 describe('AdminUpdatePassword', () => {
@@ -43,25 +41,29 @@ describe('AdminUpdatePassword', () => {
   });
 
   describe('비밀번호 정상 수정 여부', () => {
-    it('수정 성공', async () => {
-      // Given
-      const accountId = { accountId: 1 };
-      const password = { password: '1234' };
+    const accountId = { accountId: 1 };
+    const password = { password: '1234' };
 
-      // 수정하고자 하는 값
-      const newPassword = {
-        password: password,
-      };
+    // 수정하고자 하는 값
+    const newPassword = {
+      password: password,
+    };
 
+    it('비밀번호 수정 성공', async () => {
       accountRepository.update(newPassword);
-
-      // When
       const result = await adminUpdatePasswordHandler.execute(
         new AdminUpdatePasswordCommand(accountId.accountId, password.password),
       );
-
-      // Then
       expect(result).toEqual('비밀번호 변경 완료');
+    });
+
+    it('비밀번호 수정 실패', async () => {
+      try {
+        await accountRepository.update.mockRejectedValue(undefined);
+        throw new Error('비밀번호 수정에입력된 내용을 확인해주세요.');
+      } catch (e) {
+        expect(e.message).toBe('비밀번호 수정에입력된 내용을 확인해주세요.');
+      }
     });
   });
 });
