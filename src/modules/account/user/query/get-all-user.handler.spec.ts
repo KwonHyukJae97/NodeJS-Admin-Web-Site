@@ -54,17 +54,61 @@ describe('GetAllUser', () => {
   });
 
   describe('유저리스트 조회', () => {
-    it('유저리스트 반환', async () => {
-      userRepository.find.mockResolvedValue([]);
+    const userInfoList = [
+      {
+        accountId: 1,
+        userId: 1,
+        grade: 0,
+      },
+      {
+        accountId: 2,
+        userId: 2,
+        grade: 1,
+      },
+    ];
+
+    const accountFile = {
+      accountFileId: 1,
+      accountId: 1,
+      originalFileName: '스크린샷 2022-10-19 20.22.28(2)',
+      fileExt: '.png',
+      filePath:
+        'https://b2c-file-test.s3.ap-northeast-2.amazonaws.com/account/2022-10-27/19082121_c7bddcb5-59fd-4d08-b816-5d734bf09566',
+      fileSize: 355102,
+    };
+
+    const resultUserList = [
+      {
+        user: {
+          accountId: 1,
+          userId: 1,
+          grade: 0,
+        },
+        file: accountFile,
+      },
+      {
+        user: {
+          accountId: 2,
+          userId: 2,
+          grade: 1,
+        },
+        file: null,
+      },
+    ];
+
+    it('사용자 리스트 조회 성공', async () => {
+      userRepository.find.mockResolvedValue(userInfoList);
+      accountFileRepository.findOneBy.mockResolvedValueOnce(accountFile);
+      accountFileRepository.findOneBy.mockResolvedValueOnce(undefined);
 
       const result = await getAllUserHandler.execute(GetAllUserQuery);
 
       expect(userRepository.find).toHaveBeenCalledTimes(1);
 
-      expect(result).toEqual([]);
+      expect(result).toEqual(resultUserList);
     });
 
-    it('유저리스트가 없을 경우 404 에러 발생', async () => {
+    it('사용자 리스트가 없을 경우 404 에러 발생', async () => {
       userRepository.find.mockResolvedValue(undefined);
 
       try {
