@@ -128,7 +128,7 @@ describe('DeleteAdmin', () => {
       ci: '*****',
     };
 
-    it('기존 파일이 없을 경우 관리자 정보 삭제 성공', async () => {
+    it('계정 파일이 있을 경우 관리자 정보 삭제 성공', async () => {
       adminRepository.findOneBy.mockResolvedValue(adminInfo);
       accountRepository.findOneBy.mockResolvedValue(accountInfo);
       acccountFileRepository.findOneBy.mockResolvedValue(accountInfo.accountId);
@@ -144,40 +144,38 @@ describe('DeleteAdmin', () => {
             execute: () => deleteAccountInfo,
           };
         });
-
       acccountFileRepository.findOneBy.mockResolvedValue(accountFile);
 
-      // When
       const result = await deleteAdminHandler.execute(new DeleteAdminCommand(adminId, delDate));
 
-      // Then
       expect(eventBus.publish).toHaveBeenCalledTimes(1);
       expect(deleteAccount).toHaveBeenCalled();
       expect(acccountFileRepository.findOneBy).toHaveBeenCalledTimes(1);
       expect(result).toEqual('관리자 삭제 완료');
     });
 
-    it('기존 파일이 없을 경우 관리자 정보 삭제 성공', async () => {
+    it('계정 파일이 없을 경우 관리자 정보 삭제 성공', async () => {
       adminRepository.findOneBy.mockResolvedValue(adminInfo);
       accountRepository.findOneBy.mockResolvedValue(accountInfo);
       acccountFileRepository.findOneBy.mockResolvedValue(accountInfo.accountId);
-      jest.spyOn(accountRepository, 'createQueryBuilder').mockImplementation(() => {
-        const mockModule = jest.requireMock('typeorm');
-        return {
-          ...mockModule,
-          update: jest.fn().mockReturnThis(),
-          set: jest.fn().mockReturnThis(),
-          where: jest.fn().mockReturnThis(),
-          execute: () => deleteAccountInfo,
-        };
-      });
+      const deleteAccount = jest
+        .spyOn(accountRepository, 'createQueryBuilder')
+        .mockImplementation(() => {
+          const mockModule = jest.requireMock('typeorm');
+          return {
+            ...mockModule,
+            update: jest.fn().mockReturnThis(),
+            set: jest.fn().mockReturnThis(),
+            where: jest.fn().mockReturnThis(),
+            execute: () => deleteAccountInfo,
+          };
+        });
       acccountFileRepository.findOneBy.mockResolvedValue(undefined);
 
-      // When
       const result = await deleteAdminHandler.execute(new DeleteAdminCommand(adminId, delDate));
 
-      // Then
       expect(eventBus.publish).not.toHaveBeenCalled();
+      expect(deleteAccount).toHaveBeenCalled();
       expect(acccountFileRepository.findOneBy).toHaveBeenCalledTimes(1);
       expect(result).toEqual('관리자 삭제 완료');
     });
@@ -199,23 +197,23 @@ describe('DeleteAdmin', () => {
       adminRepository.findOneBy.mockResolvedValue(adminInfo);
       accountRepository.findOneBy.mockResolvedValue(accountInfo);
       acccountFileRepository.findOneBy.mockResolvedValue(accountInfo.accountId);
-      jest.spyOn(accountRepository, 'createQueryBuilder').mockImplementation(() => {
-        const mockModule = jest.requireMock('typeorm');
-        return {
-          ...mockModule,
-          update: jest.fn().mockReturnThis(),
-          set: jest.fn().mockReturnThis(),
-          where: jest.fn().mockReturnThis(),
-          execute: jest.fn().mockRejectedValue({
-            status: 500,
-            response: '에러가 발생하였습니다. 관리자에게 문의해주세요.',
-          }),
-        };
-      });
+      const deleteAccount = jest
+        .spyOn(accountRepository, 'createQueryBuilder')
+        .mockImplementation(() => {
+          const mockModule = jest.requireMock('typeorm');
+          return {
+            ...mockModule,
+            update: jest.fn().mockReturnThis(),
+            set: jest.fn().mockReturnThis(),
+            where: jest.fn().mockReturnThis(),
+            execute: () => Promise.reject(),
+          };
+        });
 
       try {
         const result = await deleteAdminHandler.execute(new DeleteAdminCommand(adminId, delDate));
         expect(result).toBeDefined();
+        expect(deleteAccount).toHaveBeenCalled();
       } catch (err) {
         expect(err.status).toBe(500);
         expect(err.response).toBe('에러가 발생하였습니다. 관리자에게 문의해주세요.');

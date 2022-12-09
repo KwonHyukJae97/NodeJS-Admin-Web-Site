@@ -53,7 +53,7 @@ describe('GetDetailAdmin', () => {
   });
 
   describe('관리자 상세 정보 정상 조회 여부', () => {
-    it('관리자 상세정보 조회 성공', async () => {
+    it('계정 파일 있을 경우 관리자 상세정보 조회 성공', async () => {
       const adminId = 1;
 
       const account = {
