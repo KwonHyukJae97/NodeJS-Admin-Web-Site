@@ -151,5 +151,26 @@ describe('GetCommentList', () => {
       // Then
       expect(result).toEqual(resultCommentList);
     });
+    //GetCommentListQuery 에 넘겨줄 param값 정의
+    const param = {
+      searchWord: null,
+      pageNo: 1,
+      pageSize: 10,
+      totalData: false,
+      getLimit: () => 1,
+      getOffset: () => 10,
+    };
+
+    it('코멘트 정보가 없는 404 에러 발생', async () => {
+      if (param.totalData == undefined) {
+        try {
+          const result = await getCommentListHandler.execute(new GetCommentListQuery(param));
+          expect(result).toBeDefined();
+        } catch (Err) {
+          expect(Err.status).toBe(404);
+          expect(Err.response).toBe('QnA 정보를 찾을 수 없습니다.');
+        }
+      }
+    });
   });
 });
