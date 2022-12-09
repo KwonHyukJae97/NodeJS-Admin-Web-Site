@@ -95,13 +95,18 @@ export class AuthService {
   async getByAccountId(id: string, snsType: string, showCurrentHashedRefreshToken: boolean) {
     const account = await this.accountRepository.findOne({ where: { id, snsType } });
 
-    if (account) {
-      delete account.password;
-      if (!showCurrentHashedRefreshToken) {
-        delete account.currentHashedRefreshToken;
-      }
+    //예외처리
+    try {
+      if (account) {
+        delete account.password;
+        if (!showCurrentHashedRefreshToken) {
+          delete account.currentHashedRefreshToken;
+        }
 
-      return account;
+        return account;
+      }
+    } catch (err) {
+      return this.convertException.notFoundError('아이디', 404);
     }
   }
 
@@ -115,13 +120,18 @@ export class AuthService {
   async getBySnsType(snsType: string, snsId: string, showCurrentHashedRefreshToken: boolean) {
     const account = await this.accountRepository.findOne({ where: { snsType, snsId } });
 
-    if (account) {
-      delete account.password;
-      if (!showCurrentHashedRefreshToken) {
-        delete account.currentHashedRefreshToken;
-      }
+    //예외처리
+    try {
+      if (account) {
+        delete account.password;
+        if (!showCurrentHashedRefreshToken) {
+          delete account.currentHashedRefreshToken;
+        }
 
-      return account;
+        return account;
+      }
+    } catch (err) {
+      return this.convertException.notFoundError('SnsType', 404);
     }
   }
 
@@ -176,10 +186,15 @@ export class AuthService {
    * @param id
    */
   async setCurrentRefreshToken(refreshToken: string, id: string) {
-    if (refreshToken) {
-      refreshToken = await bcrypt.hash(refreshToken, 10);
+    //예외처리
+    try {
+      if (refreshToken) {
+        refreshToken = await bcrypt.hash(refreshToken, 10);
+      }
+      await this.accountRepository.update({ id }, { currentHashedRefreshToken: refreshToken });
+    } catch (err) {
+      return this.convertException.CommonError(500);
     }
-    await this.accountRepository.update({ id }, { currentHashedRefreshToken: refreshToken });
   }
 
   /**
@@ -188,17 +203,27 @@ export class AuthService {
    * @param id
    */
   async setSocialCurrentRefreshToken(refreshToken: string, snsId: string) {
-    if (refreshToken) {
-      refreshToken = await bcrypt.hash(refreshToken, 10);
+    //예외처리
+    try {
+      if (refreshToken) {
+        refreshToken = await bcrypt.hash(refreshToken, 10);
+      }
+      await this.accountRepository.update({ snsId }, { currentHashedRefreshToken: refreshToken });
+    } catch (err) {
+      return this.convertException.CommonError(500);
     }
-    await this.accountRepository.update({ snsId }, { currentHashedRefreshToken: refreshToken });
   }
 
   async setSocialToken(snsToken: string, snsId: string) {
-    if (snsToken) {
-      snsToken = await bcrypt.hash(snsToken, 10);
+    //예외처리
+    try {
+      if (snsToken) {
+        snsToken = await bcrypt.hash(snsToken, 10);
+      }
+      await this.accountRepository.update({ snsId }, { snsToken: snsToken });
+    } catch (err) {
+      return this.convertException.CommonError(500);
     }
-    await this.accountRepository.update({ snsId }, { snsToken: snsToken });
   }
 
   /**

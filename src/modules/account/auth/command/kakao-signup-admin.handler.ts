@@ -56,27 +56,29 @@ export class KakaoSignUpAdminHandler implements ICommandHandler<KakaoSignUpAdmin
       division: true,
     });
 
-    //중복체크
     const isIdExist = await this.accountRepository.findOne({ where: { snsId } });
     const isPhoneExist = await this.accountRepository.findOne({ where: { phone } });
     const isNicknameExist = await this.accountRepository.findOne({ where: { nickname } });
+    const isBusinessNumberExist = await this.companyRepository.findOne({
+      where: { businessNumber },
+    });
 
+    //중복체크
     if (isIdExist) {
-      return this.convertException.badRequestAccountError(
-        '이미 존재하는 카카오 아이디이므로 저장에',
-        400,
-      );
+      return this.convertException.badInput('이미 존재하는 아이디입니다. ', 400);
     } else if (isPhoneExist) {
-      return this.convertException.badRequestAccountError('이미 존재하는 연락처이므로 저장에', 400);
+      return this.convertException.badInput('이미 존재하는 연락처입니다. ', 400);
     } else if (isNicknameExist) {
-      return this.convertException.badRequestAccountError('이미 존재하는 닉네임이므로 저장에', 400);
-    } else {
-      try {
-        await this.accountRepository.save(accountKakaoAdmin);
-      } catch (err) {
-        console.log(err);
-        return this.convertException.badRequestError('Kakao 2차정보 저장에', 400);
-      }
+      return this.convertException.badInput('이미 존재하는 닉네임입니다. ', 400);
+    } else if (isBusinessNumberExist) {
+      return this.convertException.badInput('이미 존재하는 사업자번호입니다. ', 400);
+    }
+
+    try {
+      await this.accountRepository.save(accountKakaoAdmin);
+    } catch (err) {
+      console.log(err);
+      return this.convertException.badRequestError('카카오 2차정보 저장에 ', 400);
     }
 
     //회원가입 시 회원사 테이블 데이터저장

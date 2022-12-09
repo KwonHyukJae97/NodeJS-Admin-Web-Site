@@ -85,14 +85,13 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
     } else if (isBusinessNumberExist) {
       return this.convertException.badInput('이미 존재하는 사업자번호입니다. ', 400);
     }
-    {
-      //Account 저장
-      try {
-        await this.accountRepository.save(accountAdmin);
-      } catch (err) {
-        console.log(err);
-        return this.convertException.badRequestError('관리자 회원가입에 ', 400);
-      }
+
+    //Account 저장
+    try {
+      await this.accountRepository.save(accountAdmin);
+    } catch (err) {
+      console.log(err);
+      return this.convertException.badRequestError('관리자 회원가입에 ', 400);
     }
 
     //회원가입 시 회원사 테이블 데이터저장

@@ -46,15 +46,14 @@ describe('FindId', () => {
   });
 
   describe('아이디 찾기 성공 여부', () => {
+    const name = '권혁재';
+    const phone = '01086197872';
+
+    const param = {
+      name: name,
+      phone: phone,
+    };
     it('아이디 찾기 ', async () => {
-      const name = '권혁재';
-      const phone = '01086197872';
-
-      const param = {
-        name: name,
-        phone: phone,
-      };
-
       accountRepository.findOne.mockResolvedValue(param);
 
       jest.spyOn(accountRepository, 'createQueryBuilder').mockImplementation(() => {
@@ -70,6 +69,18 @@ describe('FindId', () => {
       const result = await getFindIdHandler.execute(new GetFindIdQuery(param));
 
       expect(result).toEqual(result);
+    });
+
+    it('잘못된 정보로 아이디찾기를 한 경우 404 에러 발생', async () => {
+      accountRepository.findOne.mockResolvedValue(param);
+
+      try {
+        const result = await getFindIdHandler.execute(new GetFindIdQuery(param));
+        expect(result).toBeDefined();
+      } catch (Err) {
+        expect(Err.status).toBe(404);
+        expect(Err.response).toBe('입력한 정보를 찾을 수 없습니다.');
+      }
     });
   });
 });
