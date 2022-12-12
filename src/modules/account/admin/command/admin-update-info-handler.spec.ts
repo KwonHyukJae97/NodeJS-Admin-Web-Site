@@ -13,6 +13,7 @@ import { AdminUpdateInfoCommand } from './admin-update-info.command';
 
 // Repository에서 사용되는 함수 복제
 const mockRepository = () => ({
+  save: jest.fn(),
   findOneBy: jest.fn(),
   findOne: jest.fn(),
   update: jest.fn(),
@@ -73,8 +74,7 @@ describe('AdminUpdateInfo', () => {
     eventBus = module.get(EventBus);
   });
 
-  describe('관리자 정보 정상 수정 여부', () => {
-    // Given
+  describe('관리자 상세정보 정상 수정 여부', () => {
     const mockFile = {
       fieldname: 'file',
       originalname: 'medal.png',
@@ -87,22 +87,12 @@ describe('AdminUpdateInfo', () => {
     // 수정하고자 하는 값
     const newAdminInfo = {
       accountId: 1,
-      password: 'password',
       email: 'test@email.com',
       phone: '010-0000-0000',
       nickname: '닉네임 변경',
-      adminId: 1,
-      isSuper: true,
       file: mockFile,
     };
 
-    // 기존 값(admin)
-    const adminInfo = {
-      accountId: 1,
-      companyId: 1,
-      roleId: 1,
-      isSuper: false,
-    };
     // 기존 값(account)
     const accountInfo = {
       accountId: 1,
@@ -113,6 +103,16 @@ describe('AdminUpdateInfo', () => {
       nickname: '닉네임',
       birth: '20221202',
       gender: '0',
+    };
+
+    const accountFile = {
+      accountFileId: 1,
+      accountId: 1,
+      originalFileName: '스크린샷 2022-10-19 20.22.28(2)',
+      fileExt: '.png',
+      filePath:
+        'https://b2c-file-test.s3.ap-northeast-2.amazonaws.com/account/2022-10-27/19082121_c7bddcb5-59fd-4d08-b816-5d734bf09566',
+      fileSize: 355102,
     };
 
     // 수정 내용 반영시 예상 결과 값(account)
@@ -140,10 +140,15 @@ describe('AdminUpdateInfo', () => {
       gender: '0',
     };
 
-    it('수정 성공', async () => {
+    it('관리자 상세정보 수정 성공', async () => {
       accountRepository.findOneBy.mockResolvedValue(accountInfo);
-      accountRepository.update.mockResolvedValue(updateAccountInfo);
-      accountFileRepository.findOneBy(adminInfo.accountId);
+      accountRepository.findOne.mockResolvedValueOnce(undefined);
+      accountRepository.update.mockResolvedValueOnce(newAdminInfo);
+      accountRepository.findOne.mockResolvedValueOnce(undefined);
+      accountRepository.update.mockResolvedValueOnce(newAdminInfo);
+      accountRepository.findOne.mockResolvedValueOnce(undefined);
+      accountRepository.update.mockResolvedValueOnce(newAdminInfo);
+      accountFileRepository.findOneBy.mockResolvedValue(accountFile);
 
       const result = await adminUpdateInfoHandler.execute(
         new AdminUpdateInfoCommand(
@@ -163,9 +168,10 @@ describe('AdminUpdateInfo', () => {
       expect(eventBus.publish).toHaveBeenCalledTimes(1);
     });
 
-    it('존재하는 이메일 정보 입력 시 이메일 수정 실패 처리', async () => {
-      accountRepository.findOne.mockResolvedValue(newAdminInfo.email);
-      accountRepository.update.mockRejectedValue(updateAccountInfo);
+    it('해당 계정 정보가 없을 경우 404 에러 발생', async () => {
+      // accountRepository.findOneBy.mockResolvedValue(undefined);
+      accountRepository.findOneBy.mockRejectedValue(undefined);
+
       try {
         const result = await adminUpdateInfoHandler.execute(
           new AdminUpdateInfoCommand(
@@ -176,17 +182,40 @@ describe('AdminUpdateInfo', () => {
             newAdminInfo.file,
           ),
         );
-        expect(result).toBeUndefined();
+        expect(result).toBeDefined();
+      } catch (err) {
+        expect(err.status).toBe(404);
+        expect(err.response).toBe('관리자 정보를 찾을 수 없습니다.');
+      }
+    });
+
+    it('변경하고자 하는 이메일이 중복될 경우 400 에러 발생', async () => {
+      accountRepository.findOneBy.mockResolvedValue(accountInfo);
+      accountRepository.findOne.mockResolvedValueOnce(accountInfo);
+
+      try {
+        const result = await adminUpdateInfoHandler.execute(
+          new AdminUpdateInfoCommand(
+            newAdminInfo.accountId,
+            newAdminInfo.email,
+            newAdminInfo.phone,
+            newAdminInfo.nickname,
+            newAdminInfo.file,
+          ),
+        );
+        expect(result).toBeDefined();
       } catch (err) {
         expect(err.status).toBe(400);
         expect(err.response).toBe('이미 존재하는 이메일이므로 수정 정보를 확인해주세요.');
       }
     });
 
-    it('존재하는 연락처 정보 입력 시 연락처 수정 실패 처리', async () => {
-      accountRepository.findOne.mockResolvedValue(newAdminInfo.phone);
-      accountRepository.findOne.mockRejectedValue(newAdminInfo.email);
-      accountRepository.update.mockRejectedValue(updateAccountInfo);
+    it('변경하고자 하는 연락처가 중복될 경우 400 에러 발생', async () => {
+      accountRepository.findOneBy.mockResolvedValue(accountInfo);
+      accountRepository.findOne.mockResolvedValueOnce(undefined);
+      accountRepository.update.mockResolvedValueOnce(newAdminInfo);
+      accountRepository.findOne.mockResolvedValueOnce(accountInfo);
+
       try {
         const result = await adminUpdateInfoHandler.execute(
           new AdminUpdateInfoCommand(
@@ -197,17 +226,21 @@ describe('AdminUpdateInfo', () => {
             newAdminInfo.file,
           ),
         );
-        expect(result).toBeUndefined();
+        expect(result).toBeDefined();
       } catch (err) {
         expect(err.status).toBe(400);
         expect(err.response).toBe('이미 존재하는 연락처이므로 수정 정보를 확인해주세요.');
       }
     });
 
-    it('존재하는 닉네임 정보 입력 시 닉네임 수정 실패 처리', async () => {
-      accountRepository.findOne.mockResolvedValue(newAdminInfo.nickname);
-      accountRepository.findOne.mockRejectedValue(newAdminInfo.phone);
-      accountRepository.update.mockRejectedValue(updateAccountInfo);
+    it('변경하고자 하는 닉네임이 중복될 경우 400 에러 발생', async () => {
+      accountRepository.findOneBy.mockResolvedValue(accountInfo);
+      accountRepository.findOne.mockResolvedValueOnce(undefined);
+      accountRepository.update.mockResolvedValueOnce(newAdminInfo);
+      accountRepository.findOne.mockResolvedValueOnce(undefined);
+      accountRepository.update.mockResolvedValueOnce(newAdminInfo);
+      accountRepository.findOne.mockResolvedValueOnce(accountInfo);
+
       try {
         const result = await adminUpdateInfoHandler.execute(
           new AdminUpdateInfoCommand(
@@ -218,7 +251,7 @@ describe('AdminUpdateInfo', () => {
             newAdminInfo.file,
           ),
         );
-        expect(result).toBeUndefined();
+        expect(result).toBeDefined();
       } catch (err) {
         expect(err.status).toBe(400);
         expect(err.response).toBe('이미 존재하는 닉네임이므로 수정 정보를 확인해주세요.');
