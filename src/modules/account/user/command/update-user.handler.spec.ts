@@ -10,6 +10,7 @@ import { AccountFileDb } from '../../account-file-db';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { EventBus } from '@nestjs/cqrs';
 import { UpdateUserCommand } from './update-user.command';
+import * as bcrypt from 'bcryptjs';
 
 // Repository에서 사용되는 함수 복제
 const mockRepository = () => ({
@@ -73,89 +74,88 @@ describe('UpdateUser', () => {
   });
 
   describe('사용자 정보 정상 수정 여부', () => {
-    it('수정 성공', async () => {
-      // Given
-      const userId = { userId: 1 };
-      const mockFile = {
-        fieldname: 'file',
-        originalname: 'medal.png',
-        encoding: '7bit',
-        mimetype: 'image/png',
-        buffer: Buffer.from(__dirname + '/../../medal.png', 'utf8'),
-        size: 51828,
-      } as Express.MulterS3.File;
+    const mockFile = {
+      fieldname: 'file',
+      originalname: 'medal.png',
+      encoding: '7bit',
+      mimetype: 'image/png',
+      buffer: Buffer.from(__dirname + '/../../medal.png', 'utf8'),
+      size: 51828,
+    } as Express.MulterS3.File;
 
-      // 수정하고자 하는 값
-      const newUserInfo = {
-        userId: 1,
-        password: 'password',
-        email: 'test@email.com',
-        phone: '010-0000-0000',
-        nickname: '닉네임 변경',
-        grade: 0,
-        file: mockFile,
-      };
+    // 수정하고자 하는 값
+    const newUserInfo = {
+      userId: 1,
+      password: 'password',
+      email: 'test@email.com',
+      phone: '010-0000-0000',
+      nickname: '닉네임 변경',
+      grade: 0,
+      file: mockFile,
+    };
 
-      // 기존 값(user)
-      const userInfo = {
-        userId: 1,
-        grade: 1,
-        accountId: 1,
-      };
+    // 기존 값(user)
+    const userInfo = {
+      userId: 1,
+      grade: 1,
+      accountId: 1,
+    };
 
-      // 기존 값(account)
-      const accountInfo = {
-        accountId: 1,
-        id: 'test',
-        name: '이름',
-        email: 'email@email.com',
-        phone: '010-1111-1111',
-        nickname: '닉네임',
-        grade: 1,
-        birth: '20221202',
-        gender: '0',
-      };
+    // 기존 값(account)
+    const accountInfo = {
+      accountId: 1,
+      id: 'test',
+      name: '이름',
+      email: 'email@email.com',
+      phone: '010-1111-1111',
+      nickname: '닉네임',
+      grade: 1,
+      birth: '20221202',
+      gender: '0',
+    };
 
-      // 수정 내용 반영시 예상 결과 값(user)
-      const updateUserInfo = {
-        userId: 1,
-        grade: 0,
-        accountId: 1,
-      };
+    // 수정 내용 반영시 예상 결과 값(user)
+    const updateUserInfo = {
+      userId: 1,
+      grade: 0,
+      accountId: 1,
+    };
 
-      const updateAccountInfo = {
-        accountId: 1,
-        id: 'test',
-        name: '이름',
-        email: 'test@email.com',
-        phone: '010-0000-0000',
-        nickname: '닉네임 변경',
-        grade: 0,
-        birth: '20221202',
-        gender: '0',
-      };
+    const updateAccountInfo = {
+      accountId: 1,
+      id: 'test',
+      name: '이름',
+      email: 'test@email.com',
+      phone: '010-0000-0000',
+      nickname: '닉네임 변경',
+      grade: 0,
+      birth: '20221202',
+      gender: '0',
+    };
 
-      // 예상 결과 값
-      const resultUserInfo = {
-        accountId: 1,
-        id: 'test',
-        password: '$2a$10$9BXY43cplwHcQYkwt6FEgeM2q.edMDehiGPzN3Fn6GASzZ9QrNOYq',
-        name: '이름',
-        email: 'test@email.com',
-        phone: '010-0000-0000',
-        nickname: '닉네임 변경',
-        grade: 0,
-        birth: '20221202',
-        gender: '0',
-      };
+    // 예상 결과 값
+    const resultUserInfo = {
+      accountId: 1,
+      id: 'test',
+      password: '$2a$10$9BXY43cplwHcQYkwt6FEgeM2q.edMDehiGPzN3Fn6GASzZ9QrNOYq',
+      name: '이름',
+      email: 'test@email.com',
+      phone: '010-0000-0000',
+      nickname: '닉네임 변경',
+      grade: 0,
+      birth: '20221202',
+      gender: '0',
+    };
 
+    it('사용자 정보 수정 성공', async () => {
       userRepository.findOneBy.mockResolvedValue(userInfo);
       accountRepository.findOneBy.mockResolvedValue(accountInfo);
-      userRepository.save(updateUserInfo);
-      accountRepository.save(updateAccountInfo);
-      accountFileRepository.findOneBy(userInfo.accountId);
+      userRepository.save.mockResolvedValue(updateUserInfo);
+      jest.spyOn(bcrypt, 'genSalt');
+      jest.spyOn(bcrypt, 'hash');
+      accountRepository.save.mockResolvedValue(updateAccountInfo);
+      accountFileRepository.findOneBy.mockResolvedValue(userInfo.accountId);
 
-      // When
       const result = await updateUserHandler.execute(
         new UpdateUserCommand(
           newUserInfo.password,
@@ -168,7 +168,6 @@ describe('UpdateUser', () => {
         ),
       );
 
-      // Then
       if (result instanceof Account) {
         expect(result.email).toEqual(resultUserInfo.email);
         expect(result.nickname).toEqual(resultUserInfo.nickname);
@@ -178,6 +177,55 @@ describe('UpdateUser', () => {
         expect(result.grade).toEqual(resultUserInfo.grade);
       }
       expect(eventBus.publish).toHaveBeenCalledTimes(1);
+    });
+
+    it('학년 정보에 문제가 있을 경우 400 에러 발생', async () => {
+      userRepository.findOneBy.mockResolvedValue(userInfo);
+      accountRepository.findOneBy.mockResolvedValue(accountInfo);
+      userRepository.save.mockRejectedValue(updateUserInfo);
+
+      try {
+        const result = await updateUserHandler.execute(
+          new UpdateUserCommand(
+            newUserInfo.password,
+            newUserInfo.email,
+            newUserInfo.phone,
+            newUserInfo.nickname,
+            newUserInfo.grade,
+            newUserInfo.userId,
+            newUserInfo.file,
+          ),
+        );
+        expect(result).toBeDefined();
+      } catch (err) {
+        expect(err.status).toBe(400);
+        expect(err.response).toBe('학년정보에입력된 내용을 확인해주세요.');
+      }
+    });
+
+    it('계정 정보에 문제가 있을 경우 500 에러 발생', async () => {
+      userRepository.findOneBy.mockResolvedValue(userInfo);
+      accountRepository.findOneBy.mockResolvedValue(accountInfo);
+      userRepository.save.mockResolvedValue(updateUserInfo);
+      accountRepository.save.mockRejectedValue(updateAccountInfo);
+
+      try {
+        const result = await updateUserHandler.execute(
+          new UpdateUserCommand(
+            newUserInfo.password,
+            newUserInfo.email,
+            newUserInfo.phone,
+            newUserInfo.nickname,
+            newUserInfo.grade,
+            newUserInfo.userId,
+            newUserInfo.file,
+          ),
+        );
+        expect(result).toBeDefined();
+      } catch (err) {
+        expect(err.status).toBe(500);
+        expect(err.response).toBe('에러가 발생하였습니다. 관리자에게 문의해주세요.');
+      }
     });
   });
 });

@@ -55,7 +55,7 @@ export class QnaController {
    * @returns : 1:1 문의 상세 정보 조회 커맨드 전송
    */
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async getQnaDetail(
     @Param('id') qnaId: number,
     // @GetUser() account: Account,
@@ -69,7 +69,7 @@ export class QnaController {
    * @returns : 1:1 문의 리스트 조회 쿼리 전송
    */
   @Get()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async getAllQna(
     // @GetUser() account: Account,
     @Body() param: GetQnaRequestDto,
@@ -105,11 +105,7 @@ export class QnaController {
    */
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  async deleteQna(
-    @Param('id') qnaId: number,
-    @GetUser() account: Account,
-    // @Query() accountId: number,
-  ) {
+  async deleteQna(@Param('id') qnaId: number, @GetUser() account: Account) {
     const command = new DeleteQnaCommand(qnaId, account);
     return this.commandBus.execute(command);
   }

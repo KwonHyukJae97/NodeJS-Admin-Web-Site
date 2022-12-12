@@ -8,7 +8,6 @@ import { Company } from '../entities/company.entity';
 import { DeleteCompanyHandler } from './deleate-company.handler';
 import { DeleteCompanyCommand } from './delete-company.command';
 
-// Repository에서 사용되는 함수 복제
 const mockRepository = () => ({
   softDelete: jest.fn(),
   createQueryBuilder: jest.fn().mockReturnValue({
@@ -19,7 +18,6 @@ const mockRepository = () => ({
   }),
 });
 
-// MockRepository 타입 정의
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
 describe('DeleteCompany', () => {
@@ -56,8 +54,7 @@ describe('DeleteCompany', () => {
   });
 
   describe('회원사 정보 정상 삭제 여부', () => {
-    it('삭제 성공', async () => {
-      // Given
+    it('회원사 정보 삭제 성공', async () => {
       const companyId = 1;
       const roleId = 1;
 
@@ -70,7 +67,6 @@ describe('DeleteCompany', () => {
         },
       };
 
-      // 반환값 설정 (mockResolvedValue = 비동기 반환값 / mockReturnValue = 일반 반환값 반환 시 사용)
       jest.spyOn(adminRepository, 'createQueryBuilder').mockImplementation(() => {
         const mockModule = jest.requireMock('typeorm');
         return {
@@ -83,12 +79,10 @@ describe('DeleteCompany', () => {
       });
       adminRepository.softDelete.mockReturnValue(companyId);
 
-      // When
       const result = await deleteCompanyHandler.execute(
         new DeleteCompanyCommand(companyId, roleId),
       );
 
-      // Then
       expect(result).toEqual('삭제가 완료 되었습니다.');
     });
   });
