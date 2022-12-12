@@ -7,20 +7,21 @@ import { AccountFile } from '../../../file/entities/account-file';
 import { AccountFileDb } from '../../account-file-db';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { EventBus } from '@nestjs/cqrs';
-import { UpdateAdminHandler } from './update-admin.handler';
 import { Admin } from '../entities/admin';
-import { UpdateAdminCommand } from './update-admin.command';
-import * as bcrypt from 'bcryptjs';
+import { AdminUpdateInfoHandler } from './admin-update-info-handler';
+import { AdminUpdateInfoCommand } from './admin-update-info.command';
 
 const mockRepository = () => ({
   save: jest.fn(),
   findOneBy: jest.fn(),
+  findOne: jest.fn(),
+  update: jest.fn(),
 });
 
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
-describe('UpdateAdmin', () => {
-  let updateAdminHandler: UpdateAdminHandler;
+describe('UpdateAdminInfo', () => {
+  let updateAdminInfoHandler: AdminUpdateInfoHandler;
   let adminRepository: MockRepository<Admin>;
   let accountRepository: MockRepository<Account>;
   let accountFileRepository: MockRepository<AccountFile>;
@@ -36,7 +37,7 @@ describe('UpdateAdmin', () => {
         }),
       ],
       providers: [
-        UpdateAdminHandler,
+        AdminUpdateInfoHandler,
         ConvertException,
         AccountFileDb,
         {
@@ -64,14 +65,14 @@ describe('UpdateAdmin', () => {
       ],
     }).compile();
 
-    updateAdminHandler = module.get(UpdateAdminHandler);
+    updateAdminInfoHandler = module.get(AdminUpdateInfoHandler);
     adminRepository = module.get(getRepositoryToken(Admin));
     accountRepository = module.get(getRepositoryToken(Account));
     accountFileRepository = module.get(getRepositoryToken(AccountFile));
     eventBus = module.get(EventBus);
   });
 
-  describe('관리자 정보 정상 수정 여부', () => {
+  describe('관리자 상세정보 정상 수정 여부', () => {
     const mockFile = {
       fieldname: 'file',
       originalname: 'medal.png',
@@ -83,22 +84,11 @@ describe('UpdateAdmin', () => {
 
     // 수정하고자 하는 값
     const newAdminInfo = {
-      roleId: 1,
-      password: 'password',
+      accountId: 1,
       email: 'test@email.com',
       phone: '010-0000-0000',
       nickname: '닉네임 변경',
-      adminId: 1,
-      isSuper: true,
       file: mockFile,
-    };
-
-    // 기존 값(admin)
-    const adminInfo = {
-      accountId: 1,
-      companyId: 1,
-      roleId: 1,
-      isSuper: false,
     };
 
     // 기존 값(account)
@@ -113,12 +103,14 @@ describe('UpdateAdmin', () => {
       gender: '0',
     };
 
-    // 수정 내용 반영시 예상 결과 값(admin)
-    const updateAdminInfo = {
+    const accountFile = {
+      accountFileId: 1,
       accountId: 1,
-      companyId: 1,
-      roleId: 2,
-      isSuper: true,
+      originalFileName: '스크린샷 2022-10-19 20.22.28(2)',
+      fileExt: '.png',
+      filePath:
+        'https://b2c-file-test.s3.ap-northeast-2.amazonaws.com/account/2022-10-27/19082121_c7bddcb5-59fd-4d08-b816-5d734bf09566',
+      fileSize: 355102,
     };
 
     // 수정 내용 반영시 예상 결과 값(account)
@@ -146,25 +138,22 @@ describe('UpdateAdmin', () => {
       gender: '0',
     };
 
-    it('관리자 정보 수정 성공', async () => {
-      adminRepository.findOneBy.mockResolvedValue(adminInfo);
+    it('관리자 상세정보 수정 성공', async () => {
       accountRepository.findOneBy.mockResolvedValue(accountInfo);
-      adminRepository.save.mockResolvedValueOnce(updateAdminInfo);
-      adminRepository.save.mockResolvedValueOnce(updateAdminInfo);
-      jest.spyOn(bcrypt, 'genSalt');
-      jest.spyOn(bcrypt, 'hash');
-      accountRepository.save.mockResolvedValue(updateAccountInfo);
-      accountFileRepository.findOneBy(adminInfo.accountId);
+      accountRepository.findOne.mockResolvedValueOnce(undefined);
+      accountRepository.update.mockResolvedValueOnce(newAdminInfo);
+      accountRepository.findOne.mockResolvedValueOnce(undefined);
+      accountRepository.update.mockResolvedValueOnce(newAdminInfo);
+      accountRepository.findOne.mockResolvedValueOnce(undefined);
+      accountRepository.update.mockResolvedValueOnce(newAdminInfo);
+      accountFileRepository.findOneBy.mockResolvedValue(accountFile);
 
-      const result = await updateAdminHandler.execute(
-        new UpdateAdminCommand(
-          newAdminInfo.password,
+      const result = await updateAdminInfoHandler.execute(
+        new AdminUpdateInfoCommand(
+          newAdminInfo.accountId,
           newAdminInfo.email,
           newAdminInfo.phone,
           newAdminInfo.nickname,
-          newAdminInfo.roleId,
-          newAdminInfo.isSuper,
-          newAdminInfo.adminId,
           newAdminInfo.file,
         ),
       );
@@ -174,85 +163,96 @@ describe('UpdateAdmin', () => {
         expect(result.nickname).toEqual(resultAdminInfo.nickname);
         expect(result.phone).toEqual(resultAdminInfo.phone);
       }
-      expect(bcrypt.genSalt).toHaveBeenCalled();
-      expect(bcrypt.hash).toHaveBeenCalled();
       expect(eventBus.publish).toHaveBeenCalledTimes(1);
     });
 
-    it('역할 정보에 문제가 있을 경우 400 에러 발생', async () => {
-      adminRepository.findOneBy.mockResolvedValue(adminInfo);
-      accountRepository.findOneBy.mockResolvedValue(accountInfo);
-      adminRepository.save.mockRejectedValue(adminInfo);
+    it('해당 계정 정보가 없을 경우 404 에러 발생', async () => {
+      // accountRepository.findOneBy.mockResolvedValue(undefined);
+      accountRepository.findOneBy.mockRejectedValue(undefined);
 
       try {
-        const result = await updateAdminHandler.execute(
-          new UpdateAdminCommand(
-            newAdminInfo.password,
+        const result = await updateAdminInfoHandler.execute(
+          new AdminUpdateInfoCommand(
+            newAdminInfo.accountId,
             newAdminInfo.email,
             newAdminInfo.phone,
             newAdminInfo.nickname,
-            newAdminInfo.roleId,
-            newAdminInfo.isSuper,
-            newAdminInfo.adminId,
+            newAdminInfo.file,
+          ),
+        );
+        expect(result).toBeDefined();
+      } catch (err) {
+        expect(err.status).toBe(404);
+        expect(err.response).toBe('관리자 정보를 찾을 수 없습니다.');
+      }
+    });
+
+    it('변경하고자 하는 이메일이 중복될 경우 400 에러 발생', async () => {
+      accountRepository.findOneBy.mockResolvedValue(accountInfo);
+      accountRepository.findOne.mockResolvedValueOnce(accountInfo);
+
+      try {
+        const result = await updateAdminInfoHandler.execute(
+          new AdminUpdateInfoCommand(
+            newAdminInfo.accountId,
+            newAdminInfo.email,
+            newAdminInfo.phone,
+            newAdminInfo.nickname,
             newAdminInfo.file,
           ),
         );
         expect(result).toBeDefined();
       } catch (err) {
         expect(err.status).toBe(400);
-        expect(err.response).toBe('역할번호에입력된 내용을 확인해주세요.');
+        expect(err.response).toBe('이미 존재하는 이메일이므로 수정 정보를 확인해주세요.');
       }
     });
 
-    it('관리자 타입 정보에 문제가 있을 경우 400 에러 발생', async () => {
-      adminRepository.findOneBy.mockResolvedValue(adminInfo);
+    it('변경하고자 하는 연락처가 중복될 경우 400 에러 발생', async () => {
       accountRepository.findOneBy.mockResolvedValue(accountInfo);
-      adminRepository.save.mockResolvedValueOnce(updateAdminInfo);
-      adminRepository.save.mockRejectedValue(updateAdminInfo);
+      accountRepository.findOne.mockResolvedValueOnce(undefined);
+      accountRepository.update.mockResolvedValueOnce(newAdminInfo);
+      accountRepository.findOne.mockResolvedValueOnce(accountInfo);
 
       try {
-        const result = await updateAdminHandler.execute(
-          new UpdateAdminCommand(
-            newAdminInfo.password,
+        const result = await updateAdminInfoHandler.execute(
+          new AdminUpdateInfoCommand(
+            newAdminInfo.accountId,
             newAdminInfo.email,
             newAdminInfo.phone,
             newAdminInfo.nickname,
-            newAdminInfo.roleId,
-            newAdminInfo.isSuper,
-            newAdminInfo.adminId,
             newAdminInfo.file,
           ),
         );
         expect(result).toBeDefined();
       } catch (err) {
         expect(err.status).toBe(400);
-        expect(err.response).toBe('관리자타입에입력된 내용을 확인해주세요.');
+        expect(err.response).toBe('이미 존재하는 연락처이므로 수정 정보를 확인해주세요.');
       }
     });
 
-    it('계정 정보에 문제가 있을 경우 500 에러 발생', async () => {
-      adminRepository.findOneBy.mockResolvedValue(adminInfo);
+    it('변경하고자 하는 닉네임이 중복될 경우 400 에러 발생', async () => {
       accountRepository.findOneBy.mockResolvedValue(accountInfo);
-      adminRepository.save.mockResolvedValue(updateAdminInfo);
-      accountRepository.save.mockRejectedValue(updateAccountInfo);
+      accountRepository.findOne.mockResolvedValueOnce(undefined);
+      accountRepository.update.mockResolvedValueOnce(newAdminInfo);
+      accountRepository.findOne.mockResolvedValueOnce(undefined);
+      accountRepository.update.mockResolvedValueOnce(newAdminInfo);
+      accountRepository.findOne.mockResolvedValueOnce(accountInfo);
 
       try {
-        const result = await updateAdminHandler.execute(
-          new UpdateAdminCommand(
-            newAdminInfo.password,
+        const result = await updateAdminInfoHandler.execute(
+          new AdminUpdateInfoCommand(
+            newAdminInfo.accountId,
             newAdminInfo.email,
             newAdminInfo.phone,
             newAdminInfo.nickname,
-            newAdminInfo.roleId,
-            newAdminInfo.isSuper,
-            newAdminInfo.adminId,
             newAdminInfo.file,
           ),
         );
         expect(result).toBeDefined();
       } catch (err) {
-        expect(err.status).toBe(500);
-        expect(err.response).toBe('에러가 발생하였습니다. 관리자에게 문의해주세요.');
+        expect(err.status).toBe(400);
+        expect(err.response).toBe('이미 존재하는 닉네임이므로 수정 정보를 확인해주세요.');
       }
     });
   });
