@@ -7,7 +7,7 @@ import { TranslatorModule } from 'nestjs-translator';
 import { Account } from '../entities/account';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, JwtService } from '@nestjs/jwt';
-import { SignController } from './auth.controller';
+import { AuthController } from './auth.controller';
 import { EmailService } from 'src/modules/email/email.service';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import * as uuid from 'uuid';
@@ -54,7 +54,7 @@ describe('Auth Service', () => {
           }),
         }),
       ],
-      controllers: [SignController],
+      controllers: [AuthController],
       providers: [
         AuthService,
         JwtService,

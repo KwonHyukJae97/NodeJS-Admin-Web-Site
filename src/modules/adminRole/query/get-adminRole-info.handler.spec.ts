@@ -80,7 +80,7 @@ describe('GetDetailAdminRole', () => {
           grant_type: '0',
         },
         {
-          grant_type: '0',
+          grant_type: '1',
         },
       ];
 

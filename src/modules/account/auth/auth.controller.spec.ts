@@ -1,14 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TranslatorModule } from 'nestjs-translator';
 import { AuthService } from './auth.service';
-import { SignController } from './auth.controller';
+import { AuthController } from './auth.controller';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { Connection } from 'typeorm';
 import { Account } from '../entities/account';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtManageService } from '../../../guard/jwt/jwt-manage.service';
 import { EmailService } from '../../email/email.service';
 import { ConvertException } from '../../../common/utils/convert-exception';
 import { createMock } from '@golevelup/ts-jest';
@@ -46,7 +45,7 @@ const mockResponseObj = () => {
 type MockService<T = any> = Partial<Record<keyof T, jest.Mock>>;
 
 describe('Auth Controller', () => {
-  let authController: SignController;
+  let authController: AuthController;
   let authService: MockService<AuthService>;
 
   beforeEach(async () => {
@@ -71,12 +70,11 @@ describe('Auth Controller', () => {
           }),
         }),
       ],
-      controllers: [SignController],
+      controllers: [AuthController],
       providers: [
         AuthService,
         JwtService,
         ConfigService,
-        JwtManageService,
         EmailService,
         ConvertException,
         {
@@ -130,7 +128,7 @@ describe('Auth Controller', () => {
       ],
     }).compile();
 
-    authController = module.get(SignController);
+    authController = module.get(AuthController);
     authService = module.get(AuthService);
   });
 

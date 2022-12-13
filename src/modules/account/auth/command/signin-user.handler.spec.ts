@@ -65,10 +65,10 @@ describe('SignIn User', () => {
     };
 
     const findAccountFalse = {
-      id: 'admin',
-      password: 'admin',
-      name: '관리자',
-      email: 'admin@email.com',
+      id: 'user',
+      password: 'user',
+      name: '사용자',
+      email: 'user@email.com',
       phone: '010-1111-1111',
       nickname: '별명',
       birth: '20000203',
@@ -77,10 +77,10 @@ describe('SignIn User', () => {
     };
 
     const findAccountTrue = {
-      id: 'admin',
-      password: 'admin',
-      name: '관리자',
-      email: 'admin@email.com',
+      id: 'user',
+      password: 'user',
+      name: '사용자',
+      email: 'user@email.com',
       phone: '010-1111-1111',
       nickname: '별명',
       birth: '20000203',
@@ -100,7 +100,7 @@ describe('SignIn User', () => {
     };
 
     it('사용자 로그인 성공', async () => {
-      accountRepository.findOne.mockResolvedValue(userInput.id);
+      accountRepository.findOne.mockResolvedValue(findAccountFalse);
       jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(userInput.password));
       jest.spyOn(accountRepository, 'createQueryBuilder').mockImplementation(() => {
         const mockModule = jest.requireMock('typeorm');
@@ -116,6 +116,7 @@ describe('SignIn User', () => {
         new SignInUserCommand(userInput.id, userInput.password),
       );
 
+      console.log(result);
       expect(result).toEqual({ account: returnUser });
     });
 
@@ -149,7 +150,7 @@ describe('SignIn User', () => {
     });
 
     it('사용자 계정이 아닐 경우 401 에러 발생', async () => {
-      accountRepository.findOne.mockResolvedValue(findAccountFalse);
+      accountRepository.findOne.mockResolvedValue(findAccountTrue);
       jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(userInput.password));
       jest.spyOn(accountRepository, 'createQueryBuilder').mockImplementation(() => {
         const mockModule = jest.requireMock('typeorm');
@@ -167,8 +168,8 @@ describe('SignIn User', () => {
         );
         expect(result).toBeDefined();
       } catch (err) {
-        expect(err.status).toBe(401);
-        expect(err.message).toBe('관리자 로그인 정보를 확인해주세요.');
+        expect(err.status).toBe(400);
+        expect(err.message).toBe('사용자 로그인 정보가 아닙니다. 입력된 내용을 확인해주세요.');
       }
     });
   });
