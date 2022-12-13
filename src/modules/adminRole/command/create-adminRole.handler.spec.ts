@@ -8,14 +8,12 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
 import { CreateAdminRoleCommand } from './create-adminRole.command';
 
-// Repository에서 사용되는 함수 복제
 const mockRepository = () => ({
   save: jest.fn(),
   create: jest.fn(),
   insert: jest.fn(),
 });
 
-// MockRepository 타입 정의
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
 describe('CreateAdminRole', () => {
@@ -62,36 +60,34 @@ describe('CreateAdminRole', () => {
       },
     ];
 
-    const adminrole = {
+    const adminRole = {
       roleId: 1,
       roleName: roleName,
       companyId: companyId,
     };
 
     const rolePermission = {
-      roleId: adminrole.roleId,
+      roleId: adminRole.roleId,
       permissionId: roleDto[0].permissionId,
       grantType: roleDto[0].grantType,
     };
     it('등록 성공', async () => {
       // 반환값 설정 (mockResolvedValue = 비동기 반환값 / mockReturnValue = 일반 반환값 반환 시 사용)
-      adminRoleRepository.create.mockResolvedValue(adminrole);
-      adminRoleRepository.save.mockResolvedValue(adminrole);
+      adminRoleRepository.create.mockResolvedValue(adminRole);
+      adminRoleRepository.save.mockResolvedValue(adminRole);
       rolePermissionRepository.create.mockResolvedValue(rolePermission);
       rolePermissionRepository.insert.mockResolvedValue(rolePermission);
 
-      // When
       const result = await createAdminRoleHandler.execute(
         new CreateAdminRoleCommand(roleName, companyId, roleDto),
       );
 
-      // Then
       expect(result).toEqual('등록이 완료 되었습니다.');
     });
 
     it('잘못된 역할 정보일 경우 400 에러 발생', async () => {
-      adminRoleRepository.create.mockResolvedValue(adminrole);
-      adminRoleRepository.save.mockResolvedValue(adminrole);
+      adminRoleRepository.create.mockResolvedValue(adminRole);
+      adminRoleRepository.save.mockResolvedValue(adminRole);
 
       try {
         const result = await createAdminRoleHandler.execute(
@@ -105,8 +101,8 @@ describe('CreateAdminRole', () => {
     });
 
     it('역할_권한 정보에 문제가 있을 경우 500 에러 발생', async () => {
-      adminRoleRepository.create.mockResolvedValue(adminrole.roleId);
-      adminRoleRepository.save.mockResolvedValue(adminrole.roleId);
+      adminRoleRepository.create.mockResolvedValue(adminRole.roleId);
+      adminRoleRepository.save.mockResolvedValue(adminRole.roleId);
       rolePermissionRepository.create.mockResolvedValue(rolePermission);
       rolePermissionRepository.insert.mockResolvedValue(rolePermission);
 
