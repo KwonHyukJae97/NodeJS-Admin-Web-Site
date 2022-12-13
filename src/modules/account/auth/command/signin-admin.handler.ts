@@ -1,10 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -42,7 +36,7 @@ export class SignInAdminHandler implements ICommandHandler<SignInAdminCommand> {
     }
 
     if (account.division === false) {
-      throw new UnauthorizedException('관리자 로그인 정보를 확인해주세요.');
+      return this.convertException.badInput('관리자 로그인 정보가 아닙니다. ', 400);
     }
 
     const returnAdmin = await this.accountRepository

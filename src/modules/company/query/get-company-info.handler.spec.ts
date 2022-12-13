@@ -85,5 +85,30 @@ describe('GetDetailCompany', () => {
 
       expect(result).toEqual(companyInfo);
     });
+
+    it('회원사 상세 정보가 없을 경울 404 에러 발생', async () => {
+      const companyId = 1;
+
+      jest.spyOn(companyRepository, 'createQueryBuilder').mockImplementation(() => {
+        const mockModule = jest.requireMock('typeorm');
+        return {
+          ...mockModule,
+          select: jest.fn().mockReturnThis(),
+          leftJoin: jest.fn().mockReturnThis(),
+          addSelect: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          groupBy: jest.fn().mockReturnThis(),
+          getRawMany: () => undefined,
+        };
+      });
+
+      try {
+        const result = await getCompanyInfoHandler.execute(new GetCompanyInfoQuery(companyId));
+        expect(result).toBeDefined();
+      } catch (Err) {
+        expect(Err.status).toBe(404);
+        expect(Err.response).toBe('회원사 정보를 찾을 수 없습니다.');
+      }
+    });
   });
 });

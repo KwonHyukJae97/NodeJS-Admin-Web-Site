@@ -94,98 +94,97 @@ describe('GetCommentDetail', () => {
   });
 
   describe(' 코멘트 상세 정보 정상 조회 여부', () => {
-    it('조회 성공', async () => {
-      const qnaId = 1;
-      const boardId = 1;
-      const accountId = 1;
-      const companyId = 1;
-      const role = '본사 관리자';
-      const viewCount = 0;
+    const qnaId = 1;
+    const boardId = 1;
+    const accountId = 1;
+    const companyId = 1;
+    const role = '본사 관리자';
+    const viewCount = 0;
 
-      // 게시글 정보
-      const board = {
-        title: 'Update Title',
-        content: 'Update Content',
-        boardId: boardId,
-        viewCount: viewCount,
-      };
+    // 게시글 정보
+    const board = {
+      title: 'Update Title',
+      content: 'Update Content',
+      boardId: boardId,
+      viewCount: viewCount,
+    };
 
-      // qna 정보
-      const qna = {
-        boardId: boardId,
-        board: board,
+    // qna 정보
+    const qna = {
+      boardId: boardId,
+      board: board,
+      qnaId: qnaId,
+    };
+
+    // 답변 정보
+    const comment = [
+      {
         qnaId: qnaId,
-      };
+        accountId: accountId,
+        title: '100001',
+        viewCount: viewCount,
+        regDate: '2022-12-02 14:54:45',
+        isComment: 1,
+      },
+    ];
 
-      // 답변 정보
-      const comment = [
-        {
-          qnaId: qnaId,
-          accountId: accountId,
-          title: '100001',
-          viewCount: viewCount,
-          regDate: '2022-12-02 14:54:45',
-          isComment: 1,
-        },
-      ];
+    // 계정 정보
+    const adminAccount = {
+      admin_admin_id: 2,
+      admin_company_id: 1,
+      admin_role_id: 7,
+      admin_is_super: 0,
+      admin_account_id: '4',
+      account_account_id: null,
+      account_id: null,
+      account_password: null,
+      account_name: null,
+      account_email: null,
+      account_phone: null,
+      account_nickname: null,
+      account_birth: null,
+      account_gender: null,
+      account_current_hashed_refresh_token: null,
+      account_ci: null,
+      account_sns_id: null,
+      account_sns_type: null,
+      account_sns_token: null,
+      account_reg_date: null,
+      account_update_date: null,
+      account_del_date: null,
+      account_login_date: null,
+      account_division: null,
+    };
 
-      // 계정 정보
-      const adminAccount = {
-        admin_admin_id: 2,
-        admin_company_id: 1,
-        admin_role_id: 7,
-        admin_is_super: 0,
-        admin_account_id: '4',
-        account_account_id: null,
-        account_id: null,
-        account_password: null,
-        account_name: null,
-        account_email: null,
-        account_phone: null,
-        account_nickname: null,
-        account_birth: null,
-        account_gender: null,
-        account_current_hashed_refresh_token: null,
-        account_ci: null,
-        account_sns_id: null,
-        account_sns_type: null,
-        account_sns_token: null,
-        account_reg_date: null,
-        account_update_date: null,
-        account_del_date: null,
-        account_login_date: null,
-        account_division: null,
-      };
-
-      // 반환되는 답변 정보
-      const resultCommentInfo = {
-        qna: {
-          qnaId: qnaId,
+    // 반환되는 답변 정보
+    const resultCommentInfo = {
+      qna: {
+        qnaId: qnaId,
+        boardId: board.boardId,
+        board: {
           boardId: board.boardId,
-          board: {
-            boardId: board.boardId,
-            title: board.title,
-            content: board.content,
-            viewCount: 1,
-          },
+          title: board.title,
+          content: board.content,
+          viewCount: 1,
         },
-        writer: 'undefined(undefined)',
-        fileList: 1,
-        commentListInfo: [
-          {
-            comment: {
-              qnaId: qnaId,
-              accountId: accountId,
-              title: '100001',
-              viewCount: viewCount,
-              regDate: '2022-12-02 14:54:45',
-              isComment: 1,
-            },
-            writer: 'null(null)',
+      },
+      writer: 'undefined(undefined)',
+      fileList: 1,
+      commentListInfo: [
+        {
+          comment: {
+            qnaId: qnaId,
+            accountId: accountId,
+            title: '100001',
+            viewCount: viewCount,
+            regDate: '2022-12-02 14:54:45',
+            isComment: 1,
           },
-        ],
-      };
-
+          writer: 'null(null)',
+        },
+      ],
+    };
+    it('조회 성공', async () => {
       qnaRepository.findOneBy.mockResolvedValue(qna);
       boardRepository.findOneBy.mockResolvedValue(board);
       boardRepository.save.mockResolvedValue(board);
@@ -213,6 +212,88 @@ describe('GetCommentDetail', () => {
 
       // Then
       expect(result).toEqual(resultCommentInfo);
+    });
+
+    it('QnA 정보 없을 경우 404 에러 발생', async () => {
+      boardRepository.findOneBy.mockResolvedValue(qnaId);
+
+      try {
+        const result = await getCommentDetailHandler.execute(
+          new GetCommentDetailCommand(qnaId, role),
+        );
+        expect(result).toBeDefined();
+      } catch (Err) {
+        expect(Err.status).toBe(404);
+        expect(Err.response).toBe('QnA 정보를 찾을 수 없습니다.');
+      }
+    });
+
+    it('게시글 정보 없을 경우 404 에러 발생', async () => {
+      qnaRepository.findOneBy.mockResolvedValue(boardId);
+      try {
+        const result = await getCommentDetailHandler.execute(
+          new GetCommentDetailCommand(qnaId, role),
+        );
+        expect(result).toBeDefined();
+      } catch (Err) {
+        expect(Err.status).toBe(404);
+        expect(Err.response).toBe('게시글 정보를 찾을 수 없습니다.');
+      }
+    });
+
+    it('작성자 정보에 문제가 있을 경우 400 에러 발생', async () => {
+      qnaRepository.findOneBy.mockResolvedValue(qna);
+      boardRepository.findOneBy.mockResolvedValue(board);
+
+      try {
+        const result = await getCommentDetailHandler.execute(
+          new GetCommentDetailCommand(qnaId, role),
+        );
+        expect(result).toBeDefined();
+      } catch (Err) {
+        expect(Err.status).toBe(400);
+        expect(Err.response).toBe('작성자 정보를 확인해주세요.');
+      }
+    });
+
+    it('게시글 정보에 문제가 있을 경우 400 에러 발생', async () => {
+      qnaRepository.findOneBy.mockResolvedValue(qna);
+      boardRepository.findOneBy.mockResolvedValue(board);
+      boardRepository.save.mockResolvedValue(board);
+      qnaRepository.save.mockResolvedValue(qna);
+      accountRepository.findOneBy.mockResolvedValue(accountId);
+      commentRepository.find.mockResolvedValue(comment);
+      companyRepository.findOneBy.mockResolvedValue(companyId);
+
+      try {
+        const result = await getCommentDetailHandler.execute(
+          new GetCommentDetailCommand(qnaId, role),
+        );
+        expect(result).toBeDefined();
+      } catch (Err) {
+        expect(Err.status).toBe(400);
+        expect(Err.response).toBe('게시글 정보에입력된 내용을 확인해주세요.');
+      }
+    });
+
+    it('QnA 정보에 문제가 있을 경우 400 에러 발생', async () => {
+      qnaRepository.findOneBy.mockResolvedValue(qna);
+      boardRepository.findOneBy.mockResolvedValue(board);
+      boardRepository.save.mockResolvedValue(board);
+      qnaRepository.save.mockResolvedValue(qna);
+      accountRepository.findOneBy.mockResolvedValue(accountId);
+      commentRepository.find.mockResolvedValue(comment);
+      companyRepository.findOneBy.mockResolvedValue(companyId);
+
+      try {
+        const result = await getCommentDetailHandler.execute(
+          new GetCommentDetailCommand(qnaId, role),
+        );
+        expect(result).toBeDefined();
+      } catch (Err) {
+        expect(Err.status).toBe(400);
+        expect(Err.response).toBe('QnA 정보에입력된 내용을 확인해주세요.');
+      }
     });
   });
 });

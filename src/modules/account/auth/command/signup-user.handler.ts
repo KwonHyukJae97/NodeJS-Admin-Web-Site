@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account } from 'src/modules/account/entities/account';
@@ -43,20 +43,21 @@ export class SignUpUserHandler implements ICommandHandler<SignUpUserCommand> {
       gender,
     });
 
-    const isIdExist2 = await this.accountRepository.findOne({ where: { id } });
-    const isEmailExist2 = await this.accountRepository.findOne({ where: { email } });
-    const isPhoneExist2 = await this.accountRepository.findOne({ where: { phone } });
-    const isNicknameExist2 = await this.accountRepository.findOne({ where: { nickname } });
+    const isIdExist = await this.accountRepository.findOne({ where: { id } });
+    const isEmailExist = await this.accountRepository.findOne({ where: { email } });
+    const isPhoneExist = await this.accountRepository.findOne({ where: { phone } });
+    const isNicknameExist = await this.accountRepository.findOne({ where: { nickname } });
 
-    if (isIdExist2) {
-      throw new UnauthorizedException('이미 존재하는 아이디입니다.');
-    } else if (isEmailExist2) {
-      throw new UnauthorizedException('이미 존재하는 이메일입니다.');
-    } else if (isPhoneExist2) {
-      throw new UnauthorizedException('이미 존재하는 연락처입니다.');
-    } else if (isNicknameExist2) {
-      throw new UnauthorizedException('이미 존재하는 닉네임입니다.');
-    } else {
+    if (isIdExist) {
+      return this.convertException.badInput('이미 존재하는 아이디입니다. ', 400);
+    } else if (isEmailExist) {
+      return this.convertException.badInput('이미 존재하는 이메일입니다. ', 400);
+    } else if (isPhoneExist) {
+      return this.convertException.badInput('이미 존재하는 연락처입니다. ', 400);
+    } else if (isNicknameExist) {
+      return this.convertException.badInput('이미 존재하는 닉네임입니다. ', 400);
+    }
+    {
       //Account 저장
       try {
         await this.accountRepository.save(accountUser);

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { SignController } from './auth.controller';
+import { AuthController } from './auth.controller';
 import { SignUpUserHandler } from './command/signup-user.handler';
 import { SignUpAdminHandler } from './command/signup-admin.handler';
 import { User } from '../user/entities/user';
@@ -48,7 +48,7 @@ import { GetFindIdQueryHandler } from './query/get-findId.handler';
       }),
     }),
   ],
-  controllers: [SignController],
+  controllers: [AuthController],
   providers: [
     KakaoSignUpAdminHandler,
     NaverSignUpAdminHandler,

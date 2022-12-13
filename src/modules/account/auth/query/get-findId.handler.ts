@@ -21,7 +21,7 @@ export class GetFindIdQueryHandler implements IQueryHandler<GetFindIdQuery> {
     const id = await this.accountRepository.findOne({ where: { name, phone } });
 
     if (!id) {
-      return this.convertException.badRequestAccountError('입력한', 400);
+      return this.convertException.notFoundError('입력한', 404);
     }
     const returnId = await this.accountRepository
       .createQueryBuilder('account')

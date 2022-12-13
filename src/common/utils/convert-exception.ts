@@ -67,4 +67,16 @@ export class ConvertException {
       status,
     );
   }
+
+  /**
+   * 입력값 Exception 처리
+   * @param param : 에러메시지에 함께 표시할 파라미터 정의
+   * @param status : HTTP Exception 에러 코드
+   */
+  async badInput(param: string, status: number) {
+    throw new HttpException(
+      this.translator.translate('badInput', { replace: { param: param } }),
+      status,
+    );
+  }
 }

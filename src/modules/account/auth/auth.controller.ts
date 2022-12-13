@@ -44,7 +44,7 @@ import * as moment from 'moment';
  * 회원가입, 로그인 등 계정 관련 auth API controller
  */
 @Controller('auth')
-export class SignController {
+export class AuthController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly authService: AuthService,
