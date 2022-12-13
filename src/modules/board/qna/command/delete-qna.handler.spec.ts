@@ -99,6 +99,13 @@ describe('DeleteQna', () => {
       boardId: 11,
     };
 
+    const accountIdCheck = {
+      title: 'title',
+      content: 'content',
+      boardId: 11,
+      accountId: 27,
+    };
+
     const commentDetail = [
       {
         comment: 'test Content',
@@ -145,6 +152,21 @@ describe('DeleteQna', () => {
         expect(result).toBeUndefined();
       } catch (err) {
         expect(err.status).toBe(500);
+      }
+    });
+
+    it('QNA 작성자 본인 여부 체크', async () => {
+      try {
+        qnaRepository.findOneBy.mockResolvedValue(qnaId);
+        boardRepository.findOneBy.mockResolvedValue(accountIdCheck);
+        boardFileRepository.findBy.mockResolvedValue(boardId);
+        commentRepository.findBy.mockResolvedValue(commentDetail);
+        qnaRepository.delete.mockRejectedValue(qnaId);
+        const result = await deleteQnaHandler.execute(new DeleteQnaCommand(qnaId, new account()));
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(400);
+        expect(err.response).toBe('작성자 정보를 확인해주세요.');
       }
     });
   });
