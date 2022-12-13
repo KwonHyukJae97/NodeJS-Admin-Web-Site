@@ -115,7 +115,7 @@ export class AuthController {
       companyCode,
       businessNumber,
     } = kakaoSignUpAdminDto;
-    console.log('Kakao 2차 정보 컨트롤러', kakaoSignUpAdminDto.snsToken);
+    console.log('Kakao 2차 정보 컨트롤러', kakaoSignUpAdminDto);
 
     const command = new KakaoSignUpAdminCommand(
       name,

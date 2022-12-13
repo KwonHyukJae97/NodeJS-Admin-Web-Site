@@ -55,44 +55,43 @@ describe('GetDetailAdminRole', () => {
   });
 
   describe('역할 상세 정보 정상 조회 여부', () => {
+    const roleId = 1;
+    const getAdminInfo = null;
+    const rolePermissionRawList = [
+      {
+        RP_role_id: 1,
+        P_permission_id: 1,
+        RP_grant_type: '0',
+        P_menu_name: '메뉴1',
+        P_display_name: '화면1',
+      },
+      {
+        RP_role_id: 1,
+        P_permission_id: 1,
+        RP_grant_type: '1',
+        P_menu_name: '메뉴1',
+        P_display_name: '화면1',
+      },
+    ];
+
+    const grantTypeList = [
+      {
+        grant_type: '0',
+      },
+      {
+        grant_type: '1',
+      },
+    ];
+
+    const permissionList = [
+      {
+        permission_id: rolePermissionRawList[0].P_permission_id,
+        menu_name: rolePermissionRawList[0].P_menu_name,
+        display_name: rolePermissionRawList[0].P_display_name,
+        grant_type_list: grantTypeList,
+      },
+    ];
     it('역할 상세정보 조회 성공', async () => {
-      const roleId = 1;
-      const getAdminInfo = null;
-      const rolePermissionRawList = [
-        {
-          RP_role_id: 1,
-          P_permission_id: 1,
-          RP_grant_type: '0',
-          P_menu_name: '메뉴1',
-          P_display_name: '화면1',
-        },
-        {
-          RP_role_id: 1,
-          P_permission_id: 1,
-          RP_grant_type: '1',
-          P_menu_name: '메뉴1',
-          P_display_name: '화면1',
-        },
-      ];
-
-      const grantTypeList = [
-        {
-          grant_type: '0',
-        },
-        {
-          grant_type: '0',
-        },
-      ];
-
-      const permissionList = [
-        {
-          permission_id: rolePermissionRawList[0].P_permission_id,
-          menu_name: rolePermissionRawList[0].P_menu_name,
-          display_name: rolePermissionRawList[0].P_display_name,
-          grant_type_list: grantTypeList,
-        },
-      ];
-
       jest.spyOn(rolePermissionRepository, 'createQueryBuilder').mockImplementation(() => {
         const mockModule = jest.requireMock('typeorm');
         return {
@@ -109,6 +108,28 @@ describe('GetDetailAdminRole', () => {
       );
 
       expect(result).toEqual(permissionList);
+    });
+    it('역할_권한 정보가 없을 경우 404 에러 발생', async () => {
+      jest.spyOn(rolePermissionRepository, 'createQueryBuilder').mockImplementation(() => {
+        const mockModule = jest.requireMock('typeorm');
+        return {
+          ...mockModule,
+          leftJoinAndSelect: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          orderBy: jest.fn().mockReturnThis(),
+          getRawMany: () => rolePermissionRawList,
+        };
+      });
+
+      try {
+        const result = await getAdminRoleInfohanlder.execute(
+          new GetAdminRoleInfoQuery(roleId, getAdminInfo),
+        );
+        expect(result).toBeDefined();
+      } catch (Err) {
+        expect(Err.status).toBe(404);
+        expect(Err.response).toBe('역할 정보를 찾을 수 없습니다.');
+      }
     });
   });
 });

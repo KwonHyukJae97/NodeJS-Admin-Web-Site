@@ -48,6 +48,7 @@ describe('FindId', () => {
   describe('아이디 찾기 성공 여부', () => {
     const name = '권혁재';
     const phone = '01086197872';
+    const id = 'findId123';
 
     const param = {
       name: name,
@@ -74,6 +75,15 @@ describe('FindId', () => {
     it('잘못된 정보로 아이디찾기를 한 경우 404 에러 발생', async () => {
       accountRepository.findOne.mockResolvedValue(param);
 
+      jest.spyOn(accountRepository, 'createQueryBuilder').mockImplementation(() => {
+        const mockModule = jest.requireMock('typeorm');
+        return {
+          ...mockModule,
+          select: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          getOne: jest.fn().mockReturnThis(),
+        };
+      });
       try {
         const result = await getFindIdHandler.execute(new GetFindIdQuery(param));
         expect(result).toBeDefined();

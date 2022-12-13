@@ -120,9 +120,8 @@ describe('구글 2차 정보가입', () => {
     });
 
     it('중복된 아이디를 입력한 경우 400 에러 발생', async () => {
-      accountRepository.create.mockReturnValue(adminAccountData);
-      accountRepository.findOne.mockResolvedValue(id);
-      accountRepository.save.mockReturnValue(adminAccountData);
+      accountRepository.create.mockResolvedValue(adminAccountData);
+      accountRepository.findOne.mockResolvedValueOnce(true);
 
       try {
         const result = await googleSignUpHandler.execute(
@@ -147,10 +146,9 @@ describe('구글 2차 정보가입', () => {
     });
 
     it('중복된 연락처를 입력한 경우 400 에러 발생', async () => {
-      accountRepository.create.mockReturnValue(adminAccountData);
-      accountRepository.findOne.mockResolvedValue(id);
-      accountRepository.findOne.mockResolvedValue(phone);
-      accountRepository.save.mockReturnValue(adminAccountData);
+      accountRepository.create.mockResolvedValue(adminAccountData);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(true);
 
       if (!id) {
         try {
@@ -177,11 +175,10 @@ describe('구글 2차 정보가입', () => {
     });
 
     it('중복된 닉네임을 입력한 경우 400 에러 발생', async () => {
-      accountRepository.create.mockReturnValue(adminAccountData);
-      accountRepository.findOne.mockResolvedValue(id);
-      accountRepository.findOne.mockResolvedValue(phone);
-      accountRepository.findOne.mockResolvedValue(nickname);
-      accountRepository.save.mockReturnValue(adminAccountData);
+      accountRepository.create.mockResolvedValue(adminAccountData);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(true);
 
       if (!id && !phone) {
         try {
@@ -208,12 +205,11 @@ describe('구글 2차 정보가입', () => {
     });
 
     it('중복된 사업자번호를 입력한 경우 400 에러 발생', async () => {
-      accountRepository.create.mockReturnValue(adminAccountData);
-      accountRepository.findOne.mockResolvedValue(id);
-      accountRepository.findOne.mockResolvedValue(phone);
-      accountRepository.findOne.mockResolvedValue(nickname);
-      companyRepository.findOne.mockResolvedValue(businessNumber);
-      accountRepository.save.mockReturnValue(adminAccountData);
+      accountRepository.create.mockResolvedValue(adminAccountData);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(true);
 
       if (!id && !phone && !nickname) {
         try {
@@ -240,11 +236,11 @@ describe('구글 2차 정보가입', () => {
     });
 
     it('구글 2차 정보 가입에 실패 할 경우 400 에러 발생', async () => {
-      accountRepository.create.mockReturnValue(adminAccountData);
-      accountRepository.findOne.mockResolvedValue(id);
-      accountRepository.findOne.mockResolvedValue(phone);
-      accountRepository.findOne.mockResolvedValue(nickname);
-      companyRepository.findOne.mockResolvedValue(businessNumber);
+      accountRepository.create.mockResolvedValue(adminAccountData);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      companyRepository.findOne.mockResolvedValueOnce(false);
       accountRepository.save.mockRejectedValue(adminAccountData);
 
       if (!id && !phone && !nickname && !businessNumber) {
@@ -267,6 +263,39 @@ describe('구글 2차 정보가입', () => {
         } catch (Err) {
           expect(Err.status).toBe(400);
           expect(Err.response).toBe('구글 2차정보 저장에 입력된 내용을 확인해주세요.');
+        }
+      }
+    });
+
+    it('회원사 정보 가입에 실패 할 경우 400 에러 발생', async () => {
+      accountRepository.create.mockResolvedValue(adminAccountData);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.save.mockRejectedValue(adminAccountData);
+      companyRepository.save.mockRejectedValue(adminCompanyData);
+
+      if (!id && !email && !phone && !nickname && !businessNumber) {
+        try {
+          const result = await googleSignUpHandler.execute(
+            new GoogleSignUpAdminCommand(
+              adminAccountData.name,
+              adminAccountData.phone,
+              adminAccountData.nickname,
+              adminAccountData.birth,
+              adminAccountData.gender,
+              adminAccountData.snsId,
+              adminAccountData.snsToken,
+              adminCompanyData.companyName,
+              adminCompanyData.companyCode,
+              adminCompanyData.businessNumber,
+            ),
+          );
+          expect(result).toBeDefined();
+        } catch (Err) {
+          expect(Err.status).toBe(400);
+          expect(Err.response).toBe('회원사 정보 가입에 입력된 내용을 확인해주세요.');
         }
       }
     });

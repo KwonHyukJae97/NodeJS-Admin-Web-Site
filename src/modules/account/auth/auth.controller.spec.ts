@@ -1,18 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TranslatorModule } from 'nestjs-translator';
 import { AuthService } from './auth.service';
-import { SignController } from './auth.controller';
+import { AuthController } from './auth.controller';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { Connection } from 'typeorm';
 import { Account } from '../entities/account';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtManageService } from '../../../guard/jwt/jwt-manage.service';
 import { EmailService } from '../../email/email.service';
 import { ConvertException } from '../../../common/utils/convert-exception';
 import { createMock } from '@golevelup/ts-jest';
 import { response, Response } from 'express';
+import { SignUpAdminDto } from './dto/signup-admin.dto';
+import { KakaoSignUpAdminDto } from './dto/kakao-signup-admin.dto';
+import { NaverSignUpAdminDto } from './dto/naver-signup-admin.dto';
+import { GoogleSignUpAdminDto } from './dto/google-signup-admin.dto';
+import { SignUpUserDto } from './dto/signup-user.dto';
+import { FindIdDto } from './dto/findid.dto';
 
 const mockRepository = () => ({
   update: jest.fn(),
@@ -46,8 +51,10 @@ const mockResponseObj = () => {
 type MockService<T = any> = Partial<Record<keyof T, jest.Mock>>;
 
 describe('Auth Controller', () => {
-  let authController: SignController;
+  let authController: AuthController;
   let authService: MockService<AuthService>;
+  let commandBus: CommandBus;
+  let queryBus: QueryBus;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -71,12 +78,11 @@ describe('Auth Controller', () => {
           }),
         }),
       ],
-      controllers: [SignController],
+      controllers: [AuthController],
       providers: [
         AuthService,
         JwtService,
         ConfigService,
-        JwtManageService,
         EmailService,
         ConvertException,
         {
@@ -130,8 +136,10 @@ describe('Auth Controller', () => {
       ],
     }).compile();
 
-    authController = module.get(SignController);
+    authController = module.get(AuthController);
     authService = module.get(AuthService);
+    commandBus = module.get(CommandBus);
+    queryBus = module.get(QueryBus);
   });
 
   describe('Admin Social Login', () => {
@@ -555,5 +563,35 @@ describe('Auth Controller', () => {
         expect(result).toEqual('로그아웃 완료');
       });
     });
+  });
+
+  it('1. controller.signupAdmin 테스트', () => {
+    authController.signUpAdmin(new SignUpAdminDto());
+    expect(commandBus.execute).toBeCalledTimes(1);
+  });
+
+  it('2. controller.kakaoSignupAdmin 테스트', () => {
+    authController.kakaoSignUpAdmin(new KakaoSignUpAdminDto());
+    expect(commandBus.execute).toBeCalledTimes(1);
+  });
+
+  it('3. controller.naverSignupAdmin 테스트', () => {
+    authController.naverSignUpAdmin(new NaverSignUpAdminDto());
+    expect(commandBus.execute).toBeCalledTimes(1);
+  });
+
+  it('4. controller.googleSignupAdmin 테스트', () => {
+    authController.googleSignUpAdmin(new GoogleSignUpAdminDto());
+    expect(commandBus.execute).toBeCalledTimes(1);
+  });
+
+  it('5. controller.signupUser 테스트', () => {
+    authController.signUpUser(new SignUpUserDto());
+    expect(commandBus.execute).toBeCalledTimes(1);
+  });
+
+  it('6. controller.findId 테스트', () => {
+    authController.findId(new FindIdDto());
+    expect(queryBus.execute).toBeCalledTimes(1);
   });
 });
