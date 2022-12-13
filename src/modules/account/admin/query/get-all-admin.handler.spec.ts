@@ -8,13 +8,11 @@ import { AccountFile } from '../../../file/entities/account-file';
 import { GetAllAdminQuery } from './get-all-admin.query';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 
-// Repository에서 사용되는 함수 복제
 const mockRepository = () => ({
   find: jest.fn(),
   findOneBy: jest.fn(),
 });
 
-// MockRepository 타입 정의
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
 describe('GetAllAdmin', () => {
@@ -51,8 +49,7 @@ describe('GetAllAdmin', () => {
   });
 
   describe('전체 관리자 정보 정상 조회 여부', () => {
-    it('조회 성공', async () => {
-      // Given
+    it('관리자 리스트 조회 성공', async () => {
       const adminInfo = [
         {
           adminId: 1,
@@ -94,15 +91,25 @@ describe('GetAllAdmin', () => {
         },
       ];
 
-      // 반환값 설정 (mockResolvedValue = 비동기 반환값 / mockReturnValue = 일반 반환값 반환 시 사용)
       adminRepository.find.mockResolvedValue(adminInfo);
       accountFileRepository.findOneBy.mockResolvedValue(accountFile);
 
-      // When
       const result = await getAllAdminHandler.execute(new GetAllAdminQuery());
 
-      // Then
       expect(result).toEqual(adminList);
+      expect(accountFileRepository.findOneBy).toHaveBeenCalledTimes(1);
+    });
+
+    it('관리자 리스트가 없을 경우 404 에러 발생', async () => {
+      adminRepository.find.mockResolvedValue(undefined);
+
+      try {
+        const result = await getAllAdminHandler.execute(GetAllAdminQuery);
+        expect(result).toBeDefined();
+      } catch (err) {
+        expect(err.status).toBe(404);
+        expect(err.response).toBe('관리자 정보를 찾을 수 없습니다.');
+      }
     });
   });
 });

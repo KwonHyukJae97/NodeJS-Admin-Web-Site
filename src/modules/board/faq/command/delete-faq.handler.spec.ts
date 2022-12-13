@@ -22,9 +22,10 @@ type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
 describe('DeleteFaq', () => {
   let deleteFaqHandler: DeleteFaqHandler;
-  let noticeRepository: MockRepository<Faq>;
+  let faqRepository: MockRepository<Faq>;
   let boardRepository: MockRepository<Board>;
   let fileRepository: MockRepository<BoardFile>;
+  let eventBus: jest.Mocked<EventBus>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -65,26 +66,26 @@ describe('DeleteFaq', () => {
     }).compile();
 
     deleteFaqHandler = module.get(DeleteFaqHandler);
-    noticeRepository = module.get(getRepositoryToken(Faq));
+    faqRepository = module.get(getRepositoryToken(Faq));
     boardRepository = module.get(getRepositoryToken(Board));
     fileRepository = module.get(getRepositoryToken(BoardFile));
+    eventBus = module.get(EventBus);
   });
 
   describe('faq 삭제 여부', () => {
-    it('faq 삭제 성공', async () => {
-      // Given
-      const faqId = 1;
-      //   const role = '본사 관리자';
-      const findOneNoticeId = { noticeId: 1 };
-      const softDeleteNoticeId = { noticeId: 1 };
-      const findOneBoardId = { boardId: 1 };
-      const softDeleteBoardId = { boardId: 1 };
+    // Given
+    const faqId = 1;
+    //   const role = '본사 관리자';
+    const findOneNoticeId = { noticeId: 1 };
+    const softDeleteNoticeId = { noticeId: 1 };
+    const findOneBoardId = { boardId: 1 };
+    const softDeleteBoardId = { boardId: 1 };
 
-      // 반환값 설정 (mockResolvedValue = 비동기 반환값 / mockReturnValue = 일반 반환값 반환 시 사용)
-      noticeRepository.findOneBy.mockResolvedValue(findOneNoticeId);
+    it('faq 삭제 성공', async () => {
+      faqRepository.findOneBy.mockResolvedValue(findOneNoticeId);
       boardRepository.findOneBy.mockResolvedValue(findOneBoardId);
       fileRepository.findBy.mockResolvedValue(findOneBoardId);
-      noticeRepository.delete.mockResolvedValue(softDeleteNoticeId);
+      faqRepository.delete.mockResolvedValue(softDeleteNoticeId);
       boardRepository.softDelete.mockResolvedValue(softDeleteBoardId);
 
       // When
@@ -92,6 +93,32 @@ describe('DeleteFaq', () => {
 
       // Then
       expect(result).toEqual('삭제가 완료 되었습니다.');
+      expect(eventBus.publish).toHaveBeenCalledTimes(1);
+    });
+
+    it('faq 조회 실패', async () => {
+      try {
+        const faqId = 999;
+        const result = await deleteFaqHandler.execute(new DeleteFaqCommand(faqId));
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(404);
+        expect(err.response).toBe('FAQ 정보를 찾을 수 없습니다.');
+      }
+    });
+
+    it('faq 삭제 처리 실패', async () => {
+      try {
+        faqRepository.findOneBy.mockResolvedValue(findOneNoticeId);
+        boardRepository.findOneBy.mockResolvedValue(findOneBoardId);
+        fileRepository.findBy.mockResolvedValue(findOneBoardId);
+        faqRepository.delete.mockRejectedValue(softDeleteNoticeId);
+        boardRepository.softDelete.mockRejectedValue(softDeleteBoardId);
+        const result = await deleteFaqHandler.execute(new DeleteFaqCommand(faqId));
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(500);
+      }
     });
   });
 });

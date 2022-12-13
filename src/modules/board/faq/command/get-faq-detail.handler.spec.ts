@@ -4,8 +4,6 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
 import { Board } from '../../entities/board';
 import { BoardFile } from '../../../file/entities/board-file';
-import { Comment } from '../../comment/entities/comment';
-import { Admin } from '../../../account/admin/entities/admin';
 import { Account } from '../../../account/entities/account';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { GetFaqDetailHandler } from './get-faq-detail.handler';
@@ -82,45 +80,45 @@ describe('GetFaqDetail', () => {
   });
 
   describe('faq 상세 정보 정상 조회 여부', () => {
-    it('조회 성공', async () => {
-      // Given
-      const faqId = 1;
-      const role = '본사 관리자';
-      //   const categoryId = 1;
-      const accountId = 2;
-      const boardId = 1;
-      //   const viewCount = 0;
+    // Given
+    const faqId = 1;
+    const role = '본사 관리자';
+    //   const categoryId = 1;
+    const accountId = 2;
+    const boardId = 1;
+    //   const viewCount = 0;
 
-      const board = {
-        boardId: 2,
-        accountId: 2,
-        boardTypeCode: '2',
-        title: 'title',
-        content: 'content',
-        viewCount: 0,
-      };
-      const category = {
-        categoryId: 1,
-        categoryName: '카테고리 제목',
-      };
+    const board = {
+      boardId: 2,
+      accountId: 2,
+      boardTypeCode: '2',
+      title: 'title',
+      content: 'content',
+      viewCount: 0,
+    };
+    const category = {
+      categoryId: 1,
+      categoryName: '카테고리 제목',
+    };
 
-      const files = [];
+    const files = [];
 
-      const faq = {
-        faqId: 1,
-        category: category,
-        board: board,
-        // boardId: board.boardId,
-      };
+    const faq = {
+      faqId: 1,
+      category: category,
+      board: board,
+      // boardId: board.boardId,
+    };
 
-      const resultFaqInfo = {
-        faq: faq,
-        category: category,
-        // board: board,
-        fileList: 1,
-        writer: 'undefined(undefined)',
-      };
+    const resultFaqInfo = {
+      faq: faq,
+      category: category,
+      // board: board,
+      fileList: 1,
+      writer: 'undefined(undefined)',
+    };
 
+    it('faq 조회 성공', async () => {
       faqRepository.findOneBy.mockReturnValue(faq);
       categoryRepository.findOneBy.mockReturnValue(category);
       boardRepository.findOneBy.mockReturnValue(board);
@@ -134,6 +132,19 @@ describe('GetFaqDetail', () => {
 
       // Then
       expect(result).toEqual(resultFaqInfo);
+    });
+
+    it('게시글 조회 실패', async () => {
+      try {
+        const faqId = 999;
+        faqRepository.findOneBy.mockReturnValue(faq);
+
+        const result = await getFaqDetailHandler.execute(new GetFaqDetailCommand(faqId, role));
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(404);
+        expect(err.response).toBe('게시글 정보를 찾을 수 없습니다.');
+      }
     });
   });
 });

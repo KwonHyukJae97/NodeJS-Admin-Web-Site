@@ -8,7 +8,6 @@ import { TranslatorModule } from 'nestjs-translator';
 import { UpdateAdminRoleHandler } from './update-adminRole.handler';
 import { UpdateAdminRoleCommand } from './update-adminRole.command';
 
-// Repository에서 사용되는 함수 복제
 const mockRepository = () => ({
   save: jest.fn(),
   create: jest.fn(),
@@ -23,7 +22,6 @@ const mockRepository = () => ({
   }),
 });
 
-// MockRepository 타입 정의
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
 describe('UpdateAdminRole', () => {
@@ -73,41 +71,91 @@ describe('UpdateAdminRole', () => {
       },
     ];
 
+    const adminRole = {
+      roleId: 1,
+      roleName: '공지사항 관리자',
+      companyId: 1,
+    };
+
     const newAdminRole = {
       roleId: 1,
-      roleName: updateRoleName,
+      roleName: 'FAQ 관리자',
       companyId: 1,
     };
 
     const rolePermission = {
       roleId: newAdminRole.roleId,
+      permissionId: 2,
+      grantType: '0',
+    };
+
+    const newRolePermission = {
+      roleId: newAdminRole.roleId,
       permissionId: roleDto[0].permissionId,
       grantType: roleDto[0].grantType,
     };
-    it('수정 성공', async () => {
-      // 반환값 설정 (mockResolvedValue = 비동기 반환값 / mockReturnValue = 일반 반환값 반환 시 사용)
-      adminRoleRepository.findOneBy.mockResolvedValue(roleId);
-      adminRoleRepository.save.mockResolvedValue(newAdminRole);
-      rolePermissionRepository.findBy.mockResolvedValue(roleId);
-      // jest.requireMock(<모듈 이름>) 을 사용하면 해당 모듈을 mocking 할 수 있음
-      jest.spyOn(rolePermissionRepository, 'createQueryBuilder').mockImplementation(() => {
-        const mockModule = jest.requireMock('typeorm');
-        return {
-          ...mockModule,
-          where: jest.fn().mockReturnThis(),
-          andWhere: jest.fn().mockReturnThis(),
-          getOne: () => rolePermission,
-        };
-      });
-      rolePermissionRepository.update.mockResolvedValue(rolePermission);
 
-      // When
+    it('역할_권한 정보가 존재하지 않을 경우(데이터 추가) 역할 정보 수정 성공', async () => {
+      adminRoleRepository.findOneBy.mockResolvedValue(adminRole);
+      adminRoleRepository.save.mockResolvedValue(newAdminRole);
+      rolePermissionRepository.findBy.mockResolvedValue(newRolePermission);
+      const findRolePermission = jest
+        .spyOn(rolePermissionRepository, 'createQueryBuilder')
+        .mockImplementation(() => {
+          const mockModule = jest.requireMock('typeorm');
+          return {
+            ...mockModule,
+            where: jest.fn().mockReturnThis(),
+            andWhere: jest.fn().mockReturnThis(),
+            getOne: () => null,
+          };
+        });
+      rolePermissionRepository.create.mockResolvedValue(newRolePermission);
+      rolePermissionRepository.insert.mockResolvedValue(newRolePermission);
+
       const result = await updateAdminRoleHandler.execute(
-        new UpdateAdminRoleCommand(updateRoleName, roleDto, roleId.roleId),
+        new UpdateAdminRoleCommand(newAdminRole.roleName, roleDto, roleId.roleId),
       );
 
-      // Then
-      expect(result).toEqual(undefined);
+      expect(result).toBeUndefined();
+      expect(adminRoleRepository.findOneBy).toHaveBeenCalled();
+      expect(adminRoleRepository.save).toHaveBeenCalled();
+      expect(rolePermissionRepository.findBy).toHaveBeenCalled();
+      expect(findRolePermission).toHaveBeenCalled();
+      expect(rolePermissionRepository.create).toHaveBeenCalled();
+      expect(rolePermissionRepository.insert).toHaveBeenCalled();
+      expect(rolePermissionRepository.update).not.toHaveBeenCalled();
+    });
+
+    it('역할_권한 정보가 존재할 경우(데이터 수정) 역할 정보 수정 성공', async () => {
+      adminRoleRepository.findOneBy.mockResolvedValue(adminRole);
+      adminRoleRepository.save.mockResolvedValue(newAdminRole);
+      rolePermissionRepository.findBy.mockResolvedValue(newRolePermission);
+      const findRolePermission = jest
+        .spyOn(rolePermissionRepository, 'createQueryBuilder')
+        .mockImplementation(() => {
+          const mockModule = jest.requireMock('typeorm');
+          return {
+            ...mockModule,
+            where: jest.fn().mockReturnThis(),
+            andWhere: jest.fn().mockReturnThis(),
+            getOne: () => rolePermission,
+          };
+        });
+      rolePermissionRepository.update.mockResolvedValue(newRolePermission);
+
+      const result = await updateAdminRoleHandler.execute(
+        new UpdateAdminRoleCommand(newAdminRole.roleName, roleDto, roleId.roleId),
+      );
+
+      expect(result).toBeUndefined();
+      expect(adminRoleRepository.findOneBy).toHaveBeenCalled();
+      expect(adminRoleRepository.save).toHaveBeenCalled();
+      expect(rolePermissionRepository.findBy).toHaveBeenCalled();
+      expect(findRolePermission).toHaveBeenCalled();
+      expect(rolePermissionRepository.create).not.toHaveBeenCalled();
+      expect(rolePermissionRepository.insert).not.toHaveBeenCalled();
+      expect(rolePermissionRepository.update).toHaveBeenCalled();
     });
 
     it('역할권한 정보가 없을 경우 404 에러 발생', async () => {

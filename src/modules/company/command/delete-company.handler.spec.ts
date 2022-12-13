@@ -8,7 +8,6 @@ import { Company } from '../entities/company.entity';
 import { DeleteCompanyHandler } from './deleate-company.handler';
 import { DeleteCompanyCommand } from './delete-company.command';
 
-// Repository에서 사용되는 함수 복제
 const mockRepository = () => ({
   softDelete: jest.fn(),
   createQueryBuilder: jest.fn().mockReturnValue({
@@ -19,7 +18,6 @@ const mockRepository = () => ({
   }),
 });
 
-// MockRepository 타입 정의
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
 describe('DeleteCompany', () => {
@@ -82,12 +80,10 @@ describe('DeleteCompany', () => {
       });
       adminRepository.softDelete.mockReturnValue(companyId);
 
-      // When
       const result = await deleteCompanyHandler.execute(
         new DeleteCompanyCommand(companyId, roleId),
       );
 
-      // Then
       expect(result).toEqual('삭제가 완료 되었습니다.');
     });
 

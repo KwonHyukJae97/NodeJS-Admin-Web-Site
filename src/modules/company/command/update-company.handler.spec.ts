@@ -7,13 +7,11 @@ import { UpdateCompanyHandler } from './update-company.handler';
 import { Company } from '../entities/company.entity';
 import { UpdateCompanyCommand } from './update-company.command';
 
-// Repository에서 사용되는 함수 복제
 const mockRepository = () => ({
   save: jest.fn(),
   findOneBy: jest.fn(),
 });
 
-// MockRepository 타입 정의
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
 describe('UpdateCompany', () => {
@@ -65,8 +63,17 @@ describe('UpdateCompany', () => {
           companyId.companyId,
         ),
       );
+        expect(result).toBeDefined();
+      } catch (Err) {
+        expect(Err.status).toBe(404);
+        expect(Err.response).toBe('회원사 정보를 찾을 수 없습니다.');
+      }
+    });
 
-      // Then
+    it('회원사 정보에 문제가 있을 경우 400 에러 발생', async () => {
+      companyRepository.findOneBy.mockResolvedValue(companyId);
+      companyRepository.save.mockResolvedValue(newCompanyInfo);
+
       expect(result).toEqual(newCompanyInfo);
     });
 

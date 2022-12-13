@@ -37,7 +37,7 @@ export class NoticeController {
    * @returns : 공지사항 등록 커맨드 전송
    */
   @Post()
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   createNotice(
     @Body() createNoticeDto: CreateNoticeDto,
@@ -55,7 +55,7 @@ export class NoticeController {
    * @returns : 공지사항 리스트 조회 쿼리 전송
    */
   @Get()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async getAllSearchNotice(@Body() param: GetNoticeRequestDto) {
     const getNoticeListSearchQuery = new GetNoticeListQuery(param);
     return this.queryBus.execute(getNoticeListSearchQuery);
@@ -67,7 +67,7 @@ export class NoticeController {
    * @returns : 공지사항 상세 정보 조회 커맨드 전송
    */
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async getNoticeDetail(@Param('id') noticeId: number, @Query() role: string) {
     const command = new GetNoticeDetailCommand(noticeId, role);
     return this.commandBus.execute(command);
@@ -110,10 +110,9 @@ export class NoticeController {
   @UseGuards(JwtAuthGuard)
   async deleteNotice(
     @Param('id') noticeId: number,
-    @Query() role: string,
-    @GetUser() account: Account,
+    // @GetUser() account: Account,
   ) {
-    const command = new DeleteNoticeCommand(noticeId, role);
+    const command = new DeleteNoticeCommand(noticeId);
     return this.commandBus.execute(command);
   }
 }

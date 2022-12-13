@@ -53,8 +53,79 @@ describe('GetAlCompany', () => {
   });
 
   describe('전체 회원사 정보 정상 조회 여부', () => {
-    it('조회 성공', async () => {
-      // Given
+    const companyList = [
+      {
+        companyId: 1,
+        companyName: '회원사 테스트',
+        companyCode: 100001,
+        businessNumber: '10-000-00000',
+        userCount: 1,
+        adminCount: 1,
+      },
+      {
+        companyId: 2,
+        companyName: '클라이 교육',
+        companyCode: 100002,
+        businessNumber: '10-000-00000',
+        userCount: 1,
+        adminCount: 1,
+      },
+    ];
+
+    const searchCompanyList = [
+      {
+        companyId: 1,
+        companyName: '회원사 테스트',
+        companyCode: 100001,
+        businessNumber: '10-000-00000',
+        userCount: 1,
+        adminCount: 1,
+      },
+    ];
+
+    const resultAllCompanyList = {
+      currentPage: 1,
+      pageSize: 10,
+      totalCount: 1,
+      totalPage: 1,
+      items: [
+        {
+          companyId: 1,
+          companyName: '회원사 테스트',
+          companyCode: 100001,
+          businessNumber: '10-000-00000',
+          userCount: 1,
+          adminCount: 1,
+        },
+        {
+          companyId: 2,
+          companyName: '클라이 교육',
+          companyCode: 100002,
+          businessNumber: '10-000-00000',
+          userCount: 1,
+          adminCount: 1,
+        },
+      ],
+    };
+
+    const resultSearchCompanyList = {
+      currentPage: 1,
+      pageSize: 10,
+      totalCount: 1,
+      totalPage: 1,
+      items: [
+        {
+          companyId: 1,
+          companyName: '회원사 테스트',
+          companyCode: 100001,
+          businessNumber: '10-000-00000',
+          userCount: 1,
+          adminCount: 1,
+        },
+      ],
+    };
+
+    it('회원사 리스트 조회 성공', async () => {
       const param = {
         searchWord: null,
         pageNo: 1,
@@ -64,35 +135,6 @@ describe('GetAlCompany', () => {
         getOffset: () => 10,
       };
 
-      const companyList = [
-        {
-          companyId: 1,
-          companyName: '회원사 테스트',
-          companyCode: 100001,
-          businessNumber: '10-000-00000',
-          userCount: 1,
-          adminCount: 1,
-        },
-      ];
-
-      const resultCompanyList = {
-        currentPage: 1,
-        pageSize: 10,
-        totalCount: 1,
-        totalPage: 1,
-        items: [
-          {
-            companyId: 1,
-            companyName: '회원사 테스트',
-            companyCode: 100001,
-            businessNumber: '10-000-00000',
-            userCount: 1,
-            adminCount: 1,
-          },
-        ],
-      };
-
-      // jest.requireMock(<모듈 이름>) 을 사용하면 해당 모듈을 mocking 할 수 있음
       jest.spyOn(companyRepository, 'createQueryBuilder').mockImplementation(() => {
         const mockModule = jest.requireMock('typeorm');
         return {
@@ -105,15 +147,44 @@ describe('GetAlCompany', () => {
           limit: jest.fn().mockReturnThis(),
           offset: jest.fn().mockReturnThis(),
           getRawMany: () => companyList,
-          getCount: () => resultCompanyList.totalCount,
+          getCount: () => resultAllCompanyList.totalCount,
         };
       });
 
-      // When
       const result = await getAllCompanyHandler.execute(new GetAllCompanyQuery(param));
 
-      // Then
-      expect(result).toEqual(resultCompanyList);
+      expect(result).toEqual(companyList);
+    });
+
+    it('회원사 리스트 검색 조회 성공', async () => {
+      const searchParam = {
+        searchWord: '회원사',
+        pageNo: 1,
+        pageSize: 10,
+        totalData: false,
+        getLimit: () => 1,
+        getOffset: () => 10,
+      };
+
+      jest.spyOn(companyRepository, 'createQueryBuilder').mockImplementation(() => {
+        const mockModule = jest.requireMock('typeorm');
+        return {
+          ...mockModule,
+          select: jest.fn().mockReturnThis(),
+          leftJoin: jest.fn().mockReturnThis(),
+          addSelect: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          groupBy: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockReturnThis(),
+          offset: jest.fn().mockReturnThis(),
+          getRawMany: () => searchCompanyList,
+          getCount: () => resultSearchCompanyList.totalCount,
+        };
+      });
+
+      const result = await getAllCompanyHandler.execute(new GetAllCompanyQuery(searchParam));
+
+      expect(result).toEqual(resultSearchCompanyList);
     });
     //GetAllCompanyQuery 에 넘겨줄 param값 정의
     const param = {

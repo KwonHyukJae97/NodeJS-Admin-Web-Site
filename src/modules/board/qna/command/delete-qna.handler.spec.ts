@@ -85,39 +85,67 @@ describe('DeleteQna', () => {
   });
 
   describe('qna 정상 삭제 여부', () => {
-    it('삭제 성공', async () => {
-      // Given
-      const qnaId = 1;
-      const boardId = 11;
-      const commentId = 1;
-      const files = [];
-      const account = Account;
+    // Given
+    const qnaId = 1;
+    const boardId = 11;
+    const commentId = 1;
+    const files = [];
+    const account = Account;
 
-      // 기존 내용 - board
-      const boardDetail = {
-        title: 'title',
-        content: 'content',
-        boardId: 11,
-      };
+    // 기존 내용 - board
+    const boardDetail = {
+      title: 'title',
+      content: 'content',
+      boardId: 11,
+    };
 
-      const commentDetail = [
-        {
-          comment: 'test Content',
-          commentId: 11,
-        },
-      ];
+    const commentDetail = [
+      {
+        comment: 'test Content',
+        commentId: 11,
+      },
+    ];
 
+    it('QNA 삭제 성공', async () => {
       qnaRepository.findOneBy.mockResolvedValue(qnaId);
       boardRepository.findOneBy.mockResolvedValue(boardDetail);
       boardFileRepository.findBy.mockResolvedValue(boardId);
       commentRepository.findBy.mockResolvedValue(commentDetail);
+      commentRepository.softDelete.mockResolvedValue(commentId);
       qnaRepository.delete.mockResolvedValue(qnaId);
+      boardRepository.softDelete.mockResolvedValue(boardId);
 
       // When
       const result = await deleteQnaHandler.execute(new DeleteQnaCommand(qnaId, new account()));
 
       // Then
       expect(result).toEqual('삭제가 완료 되었습니다.');
+      expect(commentRepository.softDelete).toHaveBeenCalledTimes(1);
+    });
+
+    it('QNA 조회 실패', async () => {
+      try {
+        const qnaId = 999;
+        const result = await deleteQnaHandler.execute(new DeleteQnaCommand(qnaId, new account()));
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(404);
+        expect(err.response).toBe('QnA 정보를 찾을 수 없습니다.');
+      }
+    });
+
+    it('QNA 삭제 처리 실패', async () => {
+      try {
+        qnaRepository.findOneBy.mockResolvedValue(qnaId);
+        boardRepository.findOneBy.mockResolvedValue(boardDetail);
+        boardFileRepository.findBy.mockResolvedValue(boardId);
+        commentRepository.findBy.mockResolvedValue(commentDetail);
+        qnaRepository.delete.mockRejectedValue(qnaId);
+        const result = await deleteQnaHandler.execute(new DeleteQnaCommand(qnaId, new account()));
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(500);
+      }
     });
   });
 });

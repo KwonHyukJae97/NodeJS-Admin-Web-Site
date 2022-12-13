@@ -89,38 +89,69 @@ describe('GetDetailAdmin', () => {
     accountRepository = module.get(getRepositoryToken(Account));
   });
 
-  describe('qna 상세 정보 정상 조회 여부', () => {
-    it('조회 성공', async () => {
-      // Given
-      const qnaId = 1;
-      const accountId = 27;
-      const viewCount = 0;
-      const boardId = 11;
-      const files = [];
+  describe('QNA 상세 정보 정상 조회 여부', () => {
+    // Given
+    const qnaId = 1;
+    const accountId = 27;
+    const viewCount = 0;
+    const boardId = 11;
+    const files = [];
 
-      const board = {
-        boardId: boardId,
+    const board = {
+      boardId: boardId,
+      accountId: accountId,
+      boardTypeCode: '2',
+      title: 'title',
+      content: 'content',
+      viewCount: viewCount,
+    };
+
+    // 답변 작성자 정보
+    const commentList = [
+      {
+        qnaId: qnaId,
         accountId: accountId,
-        boardTypeCode: '2',
-        title: 'title',
-        content: 'content',
+        title: '100001',
+        viewCount: 4,
+        regDate: '2022-12-02 14:54:45',
+        isComment: 1,
+      },
+    ];
+
+    // 답변 정보
+    const commentDetail = [
+      {
+        qnaId: qnaId,
+        accountId: accountId,
+        title: '100001',
         viewCount: viewCount,
-      };
+        regDate: '2022-12-02 14:54:45',
+        isComment: 1,
+      },
+    ];
 
-      // 답변 작성자 정보
-      const commentList = [
-        {
-          qnaId: qnaId,
+    // qna 정보
+    const qna = {
+      boardId: board.boardId,
+      board: board,
+    };
+
+    // 반환되는 qna 정보
+    const resultQnaInfo = {
+      qna: {
+        boardId: board.boardId,
+        fileList: [],
+        writer: 'undefined(undefined)',
+        board: {
+          boardId: board.boardId,
           accountId: accountId,
-          title: '100001',
-          viewCount: 4,
-          regDate: '2022-12-02 14:54:45',
-          isComment: 1,
+          boardTypeCode: '2',
+          title: 'title',
+          content: 'content',
+          viewCount: 1,
         },
-      ];
-
-      // 답변 정보
-      const commentDetail = [
+      },
+      comment: [
         {
           qnaId: qnaId,
           accountId: accountId,
@@ -128,44 +159,11 @@ describe('GetDetailAdmin', () => {
           viewCount: viewCount,
           regDate: '2022-12-02 14:54:45',
           isComment: 1,
-        },
-      ];
-
-      // qna 정보
-      const qna = {
-        boardId: board.boardId,
-        board: board,
-      };
-
-      // 반환되는 qna 정보
-      const resultQnaInfo = {
-        qna: {
-          boardId: board.boardId,
-          fileList: [],
           writer: 'undefined(undefined)',
-          board: {
-            boardId: board.boardId,
-            accountId: accountId,
-            boardTypeCode: '2',
-            title: 'title',
-            content: 'content',
-            viewCount: 1,
-          },
         },
-        comment: [
-          {
-            qnaId: qnaId,
-            accountId: accountId,
-            title: '100001',
-            viewCount: viewCount,
-            regDate: '2022-12-02 14:54:45',
-            isComment: 1,
-            writer: 'undefined(undefined)',
-          },
-        ],
-      };
-
-      // jest.requireMock(<모듈 이름>) 을 사용하면 해당 모듈을 mocking 할 수 있음
+      ],
+    };
+    it('QNA 상세 정보 조회 성공', async () => {
       jest.spyOn(boardRepository, 'createQueryBuilder').mockImplementation(() => {
         const mockModule = jest.requireMock('typeorm');
         return {
@@ -220,6 +218,29 @@ describe('GetDetailAdmin', () => {
 
       // Then
       expect(result).toEqual(resultQnaInfo);
+    });
+
+    it('게시글 조회 실패', async () => {
+      try {
+        const qnaId = 999;
+
+        jest.spyOn(boardRepository, 'createQueryBuilder').mockImplementation(() => {
+          const mockModule = jest.requireMock('typeorm');
+          return {
+            ...mockModule,
+            leftJoinAndSelect: jest.fn().mockReturnThis(),
+            where: jest.fn().mockReturnThis(),
+            getOne: () => qna,
+          };
+        });
+        boardRepository.save.mockRejectedValue(undefined);
+
+        const result = await getQnaDetailHandler.execute(new GetQnaDetailCommand(qnaId));
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(400);
+        expect(err.response).toBe('게시글 정보에입력된 내용을 확인해주세요.');
+      }
     });
   });
 });

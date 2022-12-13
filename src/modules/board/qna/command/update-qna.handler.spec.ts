@@ -70,40 +70,39 @@ describe('UpdateQna', () => {
   });
 
   describe('qna 정상 수정 여부', () => {
+    // Given
+    const qnaId = 1;
+    const boardId = 11;
+    const files = [];
+
+    // 기존 내용 - board
+    const boardDetail = {
+      title: 'title',
+      content: 'content',
+      boardId: 11,
+    };
+
+    // 수정할 내용 - board
+    const updateBoard = {
+      title: 'Update Title',
+      content: 'Update Content',
+      boardId: 11,
+    };
+
+    // 기존 내용 - qna
+    const qnaDetail = {
+      boardId: boardId,
+      board: boardDetail,
+      qnaId: 1,
+    };
+
+    // 수정할 내용 - qna
+    const updateQna = {
+      boardId: boardId,
+      board: updateBoard,
+      qnaId: 1,
+    };
     it('수정 성공', async () => {
-      // Given
-      const qnaId = 1;
-      const boardId = 11;
-      const files = [];
-
-      // 기존 내용 - board
-      const boardDetail = {
-        title: 'title',
-        content: 'content',
-        boardId: 11,
-      };
-
-      // 수정할 내용 - board
-      const updateBoard = {
-        title: 'Update Title',
-        content: 'Update Content',
-        boardId: 11,
-      };
-
-      // 기존 내용 - qna
-      const qnaDetail = {
-        boardId: boardId,
-        board: boardDetail,
-        qnaId: 1,
-      };
-
-      // 수정할 내용 - qna
-      const updateQna = {
-        boardId: boardId,
-        board: updateBoard,
-        qnaId: 1,
-      };
-
       qnaRepository.findOneBy.mockResolvedValue(qnaDetail);
       boardRepository.findOneBy.mockResolvedValue(boardDetail);
       boardFileRepository.findBy.mockResolvedValue(boardId);
@@ -121,6 +120,35 @@ describe('UpdateQna', () => {
       }
       if (result instanceof Qna) {
         expect(result.board).toEqual(updateQna.board);
+      }
+    });
+
+    it('QNA 조회 실패', async () => {
+      try {
+        const qnaId = 999;
+        const result = await updateQnaHandler.execute(
+          new UpdateQnaCommand(updateBoard.title, updateBoard.content, qnaId, files),
+        );
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(404);
+        expect(err.response).toBe('QnA 정보를 찾을 수 없습니다.');
+      }
+    });
+
+    it('게시글 필수 작성 체크', async () => {
+      try {
+        qnaRepository.findOneBy.mockResolvedValue(qnaDetail);
+        boardRepository.findOneBy.mockResolvedValue(boardDetail);
+        boardFileRepository.findBy.mockResolvedValue(boardId);
+        boardRepository.save.mockRejectedValue(undefined);
+        const result = await updateQnaHandler.execute(
+          new UpdateQnaCommand(updateBoard.title, updateBoard.content, qnaId, files),
+        );
+        expect(result).toBeUndefined();
+      } catch (err) {
+        expect(err.status).toBe(400);
+        expect(err.message).toBe('게시글 정보에입력된 내용을 확인해주세요.');
       }
     });
   });

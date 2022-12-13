@@ -8,12 +8,14 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
 import { CreateAdminRoleCommand } from './create-adminRole.command';
 
+// Repository에서 사용되는 함수 복제
 const mockRepository = () => ({
   save: jest.fn(),
   create: jest.fn(),
   insert: jest.fn(),
 });
 
+// MockRepository 타입 정의
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
 describe('CreateAdminRole', () => {
