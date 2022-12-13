@@ -62,5 +62,20 @@ describe('DeleteAdminRole', () => {
 
       expect(result).toEqual('삭제가 완료 되었습니다.');
     });
+
+    it('역할 정보가 없을 경우 404 에러 발생', async () => {
+      const findOneRoleId = { roleId: 1 };
+      const roleId = 1;
+      adminRoleRepository.findOneBy.mockResolvedValue(findOneRoleId);
+      rolePermissionRepository.softDelete.mockResolvedValue(undefined);
+
+      try {
+        const result = await deleteAdminRoleHandler.execute(new DeleteAdminRoleCommand(roleId));
+        expect(result).toBeDefined();
+      } catch (Err) {
+        expect(Err.status).toBe(404);
+        expect(Err.response).toBe('역할 정보를 찾을 수 없습니다.');
+      }
+    });
   });
 });

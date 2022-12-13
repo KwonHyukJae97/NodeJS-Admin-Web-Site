@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -76,16 +76,17 @@ export class CreateAdminhandler implements ICommandHandler<CreateAdminCommand> {
     });
 
     if (isIdExist) {
-      throw new UnauthorizedException('이미 존재하는 아이디입니다.');
+      return this.convertException.badInput('이미 존재하는 아이디입니다. ', 400);
     } else if (isEmailExist) {
-      throw new UnauthorizedException('이미 존재하는 이메일입니다.');
+      return this.convertException.badInput('이미 존재하는 이메일입니다. ', 400);
     } else if (isPhoneExist) {
-      throw new UnauthorizedException('이미 존재하는 연락처입니다.');
+      return this.convertException.badInput('이미 존재하는 연락처입니다. ', 400);
     } else if (isNicknameExist) {
-      throw new UnauthorizedException('이미 존재하는 닉네임입니다.');
+      return this.convertException.badInput('이미 존재하는 닉네임입니다. ', 400);
     } else if (isBusinessNumberExist) {
-      throw new UnauthorizedException('이미 존재하는 사업자번호입니다.');
-    } else {
+      return this.convertException.badInput('이미 존재하는 사업자번호입니다. ', 400);
+    }
+    {
       try {
         await this.accountRepository.save(accountAdmin);
       } catch (err) {

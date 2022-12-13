@@ -79,5 +79,17 @@ describe('GetAllAdminRole', () => {
 
       expect(result).toEqual(adminRoleList);
     });
+
+    it('역할 정보가 없을 경우 404 에러 발생', async () => {
+      adminRoleRepository.find.mockResolvedValue(undefined);
+
+      try {
+        const result = await getAllAdminRoleHandler.execute(GetAllAdminRoleQuery);
+        expect(result).toBeDefined();
+      } catch (Err) {
+        expect(Err.status).toBe(404);
+        expect(Err.response).toBe('역할 정보를 찾을 수 없습니다.');
+      }
+    });
   });
 });

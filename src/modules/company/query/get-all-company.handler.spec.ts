@@ -186,5 +186,26 @@ describe('GetAlCompany', () => {
 
       expect(result).toEqual(resultSearchCompanyList);
     });
+    //GetAllCompanyQuery 에 넘겨줄 param값 정의
+    const param = {
+      searchWord: null,
+      pageNo: 1,
+      pageSize: 10,
+      totalData: false,
+      getLimit: () => 1,
+      getOffset: () => 10,
+    };
+
+    it('회원사 리스트가 없는 404 에러 발생', async () => {
+      if (param.totalData == undefined) {
+        try {
+          const result = await getAllCompanyHandler.execute(new GetAllCompanyQuery(param));
+          expect(result).toBeDefined();
+        } catch (Err) {
+          expect(Err.status).toBe(404);
+          expect(Err.response).toBe('회원사 정보를 찾을 수 없습니다.');
+        }
+      }
+    });
   });
 });

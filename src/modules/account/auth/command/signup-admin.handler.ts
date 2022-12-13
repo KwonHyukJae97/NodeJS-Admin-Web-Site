@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Admin } from 'src/modules/account/admin/entities/admin';
@@ -75,24 +75,23 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
     });
 
     if (isIdExist) {
-      throw new UnauthorizedException('이미 존재하는 아이디입니다.');
+      return this.convertException.badInput('이미 존재하는 아이디입니다. ', 400);
     } else if (isEmailExist) {
-      throw new UnauthorizedException('이미 존재하는 이메일입니다.');
+      return this.convertException.badInput('이미 존재하는 이메일입니다. ', 400);
     } else if (isPhoneExist) {
-      throw new UnauthorizedException('이미 존재하는 연락처입니다.');
+      return this.convertException.badInput('이미 존재하는 연락처입니다. ', 400);
     } else if (isNicknameExist) {
-      throw new UnauthorizedException('이미 존재하는 닉네임입니다.');
+      return this.convertException.badInput('이미 존재하는 닉네임입니다. ', 400);
     } else if (isBusinessNumberExist) {
-      throw new UnauthorizedException('이미 존재하는 사업자번호입니다.');
+      return this.convertException.badInput('이미 존재하는 사업자번호입니다. ', 400);
     }
-    {
-      //Account 저장
-      try {
-        await this.accountRepository.save(accountAdmin);
-      } catch (err) {
-        console.log(err);
-        return this.convertException.badRequestError('관리자 회원가입에 ', 400);
-      }
+
+    //Account 저장
+    try {
+      await this.accountRepository.save(accountAdmin);
+    } catch (err) {
+      console.log(err);
+      return this.convertException.badRequestError('관리자 회원가입에 ', 400);
     }
 
     //회원가입 시 회원사 테이블 데이터저장
@@ -101,14 +100,6 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
       companyCode,
       businessNumber,
     });
-
-    // const isBusinessNumberExist = await this.companyRepository.findOne({
-    //   where: { businessNumber },
-    // });
-
-    // if (isBusinessNumberExist) {
-    //   throw new UnauthorizedException('이미 존재하는 사업자번호입니다.');
-    // }
 
     try {
       await this.companyRepository.save(company);

@@ -1,12 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { compare, hash } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -103,13 +95,18 @@ export class AuthService {
   async getByAccountId(id: string, snsType: string, showCurrentHashedRefreshToken: boolean) {
     const account = await this.accountRepository.findOne({ where: { id, snsType } });
 
-    if (account) {
-      delete account.password;
-      if (!showCurrentHashedRefreshToken) {
-        delete account.currentHashedRefreshToken;
-      }
+    //예외처리
+    try {
+      if (account) {
+        delete account.password;
+        if (!showCurrentHashedRefreshToken) {
+          delete account.currentHashedRefreshToken;
+        }
 
-      return account;
+        return account;
+      }
+    } catch (err) {
+      return this.convertException.notFoundError('아이디', 404);
     }
   }
 
@@ -123,13 +120,18 @@ export class AuthService {
   async getBySnsType(snsType: string, snsId: string, showCurrentHashedRefreshToken: boolean) {
     const account = await this.accountRepository.findOne({ where: { snsType, snsId } });
 
-    if (account) {
-      delete account.password;
-      if (!showCurrentHashedRefreshToken) {
-        delete account.currentHashedRefreshToken;
-      }
+    //예외처리
+    try {
+      if (account) {
+        delete account.password;
+        if (!showCurrentHashedRefreshToken) {
+          delete account.currentHashedRefreshToken;
+        }
 
-      return account;
+        return account;
+      }
+    } catch (err) {
+      return this.convertException.notFoundError('SnsType', 404);
     }
   }
 
@@ -143,7 +145,7 @@ export class AuthService {
     const account = await this.accountRepository.findOne({ where: { id } });
 
     if (!account) {
-      throw new UnauthorizedException('존재하지 않는 사용자입니다.');
+      return this.convertException.notFoundError('사용자 ', 404);
     }
 
     const isRefreshTokenMatching = await compare(refreshToken, account.currentHashedRefreshToken);
@@ -152,7 +154,7 @@ export class AuthService {
       // return { result: true };
       return { isRefreshTokenMatching, refreshToken, id };
     } else {
-      throw new UnauthorizedException('접근에러입니다.');
+      return this.convertException.badRequestAccountError('입력한 ', 400);
     }
   }
 
@@ -162,22 +164,19 @@ export class AuthService {
    * @param snsId
    * @returns : 검증 후 결과값을 리턴
    */
-  async getSnsIdRefreshTokenMatches(
-    refreshToken: string,
-    snsId: string,
-  ): Promise<{ result: boolean }> {
+  async getSnsIdRefreshTokenMatches(refreshToken: string, snsId: string) {
     const account = await this.accountRepository.findOne({ where: { snsId } });
 
     if (!account) {
-      throw new UnauthorizedException('존재하지 않는 사용자입니다.');
+      return this.convertException.notFoundError('사용자 ', 404);
     }
 
     const isRefreshTokenMatching = await compare(refreshToken, account.currentHashedRefreshToken);
 
     if (isRefreshTokenMatching) {
-      return { result: true };
+      return { isRefreshTokenMatching, refreshToken, snsId };
     } else {
-      throw new UnauthorizedException('접근에러입니다.');
+      return this.convertException.badRequestAccountError('입력한 ', 400);
     }
   }
 
@@ -187,10 +186,15 @@ export class AuthService {
    * @param id
    */
   async setCurrentRefreshToken(refreshToken: string, id: string) {
-    if (refreshToken) {
-      refreshToken = await bcrypt.hash(refreshToken, 10);
+    //예외처리
+    try {
+      if (refreshToken) {
+        refreshToken = await bcrypt.hash(refreshToken, 10);
+      }
+      await this.accountRepository.update({ id }, { currentHashedRefreshToken: refreshToken });
+    } catch (err) {
+      return this.convertException.CommonError(500);
     }
-    await this.accountRepository.update({ id }, { currentHashedRefreshToken: refreshToken });
   }
 
   /**
@@ -199,17 +203,27 @@ export class AuthService {
    * @param id
    */
   async setSocialCurrentRefreshToken(refreshToken: string, snsId: string) {
-    if (refreshToken) {
-      refreshToken = await bcrypt.hash(refreshToken, 10);
+    //예외처리
+    try {
+      if (refreshToken) {
+        refreshToken = await bcrypt.hash(refreshToken, 10);
+      }
+      await this.accountRepository.update({ snsId }, { currentHashedRefreshToken: refreshToken });
+    } catch (err) {
+      return this.convertException.CommonError(500);
     }
-    await this.accountRepository.update({ snsId }, { currentHashedRefreshToken: refreshToken });
   }
 
   async setSocialToken(snsToken: string, snsId: string) {
-    if (snsToken) {
-      snsToken = await bcrypt.hash(snsToken, 10);
+    //예외처리
+    try {
+      if (snsToken) {
+        snsToken = await bcrypt.hash(snsToken, 10);
+      }
+      await this.accountRepository.update({ snsId }, { snsToken: snsToken });
+    } catch (err) {
+      return this.convertException.CommonError(500);
     }
-    await this.accountRepository.update({ snsId }, { snsToken: snsToken });
   }
 
   /**
@@ -329,7 +343,7 @@ export class AuthService {
 
     //division 값 확인 후 관리자만 로그인 가능
     if (account.division === false) {
-      throw new UnauthorizedException('로그인 정보를 확인해주세요.');
+      return this.convertException.badInput('관리자 로그인 정보가 아닙니다. ', 400);
     }
     const { accessToken, accessOption } = await this.getCookieWithJwtAccessToken(id, null);
 
@@ -390,7 +404,7 @@ export class AuthService {
 
     //division 값 확인 후 사용자만 로그인 가능
     if (account.division === true) {
-      throw new UnauthorizedException('로그인 정보를 확인해주세요.');
+      return this.convertException.badInput('사용자 로그인 정보가 아닙니다. ', 400);
     }
     const { accessToken, accessOption } = await this.getCookieWithJwtAccessToken(id, null);
 
