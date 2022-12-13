@@ -38,13 +38,10 @@ export class CommentController {
 
   /**
    * 답변 전체 & 검색 결과 리스트 조회
-   * @query : writer
-   * @query : commenter
-   * @query : regDate
    * @returns : 답변 리스트 조회 쿼리 전송
    */
   @Get()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async getAllComment(
     @Body() param: GetCommentRequestDto,
     // @GetUser() account: Account
