@@ -48,7 +48,7 @@ describe('FindId', () => {
   describe('아이디 찾기 성공 여부', () => {
     const name = '권혁재';
     const phone = '01086197872';
-    const id = 'findId123';
+    const id = 'findId1234';
 
     const param = {
       name: name,
