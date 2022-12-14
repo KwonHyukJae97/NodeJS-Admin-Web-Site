@@ -32,8 +32,11 @@ export class GetCategoryListHandler implements IQueryHandler<GetCategoryListQuer
       category.where('category.isUse = :isUse', { isUse: true });
     }
 
-    const categoryList = await category.getMany();
-
-    return categoryList;
+    try {
+      const categoryList = await category.getMany();
+      return categoryList;
+    } catch (err) {
+      return this.convertException.notFoundError('카테고리', 404);
+    }
   }
 }
