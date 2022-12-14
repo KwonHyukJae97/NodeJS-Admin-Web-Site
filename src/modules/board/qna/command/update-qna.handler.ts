@@ -34,7 +34,7 @@ export class UpdateQnaHandler implements ICommandHandler<UpdateQnaCommand> {
    * @returns : DB처리 실패 시 에러 메시지 반환 / 수정 성공 시 1:1 문의 정보 반환
    */
   async execute(command: UpdateQnaCommand) {
-    const { title, content, qnaId, files } = command;
+    const { title, content, qnaId, files, account } = command;
 
     const qna = await this.qnaRepository.findOneBy({ qnaId });
 
@@ -48,9 +48,9 @@ export class UpdateQnaHandler implements ICommandHandler<UpdateQnaCommand> {
       return this.convertException.notFoundError('게시글', 404);
     }
 
-    // if (account.accountId != board.accountId) {
-    //   return this.convertException.badRequestAccountError('작성자', 400);
-    // }
+    if (account.accountId != board.accountId) {
+      return this.convertException.badRequestAccountError('작성자', 400);
+    }
 
     board.title = title;
     board.content = content;
