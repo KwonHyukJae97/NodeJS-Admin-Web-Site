@@ -59,24 +59,29 @@ export class DeleteAdminHandler implements ICommandHandler<DeleteAdminCommand> {
     }
 
     //탈퇴회원의 개인정보 유출가능한 데이터는 *표로 표시 (기준:휴면계정 데이터)
-    await this.accountRepository
-      .createQueryBuilder()
-      .update(account)
-      .set({
-        password: '*****',
-        id: '*****',
-        name: '*****',
-        phone: '*****',
-        nickname: '*****',
-        email: '*****',
-        birth: '*****',
-        snsId: '*****',
-        snsType: '**',
-        gender: '*',
-        ci: '*****',
-      })
-      .where('account.account_id = :accountId', { accountId: accountId })
-      .execute();
+    //예외처리
+    try {
+      await this.accountRepository
+        .createQueryBuilder()
+        .update(account)
+        .set({
+          password: '*****',
+          id: '*****',
+          name: '*****',
+          phone: '*****',
+          nickname: '*****',
+          email: '*****',
+          birth: '*****',
+          snsId: '*****',
+          snsType: '**',
+          gender: '*',
+          ci: '*****',
+        })
+        .where('account.account_id = :accountId', { accountId: accountId })
+        .execute();
+    } catch (err) {
+      return this.convertException.CommonError(500);
+    }
 
     return '관리자 삭제 완료';
   }

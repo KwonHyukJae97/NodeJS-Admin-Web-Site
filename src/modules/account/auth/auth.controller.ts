@@ -88,9 +88,9 @@ export class AuthController {
    */
   @Patch('/update_password/:id')
   updatePassword(@Param('id') accountId: number, @Body() dto: AdminUpdatePasswordDto) {
-    const { password } = dto;
+    const { password, confirmPassword } = dto;
     console.log('변경하는 비밀번호', password);
-    const command = new AdminUpdatePasswordCommand(accountId, password);
+    const command = new AdminUpdatePasswordCommand(accountId, password, confirmPassword);
     return this.commandBus.execute(command);
   }
 
