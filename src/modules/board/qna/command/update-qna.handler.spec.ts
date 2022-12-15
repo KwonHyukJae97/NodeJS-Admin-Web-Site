@@ -11,6 +11,7 @@ import { ConvertException } from '../../../../common/utils/convert-exception';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
 import { EventBus } from '@nestjs/cqrs';
+import { Account } from '../../../account/entities/account';
 
 // Repository mocking
 const mockRepository = () => ({
@@ -74,6 +75,7 @@ describe('UpdateQna', () => {
     const qnaId = 1;
     const boardId = 11;
     const files = [];
+    const account = Account;
 
     // 기존 내용 - board
     const boardDetail = {
@@ -111,7 +113,7 @@ describe('UpdateQna', () => {
 
       // When
       const result = await updateQnaHandler.execute(
-        new UpdateQnaCommand(updateBoard.title, updateBoard.content, qnaId, files),
+        new UpdateQnaCommand(updateBoard.title, updateBoard.content, qnaId, files, new account()),
       );
 
       // Then
@@ -127,7 +129,7 @@ describe('UpdateQna', () => {
       try {
         const qnaId = 999;
         const result = await updateQnaHandler.execute(
-          new UpdateQnaCommand(updateBoard.title, updateBoard.content, qnaId, files),
+          new UpdateQnaCommand(updateBoard.title, updateBoard.content, qnaId, files, new account()),
         );
         expect(result).toBeUndefined();
       } catch (err) {
@@ -143,7 +145,7 @@ describe('UpdateQna', () => {
         boardFileRepository.findBy.mockResolvedValue(boardId);
         boardRepository.save.mockRejectedValue(undefined);
         const result = await updateQnaHandler.execute(
-          new UpdateQnaCommand(updateBoard.title, updateBoard.content, qnaId, files),
+          new UpdateQnaCommand(updateBoard.title, updateBoard.content, qnaId, files, new account()),
         );
         expect(result).toBeUndefined();
       } catch (err) {

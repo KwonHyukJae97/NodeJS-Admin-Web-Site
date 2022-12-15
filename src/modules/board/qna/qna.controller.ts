@@ -90,10 +90,10 @@ export class QnaController {
     @Param('id') qnaId: number,
     @Body() updateQnaDto: UpdateQnaDto,
     @UploadedFiles() files: Express.MulterS3.File[],
-    // @GetUser() account: Account,
+    @GetUser() account: Account,
   ) {
     const { title, content } = updateQnaDto;
-    const command = new UpdateQnaCommand(title, content, qnaId, files);
+    const command = new UpdateQnaCommand(title, content, qnaId, files, account);
     return this.commandBus.execute(command);
   }
 

@@ -10,6 +10,6 @@ export class UpdateQnaCommand implements ICommand {
     readonly content: string,
     readonly qnaId: number,
     readonly files: Express.MulterS3.File[],
-  ) // readonly account: Account,
-  {}
+    readonly account: Account,
+  ) {}
 }
