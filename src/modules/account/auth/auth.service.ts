@@ -504,7 +504,12 @@ export class AuthService {
    * @returns accountId 값으로 해당 사용자의 리프래쉬 토큰을 null처리
    */
   async removeRefreshToken(accountId: number) {
-    return this.accountRepository.update({ accountId }, { currentHashedRefreshToken: null });
+    //예외처리
+    try {
+      return this.accountRepository.update({ accountId }, { currentHashedRefreshToken: null });
+    } catch (err) {
+      return this.convertException.CommonError(500);
+    }
   }
 
   /**
@@ -588,9 +593,11 @@ export class AuthService {
     const { email } = Dto;
     const user = await this.accountRepository.findOne({ where: { email } });
 
+    //예외 처리
     if (!user) {
-      throw new BadRequestException('메일 정보가 정확하지 않습니다.');
+      return this.convertException.badInput('메일 정보가 정확하지 않습니다. ', 400);
     }
+
     const tempUUID = uuid.v4();
     const tempPassword = tempUUID.split('-')[0];
     const salt = await bcrypt.genSalt();

@@ -141,7 +141,7 @@ describe('UpdateComment', () => {
           );
           expect(result).toBeDefined();
         } catch (Err) {
-          expect(Err.status).toBe(404);
+          expect(Err.status).toBe(400);
           expect(Err.response).toBe('작성자 정보에입력된 내용을 확인해주세요.');
         }
       }

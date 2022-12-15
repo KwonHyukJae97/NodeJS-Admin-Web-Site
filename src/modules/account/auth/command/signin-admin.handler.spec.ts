@@ -123,7 +123,6 @@ describe('SignIn Admin', () => {
         ),
       );
 
-      console.log(result);
       expect(result).toEqual({
         account: returnAdmin,
         accessToken: adminInput.accessToken,

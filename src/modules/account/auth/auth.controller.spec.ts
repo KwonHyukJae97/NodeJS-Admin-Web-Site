@@ -12,6 +12,12 @@ import { EmailService } from '../../email/email.service';
 import { ConvertException } from '../../../common/utils/convert-exception';
 import { createMock } from '@golevelup/ts-jest';
 import { response, Response } from 'express';
+import { SignUpAdminDto } from './dto/signup-admin.dto';
+import { KakaoSignUpAdminDto } from './dto/kakao-signup-admin.dto';
+import { NaverSignUpAdminDto } from './dto/naver-signup-admin.dto';
+import { GoogleSignUpAdminDto } from './dto/google-signup-admin.dto';
+import { SignUpUserDto } from './dto/signup-user.dto';
+import { FindIdDto } from './dto/findid.dto';
 
 const mockRepository = () => ({
   update: jest.fn(),
@@ -47,6 +53,8 @@ type MockService<T = any> = Partial<Record<keyof T, jest.Mock>>;
 describe('Auth Controller', () => {
   let authController: AuthController;
   let authService: MockService<AuthService>;
+  let commandBus: CommandBus;
+  let queryBus: QueryBus;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -130,6 +138,8 @@ describe('Auth Controller', () => {
 
     authController = module.get(AuthController);
     authService = module.get(AuthService);
+    commandBus = module.get(CommandBus);
+    queryBus = module.get(QueryBus);
   });
 
   describe('Admin Social Login', () => {
@@ -553,5 +563,35 @@ describe('Auth Controller', () => {
         expect(result).toEqual('로그아웃 완료');
       });
     });
+  });
+
+  it('1. controller.signupAdmin 테스트', () => {
+    authController.signUpAdmin(new SignUpAdminDto());
+    expect(commandBus.execute).toBeCalledTimes(1);
+  });
+
+  it('2. controller.kakaoSignupAdmin 테스트', () => {
+    authController.kakaoSignUpAdmin(new KakaoSignUpAdminDto());
+    expect(commandBus.execute).toBeCalledTimes(1);
+  });
+
+  it('3. controller.naverSignupAdmin 테스트', () => {
+    authController.naverSignUpAdmin(new NaverSignUpAdminDto());
+    expect(commandBus.execute).toBeCalledTimes(1);
+  });
+
+  it('4. controller.googleSignupAdmin 테스트', () => {
+    authController.googleSignUpAdmin(new GoogleSignUpAdminDto());
+    expect(commandBus.execute).toBeCalledTimes(1);
+  });
+
+  it('5. controller.signupUser 테스트', () => {
+    authController.signUpUser(new SignUpUserDto());
+    expect(commandBus.execute).toBeCalledTimes(1);
+  });
+
+  it('6. controller.findId 테스트', () => {
+    authController.findId(new FindIdDto());
+    expect(queryBus.execute).toBeCalledTimes(1);
   });
 });

@@ -9,7 +9,7 @@
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "TZ=Asia/Seoul nest start",
+    "start": "TZ=Asia/Seoul NODE_ENV=local nest start",
     "start:dev": "TZ=Asia/Seoul NODE_ENV=local nest start --watch",
     "start:debug": "TZ=Asia/Seoul NODE_ENV=local nest start --debug --watch",
     "start:prod": "node dist/main",
