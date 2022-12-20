@@ -39,6 +39,7 @@ import { AdminUpdatePasswordDto } from './dto/admin-update-password.dto';
 import { AdminUpdatePasswordCommand } from './command/admin-update-password.command';
 import { JwtService } from '@nestjs/jwt';
 import * as moment from 'moment';
+import { ConfigService } from '@nestjs/config';
 
 /**
  * 회원가입, 로그인 등 계정 관련 auth API controller
@@ -50,6 +51,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private queryBus: QueryBus,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -62,14 +64,21 @@ export class AuthController {
     //토큰정보 빼놓기 까지 완료, 뺴놓은 토큰을 넘겨 로컬스토리지에 담고 처리
     const authInfo = req.user;
     const accessToken = req.cookies.authentication;
+    const accessOption = {
+      // domain: 'localhost',
+      domain: 'klaiai.co.kr',
+      path: '/',
+      httpOnly: true,
+      maxAge: Number(this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')) * 1000,
+    };
 
     //accessToken 만료 시간 추출 함수
     const jwtAccessToken = this.jwtService.decode(accessToken);
     const exp = jwtAccessToken['exp'];
     const expireAt = moment(exp * 1000);
     console.log('시간체크 테스트', expireAt);
-    res.cookie('authentication', accessToken);
-    return { authInfo, accessToken, expireAt };
+    res.cookie('authentication', accessToken, accessOption);
+    return { authInfo, accessToken, expireAt, accessOption };
   }
 
   //프로필 버튼 클릭 시 어카운트 아이디로 데이터 조회
@@ -80,6 +89,7 @@ export class AuthController {
     return this.queryBus.execute(getUserInfoQuery);
   }
 
+  //accessToken 이 중간에 바뀌는데 정상적으로 jwtToken가드에 넘겨주면 해결될거같음. 리프레쉬 경로 비교해보기 리프레쉬는 정상적으로 넘겨짐
   /**
    * 비밀번호 수정
    * @param accountId
