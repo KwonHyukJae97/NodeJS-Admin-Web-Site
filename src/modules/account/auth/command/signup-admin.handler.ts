@@ -65,6 +65,8 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
       division: true,
     });
 
+    console.log('어카운트 회원가입 데이터', accountAdmin);
+
     //중복체크
     const isIdExist = await this.accountRepository.findOne({ where: { id } });
     const isEmailExist = await this.accountRepository.findOne({ where: { email } });
@@ -101,6 +103,8 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
       businessNumber,
     });
 
+    console.log('컴퍼니 회원가입 데이터', company);
+
     try {
       await this.companyRepository.save(company);
     } catch (err) {
@@ -114,6 +118,8 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
       roleId: 0,
       isSuper: false, //본사: true, 회원사: false
     });
+
+    console.log('어드민 회원가입 데이터', admin);
     try {
       await this.adminRepository.save(admin);
     } catch (err) {
