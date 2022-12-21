@@ -243,7 +243,7 @@ export class AuthService {
     return {
       accessToken: token,
       accessOption: {
-        domain: 'localhost',
+        domain: this.configService.get('JWT_ACCESSTOKEN_OPTION_DOMAIN'),
         path: '/',
         httpOnly: true,
         maxAge: Number(this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')) * 1000,
@@ -268,7 +268,7 @@ export class AuthService {
     return {
       accessToken: token,
       accessOption: {
-        domain: 'localhost',
+        domain: this.configService.get('JWT_ACCESSTOKEN_OPTION_DOMAIN'),
         path: '/',
         httpOnly: true,
         maxAge: Number(this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')) * 1000,
@@ -293,7 +293,7 @@ export class AuthService {
     return {
       refreshToken: token,
       refreshOption: {
-        domain: 'localhost',
+        domain: this.configService.get('JWT_ACCESSTOKEN_OPTION_DOMAIN'),
         path: '/',
         httpOnly: true,
         maxAge: Number(this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')) * 1000,
@@ -318,7 +318,7 @@ export class AuthService {
     return {
       refreshToken: token,
       refreshOption: {
-        domain: 'localhost',
+        domain: this.configService.get('JWT_ACCESSTOKEN_OPTION_DOMAIN'),
         path: '/',
         httpOnly: true,
         maxAge: Number(this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')) * 1000,
@@ -448,13 +448,13 @@ export class AuthService {
   public getCookiesForLogOut() {
     return {
       accessOption: {
-        domain: 'localhost',
+        domain: this.configService.get('JWT_ACCESSTOKEN_OPTION_DOMAIN'),
         path: '/',
         httpOnly: true,
         maxAge: 0,
       },
       refreshOption: {
-        domain: 'localhost',
+        domain: this.configService.get('JWT_ACCESSTOKEN_OPTION_DOMAIN'),
         path: '/',
         httpOnly: true,
         maxAge: 0,
