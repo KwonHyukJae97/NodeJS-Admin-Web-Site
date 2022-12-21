@@ -60,17 +60,13 @@ export class SignUpAdminDto {
   @IsNotEmpty()
   readonly gender: string;
 
-  // @IsNumber()
   readonly companyId: number;
 
-  // @IsNumber()
   readonly roleId: number;
 
-  // @IsBoolean()
   readonly isSuper: boolean;
 
   //관리자 사용자 구분 (true: 1(관리자), false: 0(사용자))
-  // @IsBoolean()
   readonly division: boolean;
 
   @IsNotEmpty()

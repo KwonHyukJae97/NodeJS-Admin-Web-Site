@@ -65,8 +65,7 @@ export class AuthController {
     const authInfo = req.user;
     const accessToken = req.cookies.authentication;
     const accessOption = {
-      // domain: 'localhost',
-      domain: 'klaiai.co.kr',
+      domain: this.configService.get('JWT_ACCESSTOKEN_OPTION_DOMAIN'),
       path: '/',
       httpOnly: true,
       maxAge: Number(this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')) * 1000,
