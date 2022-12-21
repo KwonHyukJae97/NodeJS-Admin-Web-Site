@@ -77,7 +77,7 @@ export class AuthController {
     const expireAt = moment(exp * 1000);
     console.log('시간체크 테스트', expireAt);
     res.cookie('authentication', accessToken, accessOption);
-    return { authInfo, accessToken, expireAt, accessOption };
+    return { authInfo, accessToken, expireAt };
   }
 
   //프로필 버튼 클릭 시 어카운트 아이디로 데이터 조회
