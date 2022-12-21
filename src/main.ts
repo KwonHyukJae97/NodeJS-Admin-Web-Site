@@ -28,6 +28,6 @@ async function bootstrap() {
     exposedHeaders: ['content-disposition'],
   });
   app.useGlobalFilters(new GlobalExceptionFilter());
-  await app.listen(process.env.SERVER_PORT || 13002);
+  await app.listen(process.env.SERVER_PORT || 3000);
 }
 bootstrap();
