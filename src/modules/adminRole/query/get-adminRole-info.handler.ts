@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { Admin } from 'src/modules/account/admin/entities/admin';
 import { Repository } from 'typeorm';
-import { RolePermission } from '../entities/RolePermission.entity';
+import { RolePermission } from '../entities/rolePermission.entity';
 import { GetAdminRoleInfoQuery } from './get-adminRole-info.query';
 
 /**

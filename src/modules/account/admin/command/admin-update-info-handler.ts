@@ -36,6 +36,11 @@ export class AdminUpdateInfoHandler implements ICommandHandler<AdminUpdateInfoCo
     const { accountId, email, phone, nickname, file } = command;
     const account = await this.accountRepository.findOneBy({ accountId: accountId });
 
+    //404 not found 에러처리 추가
+    if (!account) {
+      return this.convertException.notFoundError('관리자', 404);
+    }
+
     if (email) {
       try {
         // const isEmailExist = this.accountRepository.findOneBy( {email} )

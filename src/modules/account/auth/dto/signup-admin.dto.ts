@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsEmail,
   IsNotEmpty,
   IsNumber,
@@ -34,7 +35,7 @@ export class SignUpAdminDto {
   @MaxLength(80)
   readonly name: string;
 
-  @IsNotEmpty()
+  // @IsNotEmpty()
   @IsEmail()
   @Matches(/^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i, {
     message: '이메일 양식에 맞게 입력해주세요.',

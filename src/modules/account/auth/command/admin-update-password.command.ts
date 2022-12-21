@@ -5,5 +5,9 @@ import { ICommand } from '@nestjs/cqrs';
  */
 
 export class AdminUpdatePasswordCommand implements ICommand {
-  constructor(readonly accountId: number, readonly password: string) {}
+  constructor(
+    readonly accountId: number,
+    readonly password: string,
+    readonly confirmPassword: string,
+  ) {}
 }

@@ -89,7 +89,7 @@ describe('CreateAdminRole', () => {
 
     it('잘못된 역할 정보일 경우 400 에러 발생', async () => {
       adminRoleRepository.create.mockResolvedValue(adminRole);
-      adminRoleRepository.save.mockResolvedValue(adminRole);
+      adminRoleRepository.save.mockRejectedValue(adminRole);
 
       try {
         const result = await createAdminRoleHandler.execute(

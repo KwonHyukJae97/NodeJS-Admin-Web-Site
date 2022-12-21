@@ -210,7 +210,7 @@ describe('UpdateAdminRole', () => {
       adminRoleRepository.save.mockResolvedValue(newAdminRole);
       rolePermissionRepository.findBy.mockResolvedValue(roleId);
       rolePermissionRepository.create.mockResolvedValue(rolePermission);
-      rolePermissionRepository.insert.mockResolvedValue(rolePermission);
+      rolePermissionRepository.insert.mockRejectedValue(rolePermission);
 
       // jest.requireMock(<모듈 이름>) 을 사용하면 해당 모듈을 mocking 할 수 있음
       jest.spyOn(rolePermissionRepository, 'createQueryBuilder').mockImplementation(() => {
@@ -239,7 +239,7 @@ describe('UpdateAdminRole', () => {
       rolePermissionRepository.findBy.mockResolvedValue(roleId);
       rolePermissionRepository.create.mockResolvedValue(rolePermission);
       rolePermissionRepository.insert.mockResolvedValue(rolePermission);
-      rolePermissionRepository.update.mockResolvedValue(rolePermission);
+      rolePermissionRepository.update.mockRejectedValue(rolePermission);
 
       // jest.requireMock(<모듈 이름>) 을 사용하면 해당 모듈을 mocking 할 수 있음
       jest.spyOn(rolePermissionRepository, 'createQueryBuilder').mockImplementation(() => {

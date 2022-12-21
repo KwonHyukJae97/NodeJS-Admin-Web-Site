@@ -12,6 +12,7 @@ import { EmailService } from 'src/modules/email/email.service';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import * as uuid from 'uuid';
 import * as bcrypt from 'bcrypt';
+import { AuthController } from './auth.controller';
 
 const mockRepository = () => ({
   update: jest.fn(async () => await Promise.resolve()),

@@ -129,9 +129,9 @@ describe('관리자 회원가입', () => {
     });
 
     it('중복된 아이디를 입력한 경우 400 에러 발생', async () => {
-      accountRepository.create.mockReturnValue(adminAccountData);
-      accountRepository.findOne.mockResolvedValue(id);
-      accountRepository.save.mockReturnValue(adminAccountData);
+      accountRepository.create.mockResolvedValue(adminAccountData);
+      accountRepository.findOne.mockResolvedValueOnce(true);
+      // accountRepository.save.mockReturnValue(adminAccountData);
 
       try {
         const result = await signUpAdminHandler.execute(
@@ -162,9 +162,9 @@ describe('관리자 회원가입', () => {
 
     it('중복된 이메을을 입력한 경우 400 에러 발생', async () => {
       accountRepository.create.mockResolvedValue(adminAccountData);
-      accountRepository.findOne.mockResolvedValue(id);
-      accountRepository.findOne.mockResolvedValue(email);
-      accountRepository.save.mockResolvedValue(adminAccountData);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(true);
+      // accountRepository.save.mockResolvedValue(adminAccountData);
 
       if (!id) {
         try {
@@ -197,10 +197,10 @@ describe('관리자 회원가입', () => {
 
     it('중복된 연락처을 입력한 경우 400 에러 발생', async () => {
       accountRepository.create.mockResolvedValue(adminAccountData);
-      accountRepository.findOne.mockResolvedValue(id);
-      accountRepository.findOne.mockResolvedValue(email);
-      accountRepository.findOne.mockResolvedValue(phone);
-      accountRepository.save.mockResolvedValue(adminAccountData);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(true);
+      // accountRepository.save.mockResolvedValue(adminAccountData);
 
       if (!id && !email) {
         try {
@@ -233,11 +233,11 @@ describe('관리자 회원가입', () => {
 
     it('중복된 닉네임을 입력한 경우 400 에러 발생', async () => {
       accountRepository.create.mockResolvedValue(adminAccountData);
-      accountRepository.findOne.mockResolvedValue(id);
-      accountRepository.findOne.mockResolvedValue(email);
-      accountRepository.findOne.mockResolvedValue(phone);
-      accountRepository.findOne.mockResolvedValue(nickname);
-      accountRepository.save.mockResolvedValue(adminAccountData);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(true);
+      // accountRepository.save.mockResolvedValue(adminAccountData);
 
       if (!id && !email && !phone) {
         try {
@@ -270,12 +270,12 @@ describe('관리자 회원가입', () => {
 
     it('중복된 사업자번호를 입력한 경우 400 에러 발생', async () => {
       accountRepository.create.mockResolvedValue(adminAccountData);
-      accountRepository.findOne.mockResolvedValue(id);
-      accountRepository.findOne.mockResolvedValue(email);
-      accountRepository.findOne.mockResolvedValue(phone);
-      accountRepository.findOne.mockResolvedValue(nickname);
-      companyRepository.findOne.mockResolvedValue(businessNumber);
-      accountRepository.save.mockResolvedValue(adminAccountData);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      companyRepository.findOne.mockResolvedValueOnce(true);
+      // accountRepository.save.mockResolvedValue(adminAccountData);
 
       if (!id && !email && !phone && !nickname) {
         try {
@@ -307,11 +307,11 @@ describe('관리자 회원가입', () => {
     });
     it('관리자 회원가입에 실패 할 경우 400 에러 발생', async () => {
       accountRepository.create.mockResolvedValue(adminAccountData);
-      accountRepository.findOne.mockResolvedValue(id);
-      accountRepository.findOne.mockResolvedValue(email);
-      accountRepository.findOne.mockResolvedValue(phone);
-      accountRepository.findOne.mockResolvedValue(nickname);
-      companyRepository.findOne.mockResolvedValue(businessNumber);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      companyRepository.findOne.mockResolvedValueOnce(false);
       accountRepository.save.mockRejectedValue(adminAccountData);
 
       if (!id && !email && !phone && !nickname && !businessNumber) {
@@ -345,11 +345,11 @@ describe('관리자 회원가입', () => {
 
     it('회원사 정보 가입에 실패 할 경우 400 에러 발생', async () => {
       accountRepository.create.mockResolvedValue(adminAccountData);
-      accountRepository.findOne.mockResolvedValue(id);
-      accountRepository.findOne.mockResolvedValue(email);
-      accountRepository.findOne.mockResolvedValue(phone);
-      accountRepository.findOne.mockResolvedValue(nickname);
-      companyRepository.findOne.mockResolvedValue(businessNumber);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      companyRepository.findOne.mockResolvedValueOnce(false);
       accountRepository.save.mockRejectedValue(adminAccountData);
       companyRepository.save.mockRejectedValue(adminCompanyData);
 
@@ -384,13 +384,12 @@ describe('관리자 회원가입', () => {
 
     it('admin테이블 저장에 문제가 있을 경우 500 에러 발생', async () => {
       accountRepository.create.mockResolvedValue(adminAccountData);
-      accountRepository.findOne.mockResolvedValue(id);
-      accountRepository.findOne.mockResolvedValue(email);
-      accountRepository.findOne.mockResolvedValue(phone);
-      accountRepository.findOne.mockResolvedValue(nickname);
-      companyRepository.findOne.mockResolvedValue(businessNumber);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      companyRepository.findOne.mockResolvedValueOnce(false);
       accountRepository.save.mockRejectedValue(adminAccountData);
-      companyRepository.save.mockRejectedValue(adminCompanyData);
       adminRepository.save.mockRejectedValue(adminData);
 
       if (!id && !email && phone && nickname && businessNumber) {

@@ -132,9 +132,8 @@ describe('사용자 회원가입', () => {
 
     it('중복된 이메일을 입력한 경우 400 에러 발생', async () => {
       accountRepository.create.mockResolvedValue(userAccountData);
-      accountRepository.findOne.mockResolvedValue(id);
-      accountRepository.findOne.mockResolvedValue(email);
-      accountRepository.save.mockResolvedValue(userAccountData);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(true);
 
       if (!id) {
         try {
@@ -161,10 +160,9 @@ describe('사용자 회원가입', () => {
 
     it('중복된 연락처를 입력한 경우 400 에러 발생', async () => {
       accountRepository.create.mockResolvedValue(userAccountData);
-      accountRepository.findOne.mockResolvedValue(id);
-      accountRepository.findOne.mockResolvedValue(email);
-      accountRepository.findOne.mockResolvedValue(phone);
-      accountRepository.save.mockResolvedValue(userAccountData);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(true);
 
       if (!id && !email) {
         try {
@@ -191,11 +189,10 @@ describe('사용자 회원가입', () => {
 
     it('중복된 닉네임을 입력한 경우 400 에러 발생', async () => {
       accountRepository.create.mockResolvedValue(userAccountData);
-      accountRepository.findOne.mockResolvedValue(id);
-      accountRepository.findOne.mockResolvedValue(email);
-      accountRepository.findOne.mockResolvedValue(phone);
-      accountRepository.findOne.mockResolvedValue(nickname);
-      accountRepository.save.mockResolvedValue(userAccountData);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(true);
 
       if (!id && !email && !phone) {
         try {
@@ -222,10 +219,10 @@ describe('사용자 회원가입', () => {
 
     it('사용자 회원가입에 실패 할 경우 400 에러 발생', async () => {
       accountRepository.create.mockResolvedValue(userAccountData);
-      accountRepository.findOne.mockResolvedValue(id);
-      accountRepository.findOne.mockResolvedValue(email);
-      accountRepository.findOne.mockResolvedValue(phone);
-      accountRepository.findOne.mockResolvedValue(nickname);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
       accountRepository.save.mockRejectedValue(userAccountData);
 
       if (!id && !email && !phone && !nickname) {
@@ -253,12 +250,12 @@ describe('사용자 회원가입', () => {
 
     it('유저테이블 저장에 문제가 있을 경우 500 에러 발생', async () => {
       accountRepository.create.mockResolvedValue(userAccountData);
-      accountRepository.findOne.mockResolvedValue(id);
-      accountRepository.findOne.mockResolvedValue(email);
-      accountRepository.findOne.mockResolvedValue(phone);
-      accountRepository.findOne.mockResolvedValue(nickname);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
+      accountRepository.findOne.mockResolvedValueOnce(false);
       accountRepository.save.mockRejectedValue(userAccountData);
-      userRepository.save.mockRejectedValue(userAccountData);
+      userRepository.save.mockRejectedValue(userData);
 
       if (!id && !email && !phone && !nickname) {
         try {

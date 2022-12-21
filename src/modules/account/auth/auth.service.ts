@@ -243,8 +243,7 @@ export class AuthService {
     return {
       accessToken: token,
       accessOption: {
-        // domain: 'localhost',
-        domain: 'klaiai.co.kr',
+        domain: this.configService.get('JWT_ACCESSTOKEN_OPTION_DOMAIN'),
         path: '/',
         httpOnly: true,
         maxAge: Number(this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')) * 1000,
@@ -269,7 +268,7 @@ export class AuthService {
     return {
       accessToken: token,
       accessOption: {
-        domain: 'localhost',
+        domain: this.configService.get('JWT_ACCESSTOKEN_OPTION_DOMAIN'),
         path: '/',
         httpOnly: true,
         maxAge: Number(this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')) * 1000,
@@ -294,8 +293,7 @@ export class AuthService {
     return {
       refreshToken: token,
       refreshOption: {
-        // domain: 'localhost',
-        domain: 'klaiai.co.kr',
+        domain: this.configService.get('JWT_ACCESSTOKEN_OPTION_DOMAIN'),
         path: '/',
         httpOnly: true,
         maxAge: Number(this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')) * 1000,
@@ -320,7 +318,7 @@ export class AuthService {
     return {
       refreshToken: token,
       refreshOption: {
-        domain: 'localhost',
+        domain: this.configService.get('JWT_ACCESSTOKEN_OPTION_DOMAIN'),
         path: '/',
         httpOnly: true,
         maxAge: Number(this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')) * 1000,
@@ -450,13 +448,13 @@ export class AuthService {
   public getCookiesForLogOut() {
     return {
       accessOption: {
-        domain: 'localhost',
+        domain: this.configService.get('JWT_ACCESSTOKEN_OPTION_DOMAIN'),
         path: '/',
         httpOnly: true,
         maxAge: 0,
       },
       refreshOption: {
-        domain: 'localhost',
+        domain: this.configService.get('JWT_ACCESSTOKEN_OPTION_DOMAIN'),
         path: '/',
         httpOnly: true,
         maxAge: 0,
@@ -506,7 +504,12 @@ export class AuthService {
    * @returns accountId 값으로 해당 사용자의 리프래쉬 토큰을 null처리
    */
   async removeRefreshToken(accountId: number) {
-    return this.accountRepository.update({ accountId }, { currentHashedRefreshToken: null });
+    //예외처리
+    try {
+      return this.accountRepository.update({ accountId }, { currentHashedRefreshToken: null });
+    } catch (err) {
+      return this.convertException.CommonError(500);
+    }
   }
 
   /**
@@ -590,9 +593,11 @@ export class AuthService {
     const { email } = Dto;
     const user = await this.accountRepository.findOne({ where: { email } });
 
+    //예외 처리
     if (!user) {
-      throw new BadRequestException('메일 정보가 정확하지 않습니다.');
+      return this.convertException.badInput('메일 정보가 정확하지 않습니다. ', 400);
     }
+
     const tempUUID = uuid.v4();
     const tempPassword = tempUUID.split('-')[0];
     const salt = await bcrypt.genSalt();

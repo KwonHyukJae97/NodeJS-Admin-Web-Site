@@ -244,6 +244,7 @@ describe('GetCommentDetail', () => {
     it('작성자 정보에 문제가 있을 경우 400 에러 발생', async () => {
       qnaRepository.findOneBy.mockResolvedValue(qna);
       boardRepository.findOneBy.mockResolvedValue(board);
+      accountRepository.save.mockRejectedValue(accountId);
 
       try {
         const result = await getCommentDetailHandler.execute(
@@ -259,7 +260,7 @@ describe('GetCommentDetail', () => {
     it('게시글 정보에 문제가 있을 경우 400 에러 발생', async () => {
       qnaRepository.findOneBy.mockResolvedValue(qna);
       boardRepository.findOneBy.mockResolvedValue(board);
-      boardRepository.save.mockResolvedValue(board);
+      boardRepository.save.mockRejectedValue(board);
       qnaRepository.save.mockResolvedValue(qna);
       accountRepository.findOneBy.mockResolvedValue(accountId);
       commentRepository.find.mockResolvedValue(comment);
@@ -280,7 +281,7 @@ describe('GetCommentDetail', () => {
       qnaRepository.findOneBy.mockResolvedValue(qna);
       boardRepository.findOneBy.mockResolvedValue(board);
       boardRepository.save.mockResolvedValue(board);
-      qnaRepository.save.mockResolvedValue(qna);
+      qnaRepository.save.mockRejectedValue(qna);
       accountRepository.findOneBy.mockResolvedValue(accountId);
       commentRepository.find.mockResolvedValue(comment);
       companyRepository.findOneBy.mockResolvedValue(companyId);
