@@ -3,7 +3,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { Company } from 'src/modules/company/entities/company.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Admin } from '../../admin/entities/admin';
 import { Account } from '../../entities/account';
 import { NaverSignUpAdminCommand } from './naver-signup-admin.command';
@@ -26,6 +26,8 @@ export class NaverSignUpAdminHandler implements ICommandHandler<NaverSignUpAdmin
 
     @Inject(ConvertException)
     private convertException: ConvertException,
+
+    private dataSource: DataSource,
   ) {}
 
   //네이버 2차 정보 저장 메소드
@@ -42,18 +44,6 @@ export class NaverSignUpAdminHandler implements ICommandHandler<NaverSignUpAdmin
       companyCode,
       businessNumber,
     } = command;
-
-    const accountNaverAdmin = this.accountRepository.create({
-      name,
-      phone,
-      nickname,
-      birth,
-      gender,
-      snsId,
-      snsType: '00',
-      snsToken,
-      division: true,
-    });
 
     //중복체크
     const isIdExist = await this.accountRepository.findOne({ where: { snsId } });
@@ -73,42 +63,54 @@ export class NaverSignUpAdminHandler implements ICommandHandler<NaverSignUpAdmin
       return this.convertException.badInput('이미 존재하는 사업자번호입니다. ', 400);
     }
 
+    //트랜잭션 생성 후 연결 및 시작
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    const accountNaverAdmin = this.accountRepository.create({
+      name,
+      phone,
+      nickname,
+      birth,
+      gender,
+      snsId,
+      snsType: '00',
+      snsToken,
+      division: true,
+    });
+
     try {
-      await this.accountRepository.save(accountNaverAdmin);
+      await queryRunner.manager.getRepository(Account).save(accountNaverAdmin);
+
+      //회원가입 시 회원사 테이블 데이터저장
+      const company = this.companyRepository.create({
+        companyName,
+        companyCode,
+        businessNumber,
+      });
+
+      await queryRunner.manager.getRepository(Company).save(company);
+
+      const adminNaver = this.adminRepository.create({
+        accountId: accountNaverAdmin.accountId,
+        companyId: company.companyId,
+        //임의값 입력
+        roleId: 0,
+        isSuper: true,
+      });
+
+      await queryRunner.manager.getRepository(Admin).save(adminNaver);
+
+      await queryRunner.commitTransaction();
+
+      return accountNaverAdmin;
     } catch (err) {
       console.log(err);
+      await queryRunner.rollbackTransaction();
       return this.convertException.badRequestError('네이버 2차정보 저장에 ', 400);
+    } finally {
+      await queryRunner.release();
     }
-
-    //회원가입 시 회원사 테이블 데이터저장
-    const company = this.companyRepository.create({
-      companyName,
-      companyCode,
-      businessNumber,
-    });
-    try {
-      await this.companyRepository.save(company);
-    } catch (err) {
-      console.log(err);
-      return this.convertException.badRequestError('회원사 정보 가입에 ', 400);
-    }
-
-    const adminNaver = this.adminRepository.create({
-      accountId: accountNaverAdmin.accountId,
-      companyId: company.companyId,
-      //임의값 입력
-      roleId: 0,
-      isSuper: true,
-    });
-
-    try {
-      await this.adminRepository.save(adminNaver);
-    } catch (err) {
-      console.log(err);
-      return this.convertException.CommonError(500);
-    }
-
-    // 네이버 정보를 리턴
-    return accountNaverAdmin;
   }
 }
