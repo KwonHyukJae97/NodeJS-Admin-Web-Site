@@ -72,7 +72,6 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
       }
 
       await queryRunner.commitTransaction();
-
       return faq;
     } catch (err) {
       await queryRunner.rollbackTransaction();

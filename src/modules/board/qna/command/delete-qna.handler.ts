@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { DeleteQnaCommand } from './delete-qna.command';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Qna } from '../entities/qna';
 import { Board } from '../../entities/board';
 import { BoardFile } from '../../../file/entities/board-file';
@@ -25,6 +25,7 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
     @Inject('qnaFile') private boardFileDb: BoardFileDb,
     @Inject(ConvertException) private convertException: ConvertException,
     private eventBus: EventBus,
+    private dataSource: DataSource,
   ) {}
 
   /**
@@ -34,6 +35,10 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
    */
   async execute(command: DeleteQnaCommand) {
     const { qnaId, account } = command;
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     const qna = await this.qnaRepository.findOneBy({ qnaId });
 
@@ -60,26 +65,20 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
 
     const comments = await this.commentRepository.findBy({ qnaId });
 
-    comments.map((comment) => {
-      try {
-        this.commentRepository.softDelete({ commentId: comment.commentId });
-      } catch (err) {
-        return this.convertException.CommonError(500);
-      }
-    });
-
     try {
-      await this.qnaRepository.delete(qna);
-    } catch (err) {
-      return this.convertException.CommonError(500);
-    }
+      comments.map((comment) => {
+        queryRunner.manager.getRepository(Comment).softDelete({ commentId: comment.commentId });
+      });
 
-    try {
-      await this.boardRepository.softDelete({ boardId: board.boardId });
+      await queryRunner.manager.getRepository(Qna).delete(qna);
+      await queryRunner.manager.getRepository(Board).softDelete({ boardId: board.boardId });
+      await queryRunner.commitTransaction();
+      return '삭제가 완료 되었습니다.';
     } catch (err) {
+      await queryRunner.rollbackTransaction();
       return this.convertException.CommonError(500);
+    } finally {
+      await queryRunner.release();
     }
-
-    return '삭제가 완료 되었습니다.';
   }
 }

@@ -6,7 +6,6 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -43,10 +42,10 @@ export class FaqController {
   createFaq(
     @Body() createFaqDto: CreateFaqDto,
     @UploadedFiles() files: Express.MulterS3.File[],
-    // @GetUser() account: Account,
+    @GetUser() account: Account,
   ) {
-    const { title, content, categoryName, role } = createFaqDto;
-    const command = new CreateFaqCommand(title, content, categoryName, role, files);
+    const { title, content, categoryName } = createFaqDto;
+    const command = new CreateFaqCommand(title, content, categoryName, account, files);
     return this.commandBus.execute(command);
   }
 
@@ -55,7 +54,7 @@ export class FaqController {
    * @returns : FAQ 리스트 조회 쿼리 전송
    */
   @Get()
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   async getFaqSearch(@Body() param: GetFaqRequestDto) {
     const getFaqListSearchQuery = new GetFaqListQuery(param);
     return this.queryBus.execute(getFaqListSearchQuery);
@@ -66,9 +65,9 @@ export class FaqController {
    * @returns : FAQ 카테고리 리스트 조회 쿼리 전송
    */
   @Get('category')
-  // @UseGuards(JwtAuthGuard)
-  async getAllCategory(@Query('role') role: string) {
-    const getCategoryListQuery = new GetCategoryListQuery(role);
+  @UseGuards(JwtAuthGuard)
+  async getAllCategory() {
+    const getCategoryListQuery = new GetCategoryListQuery();
     return this.queryBus.execute(getCategoryListQuery);
   }
 
@@ -78,9 +77,9 @@ export class FaqController {
    * @returns : FAQ 상세 정보 조회 커맨드 전송
    */
   @Get(':id')
-  // @UseGuards(JwtAuthGuard)
-  async getFaqDetail(@Param('id') faqId: number, @Query() role: string) {
-    const command = new GetFaqDetailCommand(faqId, role);
+  @UseGuards(JwtAuthGuard)
+  async getFaqDetail(@Param('id') faqId: number) {
+    const command = new GetFaqDetailCommand(faqId);
     return this.commandBus.execute(command);
   }
 
@@ -96,10 +95,9 @@ export class FaqController {
     @Param('id') faqId: number,
     @Body() updateFaqDto: UpdateFaqDto,
     @UploadedFiles() files: Express.MulterS3.File[],
-    // @GetUser() account: Account,
   ) {
-    const { title, content, categoryName, role } = updateFaqDto;
-    const command = new UpdateFaqCommand(title, content, categoryName, role, faqId, files);
+    const { title, content, categoryName } = updateFaqDto;
+    const command = new UpdateFaqCommand(title, content, categoryName, faqId, files);
     return this.commandBus.execute(command);
   }
 
@@ -110,10 +108,7 @@ export class FaqController {
    */
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  async deleteFaq(
-    @Param('id') faqId: number,
-    // @GetUser() account: Account,
-  ) {
+  async deleteFaq(@Param('id') faqId: number) {
     const command = new DeleteFaqCommand(faqId);
     return this.commandBus.execute(command);
   }
