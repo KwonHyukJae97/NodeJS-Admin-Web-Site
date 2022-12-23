@@ -22,15 +22,13 @@ export class GetCategoryListHandler implements IQueryHandler<GetCategoryListQuer
    * @returns : DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 FAQ 카테고리 리스트 반환
    */
   async execute(query: GetCategoryListQuery) {
-    const { role } = query;
-
     const category = await this.categoryRepository
       .createQueryBuilder('category')
       .orderBy('category.isUse', 'DESC');
 
-    if (role !== '본사 관리자') {
-      category.where('category.isUse = :isUse', { isUse: true });
-    }
+    // if (role !== '본사 관리자') {
+    //   category.where('category.isUse = :isUse', { isUse: true });
+    // }
 
     try {
       const categoryList = await category.getMany();

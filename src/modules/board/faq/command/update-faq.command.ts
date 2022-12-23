@@ -1,5 +1,4 @@
 import { ICommand } from '@nestjs/cqrs';
-import { Account } from '../../../account/entities/account';
 
 /**
  * FAQ 정보 수정용 커맨드 정의
@@ -9,8 +8,6 @@ export class UpdateFaqCommand implements ICommand {
     readonly title: string,
     readonly content: string,
     readonly categoryName: string,
-    readonly role: string,
-    // readonly account: Account,
     readonly faqId: number,
     readonly files: Express.MulterS3.File[],
   ) {}

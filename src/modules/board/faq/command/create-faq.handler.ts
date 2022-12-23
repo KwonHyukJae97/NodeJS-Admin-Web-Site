@@ -1,9 +1,9 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { CreateFaqCommand } from './create-faq.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Faq } from '../entities/faq';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { FaqCategory } from '../entities/faq_category';
 import { FilesCreateEvent } from '../../../file/event/files-create-event';
@@ -24,6 +24,7 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
     @Inject('faqFile') private boardFileDb: BoardFileDb,
     @Inject(ConvertException) private convertException: ConvertException,
     private eventBus: EventBus,
+    private dataSource: DataSource,
   ) {}
 
   /**
@@ -32,15 +33,14 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
    * @returns : DB처리 실패 시 에러 메시지 반환 / 등록 완료 시 FAQ 정보 반환
    */
   async execute(command: CreateFaqCommand) {
-    const { title, content, categoryName, role, files } = command;
+    const { title, content, categoryName, files, account } = command;
 
-    // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
-    if (role !== '본사 관리자') {
-      throw new BadRequestException('본사 관리자만 접근 가능합니다.');
-    }
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     const board = this.boardRepository.create({
-      accountId: 27,
+      accountId: account.accountId,
       boardTypeCode: '1',
       title,
       content,
@@ -48,36 +48,37 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
     });
 
     try {
-      await this.boardRepository.save(board);
+      await queryRunner.manager.getRepository(Board).save(board);
+
+      const category = await this.categoryRepository.findOneBy({ categoryName: categoryName });
+
+      if (!category) {
+        return this.convertException.notFoundError('카테고리', 404);
+      }
+
+      const faq = this.faqRepository.create({
+        boardId: board.boardId,
+        categoryId: category.categoryId,
+        board: board,
+      });
+
+      await queryRunner.manager.getRepository(Faq).save(faq);
+
+      if (files.length !== 0) {
+        // 파일 업로드 이벤트 처리
+        this.eventBus.publish(
+          new FilesCreateEvent(board.boardId, FileType.FAQ, files, this.boardFileDb),
+        );
+      }
+
+      await queryRunner.commitTransaction();
+
+      return faq;
     } catch (err) {
-      return this.convertException.badRequestError('게시글 정보에', 400);
+      await queryRunner.rollbackTransaction();
+      return this.convertException.badInput('FAQ 정보에', 400);
+    } finally {
+      await queryRunner.release();
     }
-
-    const category = await this.categoryRepository.findOneBy({ categoryName: categoryName });
-
-    if (!category) {
-      return this.convertException.notFoundError('카테고리', 404);
-    }
-
-    const faq = this.faqRepository.create({
-      boardId: board.boardId,
-      categoryId: category.categoryId,
-      board: board,
-    });
-
-    try {
-      await this.faqRepository.save(faq);
-    } catch (err) {
-      return this.convertException.badRequestError('FAQ 정보에', 400);
-    }
-
-    if (files.length !== 0) {
-      // 파일 업로드 이벤트 처리
-      this.eventBus.publish(
-        new FilesCreateEvent(board.boardId, FileType.FAQ, files, this.boardFileDb),
-      );
-    }
-
-    return faq;
   }
 }

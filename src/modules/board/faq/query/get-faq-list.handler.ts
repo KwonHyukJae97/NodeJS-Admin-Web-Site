@@ -36,9 +36,9 @@ export class GetFaqListHandler implements IQueryHandler<GetFaqListQuery> {
       .orderBy('category.isUse', 'DESC')
       .addOrderBy('faq.faqId', 'DESC');
 
-    if (param.role !== '본사 관리자' && '회원사 관리자') {
-      faq.where('category.isUse = :isUse', { isUse: true });
-    }
+    // if (param.role !== '본사 관리자' && '회원사 관리자') {
+    //   faq.where('category.isUse = :isUse', { isUse: true });
+    // }
 
     if (param.searchKey) {
       faq.andWhere('category.categoryName like :categoryName', {

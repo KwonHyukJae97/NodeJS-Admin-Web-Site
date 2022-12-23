@@ -1,8 +1,8 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { DeleteFaqCommand } from './delete-faq.command';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Faq } from '../entities/faq';
 import { Board } from '../../entities/board';
 import { BoardFile } from '../../../file/entities/board-file';
@@ -23,6 +23,7 @@ export class DeleteFaqHandler implements ICommandHandler<DeleteFaqCommand> {
     @Inject('faqFile') private boardFileDb: BoardFileDb,
     @Inject(ConvertException) private convertException: ConvertException,
     private eventBus: EventBus,
+    private dataSource: DataSource,
   ) {}
 
   /**
@@ -33,10 +34,9 @@ export class DeleteFaqHandler implements ICommandHandler<DeleteFaqCommand> {
   async execute(command: DeleteFaqCommand) {
     const { faqId } = command;
 
-    // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
-    // if (role !== '본사 관리자') {
-    //   throw new BadRequestException('본사 관리자만 접근 가능합니다.');
-    // }
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     const faq = await this.faqRepository.findOneBy({ faqId });
 
@@ -62,17 +62,15 @@ export class DeleteFaqHandler implements ICommandHandler<DeleteFaqCommand> {
     }
 
     try {
-      await this.faqRepository.delete(faq);
+      await queryRunner.manager.getRepository(Faq).delete(faq);
+      await queryRunner.manager.getRepository(Board).softDelete({ boardId: board.boardId });
+      await queryRunner.commitTransaction();
+      return '삭제가 완료 되었습니다.';
     } catch (err) {
+      await queryRunner.rollbackTransaction();
       return this.convertException.CommonError(500);
+    } finally {
+      await queryRunner.release();
     }
-
-    try {
-      await this.boardRepository.softDelete({ boardId: board.boardId });
-    } catch (err) {
-      return this.convertException.CommonError(500);
-    }
-
-    return '삭제가 완료 되었습니다.';
   }
 }
