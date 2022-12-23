@@ -1,8 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { rolePermissionDto } from '../dto/rolePermission.dto';
 import { AdminRole } from '../entities/adminRole.entity';
 import { RolePermission } from '../entities/rolePermission.entity';
@@ -15,9 +14,8 @@ import { CreateAdminRoleCommand } from './create-adminRole.command';
 @CommandHandler(CreateAdminRoleCommand)
 export class CreateAdminRoleHandler implements ICommandHandler<CreateAdminRoleCommand> {
   constructor(
-    @InjectRepository(AdminRole) private adminroleRepository: Repository<AdminRole>,
-    @InjectRepository(RolePermission) private rolePermissionRepository: Repository<RolePermission>,
     @Inject(ConvertException) private convertException: ConvertException,
+    private dataSource: DataSource,
   ) {}
 
   /**
@@ -26,34 +24,43 @@ export class CreateAdminRoleHandler implements ICommandHandler<CreateAdminRoleCo
    * @returns : DB처리 실패 시 에러 메시지 반환 / 등록 성공 시 완료 메시지 반환
    */
   async execute(command: CreateAdminRoleCommand) {
-    const { roleName, companyId, roleDto } = command;
+    const { roleName, companyId, regBy, roleDto } = command;
 
-    const adminrole = await this.adminroleRepository.create({
-      roleName,
-      companyId,
-    });
-    // 역할 정보 DB저장
+    //transaction처리
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      await this.adminroleRepository.save(adminrole);
-    } catch (err) {
-      return this.convertException.badRequestError('역할정보에 ', 400);
-    }
-
-    roleDto.forEach(async (value: rolePermissionDto) => {
-      const rolePermission = this.rolePermissionRepository.create({
-        roleId: adminrole.roleId,
-        permissionId: value.permissionId,
-        grantType: value.grantType,
+      // 역할 정보 DB생성
+      const adminrole = await queryRunner.manager.getRepository(AdminRole).create({
+        roleName,
+        regBy,
+        companyId,
       });
 
-      // 역할_권한 정보 DB저장
-      try {
-        await this.rolePermissionRepository.insert(rolePermission);
-      } catch (err) {
-        return this.convertException.CommonError(500);
-      }
-    });
+      // 역할 정보 DB저장
+      await queryRunner.manager.getRepository(AdminRole).save(adminrole);
 
+      // 역할_권한 정보 DB생성
+      await roleDto.forEach(async (value: rolePermissionDto) => {
+        const rolePermission = await queryRunner.manager.getRepository(RolePermission).create({
+          roleId: adminrole.roleId,
+          permissionId: value.permissionId,
+          grantType: value.grantType,
+        });
+
+        // 역할_권한 정보 DB저장
+        await queryRunner.manager.getRepository(RolePermission).insert(rolePermission);
+      });
+      await queryRunner.commitTransaction();
+    } catch (err) {
+      // 실패시 rollback
+      await queryRunner.rollbackTransaction();
+      return this.convertException.CommonError(500);
+    } finally {
+      await queryRunner.release();
+    }
     return '등록이 완료 되었습니다.';
   }
 }

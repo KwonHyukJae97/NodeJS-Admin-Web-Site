@@ -21,8 +21,8 @@ export class AdminRoleController {
    */
   @Post()
   async createAdminRole(@Body() createAdminRoleDto: CreateAdminRoleDto): Promise<void> {
-    const { roleName, companyId, roleDto } = createAdminRoleDto;
-    const command = new CreateAdminRoleCommand(roleName, companyId, roleDto);
+    const { roleName, companyId, regBy, roleDto } = createAdminRoleDto;
+    const command = new CreateAdminRoleCommand(roleName, companyId, regBy, roleDto);
     return this.commandBus.execute(command);
   }
 
@@ -56,8 +56,10 @@ export class AdminRoleController {
    */
   @Patch(':id')
   updateAdminRole(@Param('id') roleId: number, @Body() updateAdminRoleDto: UpdateAdminRoleDto) {
-    const { roleName, roleDto } = updateAdminRoleDto;
-    const command = new UpdateAdminRoleCommand(roleName, roleDto, roleId);
+    const { roleName, roleDto, updateBy } = updateAdminRoleDto;
+    const command = new UpdateAdminRoleCommand(roleName, roleDto, roleId, updateBy);
+
+    console.log('updateAdminRoleDto??????', updateAdminRoleDto);
     return this.commandBus.execute(command);
   }
 
