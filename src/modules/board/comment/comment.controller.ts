@@ -10,6 +10,7 @@ import { GetCommentInfoDto } from './dto/get-comment-info.dto';
 import { Account } from '../../account/entities/account';
 import { GetUser } from '../../account/decorator/account.decorator';
 import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
+import { GetCommentRequestDto } from './dto/get-comment-request.dto';
 
 /**
  * 답변 API controller
@@ -28,31 +29,24 @@ export class CommentController {
   createComment(
     @Param('id') qnaId: number,
     @Body() createCommentDto: CreateCommentDto,
-    @GetUser() account: Account,
+    // @GetUser() account: Account,
   ) {
     const { comment } = createCommentDto;
-    const command = new CreateCommentCommand(qnaId, comment, account);
+    const command = new CreateCommentCommand(qnaId, comment);
     return this.commandBus.execute(command);
   }
 
   /**
    * 답변 전체 & 검색 결과 리스트 조회
-   * @query : writer
-   * @query : commenter
-   * @query : regDate
    * @returns : 답변 리스트 조회 쿼리 전송
    */
   @Get()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async getAllComment(
-    @Body() getCommentInfoDto: GetCommentInfoDto,
-    @GetUser() account: Account,
-    @Query('writer') writer: string,
-    @Query('commenter') commenter: number,
-    @Query('regDate') regDate: string,
+    @Body() param: GetCommentRequestDto,
+    // @GetUser() account: Account
   ) {
-    const { role } = getCommentInfoDto;
-    const getCommentListQuery = new GetCommentListQuery(role, account, writer, commenter, regDate);
+    const getCommentListQuery = new GetCommentListQuery(param);
     return this.queryBus.execute(getCommentListQuery);
   }
 

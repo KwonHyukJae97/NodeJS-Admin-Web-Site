@@ -7,7 +7,7 @@ import { Account } from '../../entities/account';
 import { GetAuthInfoQuery } from './get-auth-info.query';
 
 /**
- * 권한 상세 정보 조회용 쿼리 핸들러
+ * 내정보 조회용 쿼리 핸들러
  */
 @QueryHandler(GetAuthInfoQuery)
 export class GetAuthInfoQueryHandler implements IQueryHandler<GetAuthInfoQuery> {
@@ -17,8 +17,8 @@ export class GetAuthInfoQueryHandler implements IQueryHandler<GetAuthInfoQuery> 
   ) {}
 
   /**
-   * 권한 상세 정보 조회 메소드
-   * @param query : 권한 상세 정보 조회 쿼리
+   * 내 정보 조회 메소드
+   * @param query : 내 정보 조회 쿼리
    * @returns : DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 권한 상세 정보 반환
    */
 

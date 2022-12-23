@@ -1,10 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -42,7 +36,7 @@ export class SignInUserHandler implements ICommandHandler<SignInUserCommand> {
     }
 
     if (account.division === true) {
-      throw new UnauthorizedException('관리자 로그인 정보를 확인해주세요.');
+      return this.convertException.badInput('사용자 로그인 정보가 아닙니다. ', 400);
     }
 
     const returnUser = await this.accountRepository
@@ -82,7 +76,7 @@ export class SignInUserHandler implements ICommandHandler<SignInUserCommand> {
       const { password, ...result } = account;
       return result;
     } catch (error) {
-      throw new HttpException('잘못된 인증 유저123정보입니다.', HttpStatus.BAD_REQUEST);
+      throw new HttpException('잘못된 인증 유저정보입니다.', HttpStatus.BAD_REQUEST);
     }
   }
   //비밀번호 체크

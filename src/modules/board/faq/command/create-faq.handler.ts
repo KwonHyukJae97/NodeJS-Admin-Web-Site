@@ -32,7 +32,7 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
    * @returns : DB처리 실패 시 에러 메시지 반환 / 등록 완료 시 FAQ 정보 반환
    */
   async execute(command: CreateFaqCommand) {
-    const { title, content, categoryName, role, account, files } = command;
+    const { title, content, categoryName, role, files } = command;
 
     // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
     if (role !== '본사 관리자') {
@@ -40,8 +40,8 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
     }
 
     const board = this.boardRepository.create({
-      accountId: account.accountId,
-      fileTypeCode: '1',
+      accountId: 27,
+      boardTypeCode: '1',
       title,
       content,
       viewCount: 0,

@@ -42,7 +42,6 @@ export class NaverSignUpAdminHandler implements ICommandHandler<NaverSignUpAdmin
       companyCode,
       businessNumber,
     } = command;
-    console.log('naver command', command.snsToken);
 
     const accountNaverAdmin = this.accountRepository.create({
       name,
@@ -60,23 +59,25 @@ export class NaverSignUpAdminHandler implements ICommandHandler<NaverSignUpAdmin
     const isIdExist = await this.accountRepository.findOne({ where: { snsId } });
     const isPhoneExist = await this.accountRepository.findOne({ where: { phone } });
     const isNicknameExist = await this.accountRepository.findOne({ where: { nickname } });
+    const isBusinessNumberExist = await this.companyRepository.findOne({
+      where: { businessNumber },
+    });
 
     if (isIdExist) {
-      return this.convertException.badRequestAccountError(
-        '이미 존재하는 네이버 아이디이므로 저장에',
-        400,
-      );
+      return this.convertException.badInput('이미 존재하는 아이디입니다. ', 400);
     } else if (isPhoneExist) {
-      return this.convertException.badRequestAccountError('이미 존재하는 연락처이므로 저장에', 400);
+      return this.convertException.badInput('이미 존재하는 연락처입니다. ', 400);
     } else if (isNicknameExist) {
-      return this.convertException.badRequestAccountError('이미 존재하는 닉네임이므로 저장에', 400);
-    } else {
-      try {
-        await this.accountRepository.save(accountNaverAdmin);
-      } catch (err) {
-        console.log(err);
-        return this.convertException.badRequestError('네이버 2차정보 저장에', 400);
-      }
+      return this.convertException.badInput('이미 존재하는 닉네임입니다. ', 400);
+    } else if (isBusinessNumberExist) {
+      return this.convertException.badInput('이미 존재하는 사업자번호입니다. ', 400);
+    }
+
+    try {
+      await this.accountRepository.save(accountNaverAdmin);
+    } catch (err) {
+      console.log(err);
+      return this.convertException.badRequestError('네이버 2차정보 저장에 ', 400);
     }
 
     //회원가입 시 회원사 테이블 데이터저장
@@ -89,7 +90,7 @@ export class NaverSignUpAdminHandler implements ICommandHandler<NaverSignUpAdmin
       await this.companyRepository.save(company);
     } catch (err) {
       console.log(err);
-      return this.convertException.badRequestError('회원사 정보 가입에', 400);
+      return this.convertException.badRequestError('회원사 정보 가입에 ', 400);
     }
 
     const adminNaver = this.adminRepository.create({

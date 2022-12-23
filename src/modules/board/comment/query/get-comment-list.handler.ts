@@ -2,14 +2,14 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetCommentListQuery } from './get-comment-list.query';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from '../entities/comment';
-import { Repository } from 'typeorm';
-import { BadRequestException, Inject } from '@nestjs/common';
+import { Brackets, Repository } from 'typeorm';
+import { Inject } from '@nestjs/common';
 import { Qna } from '../../qna/entities/qna';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { Board } from '../../entities/board';
 import { Admin } from '../../../account/admin/entities/admin';
-import { User } from '../../../account/user/entities/user';
-import { UserCompany } from '../../../account/user/entities/user-company';
+import { Page } from '../../../../common/utils/page';
+import { Account } from '../../../account/entities/account';
 
 /**
  * 답변 전체 리스트 조회용 쿼리 핸들러
@@ -29,77 +29,96 @@ export class GetCommentListHandler implements IQueryHandler<GetCommentListQuery>
    * @returns : DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 답변 전체 리스트 반환
    */
   async execute(query: GetCommentListQuery) {
-    const { role, account } = query;
-
-    // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
-    // if (role !== '본사 관리자' && role !== '회원사 관리자') {
-    //   throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
-    // }
+    const { param } = query;
 
     // 하나의 qna에 대한 답변 여부를 판단하기 위한 서브 쿼리
     const commentQb = this.commentRepository
       .createQueryBuilder()
       .subQuery()
-      .select(['comment.commentId AS commentId', 'comment.qnaId AS qnaId'])
+      .select([
+        'comment.commentId AS commentId',
+        'comment.qnaId AS qnaId',
+        'comment.adminId AS adminId',
+      ])
       .from(Comment, 'comment')
       .groupBy('comment.qnaId')
       .getQuery();
 
-    // 본사 관리자일 경우, 문의내역 전체 조회(회원사/회원사에 속한 일반사용자/일반 사용자)
-    if (role === '본사 관리자') {
-      const qna = await this.qnaRepository
-        .createQueryBuilder('qna')
-        .leftJoin(Board, 'board', 'board.boardId = qna.boardId')
-        .leftJoin(commentQb, 'comment', 'comment.qnaId = qna.qnaId')
-        .select([
-          'qna.qnaId AS qna_id',
-          'board.accountId',
-          'board.title',
-          'board.viewCount',
-          'board.regDate',
-        ])
-        .addSelect(['IF(comment.commentId IS NOT NULL, true, false) AS is_comment'])
-        .where('board.delDate IS NULL')
-        .orderBy({ 'qna.qnaId': 'DESC' })
-        .getRawMany();
+    // 전체 문의내역 조회 (본사관리자 기준)
+    const qna = await this.qnaRepository
+      .createQueryBuilder('qna')
+      .leftJoin(Board, 'board', 'qna.boardId = board.boardId')
+      .leftJoin(commentQb, 'comment', 'qna.qnaId = comment.qnaId')
+      .select([
+        'qna.qnaId AS qnaId',
+        'board.accountId AS accountId',
+        'board.title AS title',
+        'board.viewCount AS viewCount',
+        'board.regDate AS regDate',
+      ])
+      .addSelect(['IF(comment.commentId IS NOT NULL, true, false) AS isComment'])
+      .where('board.delDate IS NULL')
+      .orderBy({ 'qna.qnaId': 'DESC' });
 
-      if (qna.length === 0) {
-        return this.convertException.notFoundError('QnA', 404);
-      }
-
-      return qna;
+    // 작성자 검색
+    if (param.writer) {
+      qna.leftJoin(Account, 'account', 'board.accountId = account.accountId');
+      qna.andWhere(
+        new Brackets((qb) => {
+          qb.where('account.name like name', { name: `%${param.commenter}%` }).orWhere(
+            'account.nickname like :nickname',
+            { nickname: `%${param.commenter}%` },
+          );
+        }),
+      );
     }
 
-    // 회원사 관리자일 경우, 해당 회원사에 대한 문의내역 조회(회원사에 속한 일반사용자)
-    else if (role === '회원사 관리자') {
-      const admin = await this.adminRepository.findOneBy({ accountId: account.accountId });
-
-      const qna = await this.qnaRepository
-        .createQueryBuilder('qna')
-        .leftJoin(Board, 'board', 'board.boardId = qna.boardId')
-        .leftJoin(User, 'user', 'user.accountId = board.accountId')
-        .leftJoin(UserCompany, 'user_company', 'user_company.userId = user.userId')
-        .leftJoin(commentQb, 'comment', 'comment.qnaId = qna.qnaId')
-        .select([
-          'qna.qnaId AS qna_id',
-          'board.accountId',
-          'board.title',
-          'board.viewCount',
-          'board.regDate',
-        ])
-        .addSelect(['IF(comment.commentId IS NOT NULL, true, false) AS is_comment'])
-        .where('board.delDate IS NULL')
-        .andWhere('user_company.companyId = :companyId', { companyId: admin.companyId })
-        .orderBy({ 'qna.qnaId': 'DESC' })
-        .getRawMany();
-
-      if (qna.length === 0) {
-        return this.convertException.notFoundError('QnA', 404);
-      }
-
-      return qna;
-    } else {
-      throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
+    // 답변자 검색
+    if (param.commenter) {
+      qna.leftJoin(Admin, 'admin', 'comment.adminId = admin.adminId');
+      qna.leftJoin(Account, 'account', 'admin.accountId = account.accountId');
+      qna.andWhere(
+        new Brackets((qb) => {
+          qb.where('account.name like name', { name: `%${param.commenter}%` }).orWhere(
+            'account.nickname like :nickname',
+            { nickname: `%${param.commenter}%` },
+          );
+        }),
+      );
     }
+
+    // 답변 상태 검색
+    if (param.isComment != null) {
+      if (!param.isComment) {
+        qna.andWhere('comment.commentId IS NULL');
+      } else {
+        qna.andWhere('comment.commentId');
+      }
+    }
+
+    // 등록일 검색
+    if (param.regDate) {
+      qna.andWhere('board.regDate like :regDate', {
+        regDate: `%${param.regDate}%`,
+      });
+    }
+
+    let tempQuery = qna;
+
+    if (!param.totalData) {
+      // Raw 쿼리로 받아온 데이터는 take, skip 적용이 안되어 limit, offset으로 대체
+      tempQuery = tempQuery.limit(param.getLimit()).offset(param.getOffset());
+    }
+
+    const list = await tempQuery.getRawMany();
+    const total = await tempQuery.getCount();
+    const pageNo = param.totalData ? 1 : param.pageNo;
+    const pageSize = param.totalData ? total : param.pageSize;
+
+    if (total === 0) {
+      return this.convertException.notFoundError('QnA', 404);
+    }
+
+    return new Page(pageNo, pageSize, total, list);
   }
 }

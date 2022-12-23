@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -7,6 +7,7 @@ import { Admin } from '../entities/admin';
 import { CreateAdminCommand } from './create-admin.command';
 import * as bcrypt from 'bcryptjs';
 import { ConvertException } from 'src/common/utils/convert-exception';
+import { Company } from 'src/modules/company/entities/company.entity';
 
 /**
  * 관리자 정보 등록 커맨드 핸들러
@@ -18,6 +19,9 @@ export class CreateAdminhandler implements ICommandHandler<CreateAdminCommand> {
     @InjectRepository(Admin)
     private adminRepository: Repository<Admin>,
 
+    @InjectRepository(Company)
+    private companyRepository: Repository<Company>,
+
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
 
@@ -25,7 +29,7 @@ export class CreateAdminhandler implements ICommandHandler<CreateAdminCommand> {
   ) {}
 
   async execute(command: CreateAdminCommand) {
-    const {
+    let {
       id,
       password,
       name,
@@ -34,11 +38,16 @@ export class CreateAdminhandler implements ICommandHandler<CreateAdminCommand> {
       nickname,
       birth,
       gender,
-      companyId,
-      roleId,
-      isSuper,
-      division,
+      companyName,
+      companyCode,
+      businessNumber,
     } = command;
+
+    if (gender == 'male') {
+      gender = '1';
+    } else {
+      gender = '0';
+    }
 
     /**
      * 비밀번호 암호화 저장 (bcrypt)
@@ -55,23 +64,29 @@ export class CreateAdminhandler implements ICommandHandler<CreateAdminCommand> {
       nickname,
       birth,
       gender,
-      division,
+      division: true,
     });
 
     const isIdExist = await this.accountRepository.findOne({ where: { id } });
     const isEmailExist = await this.accountRepository.findOne({ where: { email } });
     const isPhoneExist = await this.accountRepository.findOne({ where: { phone } });
     const isNicknameExist = await this.accountRepository.findOne({ where: { nickname } });
+    const isBusinessNumberExist = await this.companyRepository.findOne({
+      where: { businessNumber },
+    });
 
     if (isIdExist) {
-      throw new UnauthorizedException('이미 존재하는 아이디입니다.');
+      return this.convertException.badInput('이미 존재하는 아이디입니다. ', 400);
     } else if (isEmailExist) {
-      throw new UnauthorizedException('이미 존재하는 이메일입니다.');
+      return this.convertException.badInput('이미 존재하는 이메일입니다. ', 400);
     } else if (isPhoneExist) {
-      throw new UnauthorizedException('이미 존재하는 연락처입니다.');
+      return this.convertException.badInput('이미 존재하는 연락처입니다. ', 400);
     } else if (isNicknameExist) {
-      throw new UnauthorizedException('이미 존재하는 닉네임입니다.');
-    } else {
+      return this.convertException.badInput('이미 존재하는 닉네임입니다. ', 400);
+    } else if (isBusinessNumberExist) {
+      return this.convertException.badInput('이미 존재하는 사업자번호입니다. ', 400);
+    }
+    {
       try {
         await this.accountRepository.save(accountAdmin);
       } catch (err) {
@@ -79,14 +94,32 @@ export class CreateAdminhandler implements ICommandHandler<CreateAdminCommand> {
       }
     }
 
+    const company = this.companyRepository.create({
+      companyName,
+      companyCode,
+      businessNumber,
+    });
+
+    try {
+      await this.companyRepository.save(company);
+    } catch (err) {
+      console.log(err);
+      return this.convertException.badRequestError('회원사 정보 가입에', 400);
+    }
+
     const admin = this.adminRepository.create({
       accountId: accountAdmin.accountId,
-      companyId,
-      roleId,
-      isSuper,
+      companyId: company.companyId,
+      roleId: 0,
+      isSuper: false, //본사: true, 회원사: false
     });
-    console.log('isSuper값 확인', admin);
-    await this.adminRepository.save(admin);
+
+    try {
+      await this.adminRepository.save(admin);
+    } catch (err) {
+      return this.convertException.CommonError(500);
+    }
+
     return '관리자 등록 완료';
   }
 }

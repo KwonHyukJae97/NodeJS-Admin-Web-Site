@@ -20,11 +20,10 @@ import { DeleteNoticeCommand } from './command/delete-notice.command';
 import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/files.interceptor';
 import { GetNoticeDetailCommand } from './command/get-notice-detail.command';
 import { GetNoticeListQuery } from './query/get-notice-list.query';
-import { GetNoticeRoleDto } from './dto/get-notice-role.dto';
 import { GetUser } from '../../account/decorator/account.decorator';
 import { Account } from '../../account/entities/account';
-import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
 import { GetNoticeRequestDto } from './dto/get-notice-request.dto';
+import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
 
 /**
  * 공지사항 API controller
@@ -38,15 +37,13 @@ export class NoticeController {
    * @returns : 공지사항 등록 커맨드 전송
    */
   @Post()
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   createNotice(
     @Body() createNoticeDto: CreateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
     // @GetUser() account: Account,
   ) {
-    console.log('Dto', createNoticeDto);
-    console.log('file', files);
     const { title, content, isTop, noticeGrant, role } = createNoticeDto;
     const command = new CreateNoticeCommand(title, content, isTop, noticeGrant, role, files);
     return this.commandBus.execute(command);
@@ -87,7 +84,7 @@ export class NoticeController {
     @Param('id') noticeId: number,
     @Body() updateNoticeDto: UpdateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
-    @GetUser() account: Account,
+    // @GetUser() account: Account,
   ) {
     const { title, content, isTop, noticeGrant, role } = updateNoticeDto;
     const command = new UpdateNoticeCommand(
@@ -97,7 +94,7 @@ export class NoticeController {
       noticeGrant,
       noticeId,
       role,
-      account,
+      // account,
       files,
     );
     return this.commandBus.execute(command);
@@ -112,11 +109,9 @@ export class NoticeController {
   @UseGuards(JwtAuthGuard)
   async deleteNotice(
     @Param('id') noticeId: number,
-    @Body() deleteNoticeInfoDto: GetNoticeRoleDto,
-    @GetUser() account: Account,
+    // @GetUser() account: Account,
   ) {
-    const { role } = deleteNoticeInfoDto;
-    const command = new DeleteNoticeCommand(noticeId, role, account);
+    const command = new DeleteNoticeCommand(noticeId);
     return this.commandBus.execute(command);
   }
 }

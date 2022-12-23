@@ -1,12 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { compare, hash } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -16,7 +8,6 @@ import { Repository } from 'typeorm';
 import { SignInUserDto } from './dto/signin-user.dto';
 import { SignInAdminDto } from './dto/signin-admin.dto';
 import { ConfigService } from '@nestjs/config';
-import { JwtManageService } from 'src/guard/jwt/jwt-manage.service';
 import { FindIdDto } from './dto/findid.dto';
 import { UserKakaoDto } from './dto/user.kakao.dto';
 import { UserNaverDto } from './dto/user.naver.dto';
@@ -25,6 +16,7 @@ import { EmailService } from 'src/modules/email/email.service';
 import * as uuid from 'uuid';
 import { Connection } from 'typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
+import moment from 'moment';
 
 /**
  * Auth 관련 토큰, 검증, 카카오 서비스
@@ -37,7 +29,6 @@ export class AuthService {
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
     private readonly configService: ConfigService,
-    private readonly jwtManageService: JwtManageService,
     private readonly emailService: EmailService,
     private connection: Connection,
     @Inject(ConvertException) private convertException: ConvertException,
@@ -63,51 +54,6 @@ export class AuthService {
     });
 
     return account;
-  }
-
-  /**
-   * email 조회하는 메소드
-   * @param email : DB에 조회시 입력한 email
-   * @returns : DB에 조회한 email
-   */
-  async getByEmail(email: string) {
-    const isEmailExist = await this.accountRepository.findOne({ where: { email } });
-
-    if (isEmailExist) {
-      return this.convertException.badRequestAccountError('사용중인 이메일입니다.', 400);
-    } else {
-      return '사용가능한 이메일입니다.';
-    }
-  }
-
-  /**
-   * phone 조회하는 메소드
-   * @param phone : DB에 조회시 입력한 phone
-   * @returns : DB에 조회한 phone
-   */
-  async getByPhone(phone: string) {
-    const isPhoneExist = await this.accountRepository.findOne({ where: { phone } });
-
-    if (isPhoneExist) {
-      return this.convertException.badRequestAccountError('사용중인 연락처입니다.', 400);
-    } else {
-      return '사용가능한 연락처입니다.';
-    }
-  }
-
-  /**
-   * nickname 조회하는 메소드
-   * @param nickname : DB에 조회시 입력한 nickname
-   * @returns : DB에 조회한 nickname
-   */
-  async getByNickname(nickname: string) {
-    const isNikcnameExist = await this.accountRepository.findOne({ where: { nickname } });
-
-    if (isNikcnameExist) {
-      return this.convertException.badRequestAccountError('사용중인 닉네임입니다.', 400);
-    } else {
-      return '사용가능한 닉네임입니다.';
-    }
   }
 
   /**
@@ -149,13 +95,18 @@ export class AuthService {
   async getByAccountId(id: string, snsType: string, showCurrentHashedRefreshToken: boolean) {
     const account = await this.accountRepository.findOne({ where: { id, snsType } });
 
-    if (account) {
-      delete account.password;
-      if (!showCurrentHashedRefreshToken) {
-        delete account.currentHashedRefreshToken;
-      }
+    //예외처리
+    try {
+      if (account) {
+        delete account.password;
+        if (!showCurrentHashedRefreshToken) {
+          delete account.currentHashedRefreshToken;
+        }
 
-      return account;
+        return account;
+      }
+    } catch (err) {
+      return this.convertException.notFoundError('아이디', 404);
     }
   }
 
@@ -169,13 +120,18 @@ export class AuthService {
   async getBySnsType(snsType: string, snsId: string, showCurrentHashedRefreshToken: boolean) {
     const account = await this.accountRepository.findOne({ where: { snsType, snsId } });
 
-    if (account) {
-      delete account.password;
-      if (!showCurrentHashedRefreshToken) {
-        delete account.currentHashedRefreshToken;
-      }
+    //예외처리
+    try {
+      if (account) {
+        delete account.password;
+        if (!showCurrentHashedRefreshToken) {
+          delete account.currentHashedRefreshToken;
+        }
 
-      return account;
+        return account;
+      }
+    } catch (err) {
+      return this.convertException.notFoundError('SnsType', 404);
     }
   }
 
@@ -185,22 +141,42 @@ export class AuthService {
    * @param id
    * @returns : 검증 후 결과값을 리턴
    */
-  async getAccountRefreshTokenMatches(
-    refreshToken: string,
-    id: string,
-  ): Promise<{ result: boolean }> {
+  async getAccountRefreshTokenMatches(refreshToken: string, id: string) {
     const account = await this.accountRepository.findOne({ where: { id } });
 
     if (!account) {
-      throw new UnauthorizedException('존재하지 않는 사용자입니다.');
+      return this.convertException.notFoundError('사용자 ', 404);
     }
 
     const isRefreshTokenMatching = await compare(refreshToken, account.currentHashedRefreshToken);
 
     if (isRefreshTokenMatching) {
-      return { result: true };
+      // return { result: true };
+      return { isRefreshTokenMatching, refreshToken, id };
     } else {
-      throw new UnauthorizedException('접근에러입니다.');
+      return this.convertException.badRequestAccountError('입력한 ', 400);
+    }
+  }
+
+  /**
+   * 리프레쉬 토큰이 유효한지 검증하는 메소드
+   * @param refreshToken
+   * @param snsId
+   * @returns : 검증 후 결과값을 리턴
+   */
+  async getSnsIdRefreshTokenMatches(refreshToken: string, snsId: string) {
+    const account = await this.accountRepository.findOne({ where: { snsId } });
+
+    if (!account) {
+      return this.convertException.notFoundError('사용자 ', 404);
+    }
+
+    const isRefreshTokenMatching = await compare(refreshToken, account.currentHashedRefreshToken);
+
+    if (isRefreshTokenMatching) {
+      return { isRefreshTokenMatching, refreshToken, snsId };
+    } else {
+      return this.convertException.badRequestAccountError('입력한 ', 400);
     }
   }
 
@@ -210,10 +186,15 @@ export class AuthService {
    * @param id
    */
   async setCurrentRefreshToken(refreshToken: string, id: string) {
-    if (refreshToken) {
-      refreshToken = await bcrypt.hash(refreshToken, 10);
+    //예외처리
+    try {
+      if (refreshToken) {
+        refreshToken = await bcrypt.hash(refreshToken, 10);
+      }
+      await this.accountRepository.update({ id }, { currentHashedRefreshToken: refreshToken });
+    } catch (err) {
+      return this.convertException.CommonError(500);
     }
-    await this.accountRepository.update({ id }, { currentHashedRefreshToken: refreshToken });
   }
 
   /**
@@ -222,17 +203,27 @@ export class AuthService {
    * @param id
    */
   async setSocialCurrentRefreshToken(refreshToken: string, snsId: string) {
-    if (refreshToken) {
-      refreshToken = await bcrypt.hash(refreshToken, 10);
+    //예외처리
+    try {
+      if (refreshToken) {
+        refreshToken = await bcrypt.hash(refreshToken, 10);
+      }
+      await this.accountRepository.update({ snsId }, { currentHashedRefreshToken: refreshToken });
+    } catch (err) {
+      return this.convertException.CommonError(500);
     }
-    await this.accountRepository.update({ snsId }, { currentHashedRefreshToken: refreshToken });
   }
 
   async setSocialToken(snsToken: string, snsId: string) {
-    if (snsToken) {
-      snsToken = await bcrypt.hash(snsToken, 10);
+    //예외처리
+    try {
+      if (snsToken) {
+        snsToken = await bcrypt.hash(snsToken, 10);
+      }
+      await this.accountRepository.update({ snsId }, { snsToken: snsToken });
+    } catch (err) {
+      return this.convertException.CommonError(500);
     }
-    await this.accountRepository.update({ snsId }, { snsToken: snsToken });
   }
 
   /**
@@ -252,7 +243,7 @@ export class AuthService {
     return {
       accessToken: token,
       accessOption: {
-        domain: 'localhost',
+        domain: this.configService.get('JWT_ACCESSTOKEN_OPTION_DOMAIN'),
         path: '/',
         httpOnly: true,
         maxAge: Number(this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')) * 1000,
@@ -277,7 +268,7 @@ export class AuthService {
     return {
       accessToken: token,
       accessOption: {
-        domain: 'localhost',
+        domain: this.configService.get('JWT_ACCESSTOKEN_OPTION_DOMAIN'),
         path: '/',
         httpOnly: true,
         maxAge: Number(this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')) * 1000,
@@ -302,7 +293,7 @@ export class AuthService {
     return {
       refreshToken: token,
       refreshOption: {
-        domain: 'localhost',
+        domain: this.configService.get('JWT_ACCESSTOKEN_OPTION_DOMAIN'),
         path: '/',
         httpOnly: true,
         maxAge: Number(this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')) * 1000,
@@ -327,7 +318,7 @@ export class AuthService {
     return {
       refreshToken: token,
       refreshOption: {
-        domain: 'localhost',
+        domain: this.configService.get('JWT_ACCESSTOKEN_OPTION_DOMAIN'),
         path: '/',
         httpOnly: true,
         maxAge: Number(this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')) * 1000,
@@ -352,7 +343,7 @@ export class AuthService {
 
     //division 값 확인 후 관리자만 로그인 가능
     if (account.division === false) {
-      throw new UnauthorizedException('로그인 정보를 확인해주세요.');
+      return this.convertException.badInput('관리자 로그인 정보가 아닙니다. ', 400);
     }
     const { accessToken, accessOption } = await this.getCookieWithJwtAccessToken(id, null);
 
@@ -413,7 +404,7 @@ export class AuthService {
 
     //division 값 확인 후 사용자만 로그인 가능
     if (account.division === true) {
-      throw new UnauthorizedException('로그인 정보를 확인해주세요.');
+      return this.convertException.badInput('사용자 로그인 정보가 아닙니다. ', 400);
     }
     const { accessToken, accessOption } = await this.getCookieWithJwtAccessToken(id, null);
 
@@ -457,13 +448,13 @@ export class AuthService {
   public getCookiesForLogOut() {
     return {
       accessOption: {
-        domain: 'localhost',
+        domain: this.configService.get('JWT_ACCESSTOKEN_OPTION_DOMAIN'),
         path: '/',
         httpOnly: true,
         maxAge: 0,
       },
       refreshOption: {
-        domain: 'localhost',
+        domain: this.configService.get('JWT_ACCESSTOKEN_OPTION_DOMAIN'),
         path: '/',
         httpOnly: true,
         maxAge: 0,
@@ -475,8 +466,9 @@ export class AuthService {
   // jwt refresh token 갱신이 필요한지 확인하여 갱신 처리 후
   // * 신규 발급받은 token 정보 가져오기
   public async refreshTokenChange(id: string, payload: TokenPayload, refreshToken: string) {
-    if (this.jwtManageService.isNeedRefreshTokenChange(refreshToken)) {
-      const newRefreshToken = this.jwtManageService.getCookieWithJwtRefreshToken(payload);
+    console.log('payload 값 추출:', refreshToken);
+    if (this.isNeedRefreshTokenChange(refreshToken)) {
+      const newRefreshToken = this.getCookieWithJwtRefreshToken(id, null);
       await this.setCurrentRefreshToken(id, newRefreshToken.refreshToken);
 
       return newRefreshToken;
@@ -512,7 +504,12 @@ export class AuthService {
    * @returns accountId 값으로 해당 사용자의 리프래쉬 토큰을 null처리
    */
   async removeRefreshToken(accountId: number) {
-    return this.accountRepository.update({ accountId }, { currentHashedRefreshToken: null });
+    //예외처리
+    try {
+      return this.accountRepository.update({ accountId }, { currentHashedRefreshToken: null });
+    } catch (err) {
+      return this.convertException.CommonError(500);
+    }
   }
 
   /**
@@ -596,29 +593,53 @@ export class AuthService {
     const { email } = Dto;
     const user = await this.accountRepository.findOne({ where: { email } });
 
+    //예외 처리
     if (!user) {
-      throw new BadRequestException('메일 정보가 정확하지 않습니다.');
+      return this.convertException.badInput('메일 정보가 정확하지 않습니다. ', 400);
     }
+
     const tempUUID = uuid.v4();
     const tempPassword = tempUUID.split('-')[0];
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(tempPassword, salt);
     console.log('수정된 비밀번호 확인', hashedPassword);
     const accountId = user.accountId;
-    const queryRunner = this.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    // const queryRunner = this.connection.createQueryRunner();
+    // await queryRunner.connect();
+    // await queryRunner.startTransaction();
 
     try {
       await this.accountRepository.update(accountId, { password: hashedPassword });
       await this.emailService.sendTempPassword(email, tempPassword);
       console.log('임시 코드 확인', tempPassword);
     } catch (e) {
-      await queryRunner.rollbackTransaction();
+      // await queryRunner.rollbackTransaction();
       throw new ConflictException({ message: '비밀번호 찾기 오류입니다. 다시 시도해주세요.' });
     } finally {
-      await queryRunner.release();
+      // await queryRunner.release();
       return { success: true, message: '이메일을 확인해주세요.' };
     }
+  }
+
+  /**
+   * jwt refresh token 갱신 필요한지 여부 가져오기
+   * @param refreshToken
+   */
+  public isNeedRefreshTokenChange(refreshToken: string) {
+    // 만약, refresh token 갱신이 필요하면 갱신 처리
+    console.log('expexpexpe', refreshToken);
+    const jwtRefreshToken = this.jwtService.decode(refreshToken);
+    const exp = jwtRefreshToken['exp'];
+
+    const currentTime = moment();
+    const expTime = moment(exp * 1000);
+
+    const diffSeconds = Math.floor(moment.duration(expTime.diff(currentTime)).asSeconds());
+
+    if (diffSeconds < this.configService.get('JWT_REFRESH_TOKEN_CHANGE_TIME')) {
+      return true;
+    }
+
+    return false;
   }
 }

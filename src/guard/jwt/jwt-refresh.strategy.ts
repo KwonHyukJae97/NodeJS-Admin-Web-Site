@@ -23,9 +23,14 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh-
     });
   }
 
-  // //Account 엔티티와 연동
-  async validate(req, payload: any) {
-    const refreshToken = req.cookies?.Refresh;
-    return this.authService.getAccountRefreshTokenMatches(refreshToken, payload.id);
+  async validate(req, payload: TokenPayload) {
+    console.log('tokenPaylod ID: ', payload.id);
+    if (payload.id == null) {
+      const refreshToken = req.cookies?.Refresh;
+      return this.authService.getSnsIdRefreshTokenMatches(refreshToken, payload.snsId);
+    } else {
+      const refreshToken = req.cookies?.Refresh;
+      return this.authService.getAccountRefreshTokenMatches(refreshToken, payload.id);
+    }
   }
 }
