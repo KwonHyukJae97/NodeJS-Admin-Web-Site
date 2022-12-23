@@ -1,9 +1,9 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { GetNoticeDetailCommand } from './get-notice-detail.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Notice } from '../entities/notice';
-import { Repository, DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { BoardFile } from '../../../file/entities/board-file';
 import { ConvertException } from '../../../../common/utils/convert-exception';
@@ -30,28 +30,17 @@ export class GetNoticeDetailHandler implements ICommandHandler<GetNoticeDetailCo
    * @returns : DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 공지사항 상세 정보 반환
    */
   async execute(command: GetNoticeDetailCommand) {
-    const { noticeId, role } = command;
+    const { noticeId } = command;
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     const notice = await this.noticeRepository.findOneBy({ noticeId });
 
     if (!notice) {
       return this.convertException.notFoundError('공지사항', 404);
     }
-
-    // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
-    if (notice.noticeGrant === '0') {
-      if (role !== '본사 관리자') {
-        throw new BadRequestException('본사 관리자만 접근 가능합니다.');
-      }
-    } else if (notice.noticeGrant === '0|1') {
-      if (role !== '본사 관리자' && role !== '회원사 관리자') {
-        throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
-      }
-    }
-
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
 
     const board = await this.boardRepository.findOneBy({ boardId: notice.boardId });
 

@@ -22,9 +22,4 @@ export class UpdateNoticeDto {
   @IsString()
   @MaxLength(10)
   noticeGrant: string;
-
-  // 작성자 본인 확인을 위해 임시 사용
-  // @IsNotEmpty()
-  @IsString()
-  role: string;
 }

@@ -6,7 +6,6 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -44,16 +43,8 @@ export class NoticeController {
     @UploadedFiles() files: Express.MulterS3.File[],
     @GetUser() account: Account,
   ) {
-    const { title, content, isTop, noticeGrant, role } = createNoticeDto;
-    const command = new CreateNoticeCommand(
-      title,
-      content,
-      isTop,
-      noticeGrant,
-      role,
-      account,
-      files,
-    );
+    const { title, content, isTop, noticeGrant } = createNoticeDto;
+    const command = new CreateNoticeCommand(title, content, isTop, noticeGrant, account, files);
     return this.commandBus.execute(command);
   }
 
@@ -75,8 +66,8 @@ export class NoticeController {
    */
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  async getNoticeDetail(@Param('id') noticeId: number, @Query() role: string) {
-    const command = new GetNoticeDetailCommand(noticeId, role);
+  async getNoticeDetail(@Param('id') noticeId: number) {
+    const command = new GetNoticeDetailCommand(noticeId);
     return this.commandBus.execute(command);
   }
 
@@ -93,16 +84,8 @@ export class NoticeController {
     @Body() updateNoticeDto: UpdateNoticeDto,
     @UploadedFiles() files: Express.MulterS3.File[],
   ) {
-    const { title, content, isTop, noticeGrant, role } = updateNoticeDto;
-    const command = new UpdateNoticeCommand(
-      title,
-      content,
-      isTop,
-      noticeGrant,
-      noticeId,
-      role,
-      files,
-    );
+    const { title, content, isTop, noticeGrant } = updateNoticeDto;
+    const command = new UpdateNoticeCommand(title, content, isTop, noticeGrant, noticeId, files);
     return this.commandBus.execute(command);
   }
 

@@ -34,11 +34,6 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
   async execute(command: DeleteNoticeCommand) {
     const { noticeId } = command;
 
-    // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
-    // if (role !== '본사 관리자' && role !== '회원사 관리자') {
-    //   throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
-    // }
-
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -69,8 +64,8 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
     try {
       await queryRunner.manager.getRepository(Notice).delete(notice);
       await queryRunner.manager.getRepository(Board).softDelete({ boardId: board.boardId });
-      await queryRunner.commitTransaction();
 
+      await queryRunner.commitTransaction();
       return '삭제가 완료 되었습니다.';
     } catch (err) {
       await queryRunner.rollbackTransaction();
