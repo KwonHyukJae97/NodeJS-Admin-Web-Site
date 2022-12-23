@@ -1,8 +1,8 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { DeleteNoticeCommand } from './delete-notice.command';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Notice } from '../entities/notice';
 import { Board } from '../../entities/board';
 import { BoardFile } from '../../../file/entities/board-file';
@@ -23,6 +23,7 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
     @Inject('noticeFile') private boardFileDb: BoardFileDb,
     @Inject(ConvertException) private convertException: ConvertException,
     private eventBus: EventBus,
+    private dataSource: DataSource,
   ) {}
 
   /**
@@ -37,6 +38,10 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
     // if (role !== '본사 관리자' && role !== '회원사 관리자') {
     //   throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
     // }
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     const notice = await this.noticeRepository.findOneBy({ noticeId });
 
@@ -62,17 +67,16 @@ export class DeleteNoticeHandler implements ICommandHandler<DeleteNoticeCommand>
     }
 
     try {
-      await this.noticeRepository.delete(notice);
-    } catch (err) {
-      return this.convertException.CommonError(500);
-    }
+      await queryRunner.manager.getRepository(Notice).delete(notice);
+      await queryRunner.manager.getRepository(Board).softDelete({ boardId: board.boardId });
+      await queryRunner.commitTransaction();
 
-    try {
-      await this.boardRepository.softDelete({ boardId: board.boardId });
+      return '삭제가 완료 되었습니다.';
     } catch (err) {
+      await queryRunner.rollbackTransaction();
       return this.convertException.CommonError(500);
+    } finally {
+      await queryRunner.release();
     }
-
-    return '삭제가 완료 되었습니다.';
   }
 }
