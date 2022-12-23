@@ -68,16 +68,13 @@ export class GetNoticeDetailHandler implements ICommandHandler<GetNoticeDetailCo
 
     const account = await this.accountRepository.findOneBy({ accountId: board.accountId });
 
-    if (!account) {
-      return this.convertException.badRequestAccountError('작성자', 400);
-    }
-
     const files = await this.fileRepository.findBy({ boardId: board.boardId });
 
     const getNoticeDetailDto = {
       notice,
-      writer: account.name + '(' + account.nickname + ')',
+      writer: account == null ? '탈퇴 회원(*****)' : account.name + '(' + account.nickname + ')',
       fileList: files,
+      noticeGrant: notice.noticeGrant,
     };
 
     return getNoticeDetailDto;
