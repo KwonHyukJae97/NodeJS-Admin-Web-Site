@@ -56,7 +56,7 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
     try {
       await queryRunner.manager.getRepository(Board).save(board);
 
-      const notice = queryRunner.manager.getRepository(Notice).create({
+      const notice = this.noticeRepository.create({
         noticeGrant,
         isTop,
         boardId: board.boardId,

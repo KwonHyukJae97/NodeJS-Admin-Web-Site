@@ -3,7 +3,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { GetNoticeDetailCommand } from './get-notice-detail.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Notice } from '../entities/notice';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Board } from '../../entities/board';
 import { BoardFile } from '../../../file/entities/board-file';
 import { ConvertException } from '../../../../common/utils/convert-exception';
@@ -21,6 +21,7 @@ export class GetNoticeDetailHandler implements ICommandHandler<GetNoticeDetailCo
     @InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>,
     @InjectRepository(Account) private accountRepository: Repository<Account>,
     @Inject(ConvertException) private convertException: ConvertException,
+    private dataSource: DataSource,
   ) {}
 
   /**
@@ -48,6 +49,10 @@ export class GetNoticeDetailHandler implements ICommandHandler<GetNoticeDetailCo
       }
     }
 
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     const board = await this.boardRepository.findOneBy({ boardId: notice.boardId });
 
     if (!board) {
@@ -59,17 +64,17 @@ export class GetNoticeDetailHandler implements ICommandHandler<GetNoticeDetailCo
     board.viewCount++;
 
     try {
-      await this.boardRepository.save(board);
-    } catch (err) {
-      return this.convertException.badRequestError('게시글 정보에', 400);
-    }
+      await queryRunner.manager.getRepository(Board).save(board);
 
-    notice.board = board;
+      notice.board = board;
+      await queryRunner.manager.getRepository(Notice).save(notice);
 
-    try {
-      await this.noticeRepository.save(notice);
+      await queryRunner.commitTransaction();
     } catch (err) {
-      return this.convertException.badRequestError('공지사항 정보에', 400);
+      await queryRunner.rollbackTransaction();
+      return this.convertException.CommonError(500);
+    } finally {
+      await queryRunner.release();
     }
 
     const account = await this.accountRepository.findOneBy({ accountId: board.accountId });
