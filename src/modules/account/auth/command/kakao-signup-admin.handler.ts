@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { string } from 'joi';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { Company } from 'src/modules/company/entities/company.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Admin } from '../../admin/entities/admin';
 import { Account } from '../../entities/account';
 import { KakaoSignUpAdminCommand } from './kakao-signup-admin.command';
@@ -27,6 +27,8 @@ export class KakaoSignUpAdminHandler implements ICommandHandler<KakaoSignUpAdmin
 
     @Inject(ConvertException)
     private convertException: ConvertException,
+
+    private dataSource: DataSource,
   ) {}
 
   //카카오 2차 정보 저장 메소드
@@ -43,18 +45,6 @@ export class KakaoSignUpAdminHandler implements ICommandHandler<KakaoSignUpAdmin
       companyCode,
       businessNumber,
     } = command;
-
-    const accountKakaoAdmin = this.accountRepository.create({
-      name,
-      phone,
-      nickname,
-      birth,
-      gender,
-      snsId,
-      snsType: '01',
-      snsToken,
-      division: true,
-    });
 
     const isIdExist = await this.accountRepository.findOne({ where: { snsId } });
     const isPhoneExist = await this.accountRepository.findOne({ where: { phone } });
@@ -74,42 +64,54 @@ export class KakaoSignUpAdminHandler implements ICommandHandler<KakaoSignUpAdmin
       return this.convertException.badInput('이미 존재하는 사업자번호입니다. ', 400);
     }
 
+    //트랜잭션 생성 후 연결 및 시작
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    const accountKakaoAdmin = this.accountRepository.create({
+      name,
+      phone,
+      nickname,
+      birth,
+      gender,
+      snsId,
+      snsType: '01',
+      snsToken,
+      division: true,
+    });
+
     try {
-      await this.accountRepository.save(accountKakaoAdmin);
+      await queryRunner.manager.getRepository(Account).save(accountKakaoAdmin);
+
+      //회원가입 시 회원사 테이블 데이터저장
+      const company = this.companyRepository.create({
+        companyName,
+        companyCode,
+        businessNumber,
+      });
+
+      await queryRunner.manager.getRepository(Company).save(company);
+
+      const adminKakao = this.adminRepository.create({
+        accountId: accountKakaoAdmin.accountId,
+        companyId: company.companyId,
+        //임의값 입력
+        roleId: 0,
+        isSuper: true,
+      });
+
+      await queryRunner.manager.getRepository(Admin).save(adminKakao);
+
+      await queryRunner.commitTransaction();
+
+      return accountKakaoAdmin;
     } catch (err) {
       console.log(err);
+      await queryRunner.rollbackTransaction();
       return this.convertException.badRequestError('카카오 2차정보 저장에 ', 400);
+    } finally {
+      await queryRunner.release();
     }
-
-    //회원가입 시 회원사 테이블 데이터저장
-    const company = this.companyRepository.create({
-      companyName,
-      companyCode,
-      businessNumber,
-    });
-    try {
-      await this.companyRepository.save(company);
-    } catch (err) {
-      console.log(err);
-      return this.convertException.badRequestError('회원사 정보 가입에', 400);
-    }
-
-    const adminKakao = this.adminRepository.create({
-      accountId: accountKakaoAdmin.accountId,
-      companyId: company.companyId,
-      //임의값 입력
-      roleId: 0,
-      isSuper: true,
-    });
-
-    try {
-      await this.adminRepository.save(adminKakao);
-    } catch (err) {
-      console.log(err);
-      return this.convertException.CommonError(500);
-    }
-
-    // 카카오 정보를 리턴
-    return accountKakaoAdmin;
   }
 }
