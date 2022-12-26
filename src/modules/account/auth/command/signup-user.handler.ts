@@ -52,37 +52,34 @@ export class SignUpUserHandler implements ICommandHandler<SignUpUserCommand> {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    const accountUser = this.accountRepository.create({
-      id,
-      password: hashedPassword,
-      name,
-      email,
-      phone,
-      nickname,
-      birth,
-      gender,
-    });
+    try {
+      const accountUser = this.accountRepository.create({
+        id,
+        password: hashedPassword,
+        name,
+        email,
+        phone,
+        nickname,
+        birth,
+        gender,
+      });
 
-    {
-      //Account 저장
-      try {
-        await queryRunner.manager.getRepository(Account).save(accountUser);
+      await queryRunner.manager.getRepository(Account).save(accountUser);
 
-        const user = this.userRepository.create({
-          accountId: accountUser.accountId,
-          grade,
-        });
+      const user = this.userRepository.create({
+        accountId: accountUser.accountId,
+        grade,
+      });
 
-        await queryRunner.manager.getRepository(User).save(user);
-        await queryRunner.commitTransaction();
-        return '회원가입 완료 (사용자)';
-      } catch (err) {
-        console.log(err);
-        await queryRunner.rollbackTransaction();
-        return this.convertException.badRequestError('사용자 회원가입에 ', 400);
-      } finally {
-        await queryRunner.release();
-      }
+      await queryRunner.manager.getRepository(User).save(user);
+      await queryRunner.commitTransaction();
+      return '회원가입 완료 (사용자)';
+    } catch (err) {
+      console.log(err);
+      await queryRunner.rollbackTransaction();
+      return this.convertException.badRequestError('사용자 회원가입에 ', 400);
+    } finally {
+      await queryRunner.release();
     }
   }
 }

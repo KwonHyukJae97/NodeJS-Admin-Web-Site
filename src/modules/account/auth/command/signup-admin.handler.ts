@@ -81,20 +81,21 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    const accountAdmin = this.accountRepository.create({
-      id,
-      password: hashedPassword,
-      name,
-      email,
-      phone,
-      nickname,
-      birth,
-      gender,
-      division: true,
-    });
-    console.log('어카운트 회원가입 데이터', accountAdmin.accountId);
     //Account 저장
     try {
+      const accountAdmin = this.accountRepository.create({
+        id,
+        password: hashedPassword,
+        name,
+        email,
+        phone,
+        nickname,
+        birth,
+        gender,
+        division: true,
+      });
+      console.log('어카운트 회원가입 데이터', accountAdmin.accountId);
+
       await queryRunner.manager.getRepository(Account).save(accountAdmin);
 
       const company = this.companyRepository.create({
