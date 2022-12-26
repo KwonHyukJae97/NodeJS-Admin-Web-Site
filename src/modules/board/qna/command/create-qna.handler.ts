@@ -37,15 +37,15 @@ export class CreateQnaHandler implements ICommandHandler<CreateQnaCommand> {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    const board = this.boardRepository.create({
-      accountId: account.accountId,
-      boardTypeCode: '2',
-      title,
-      content,
-      viewCount: 0,
-    });
-
     try {
+      const board = queryRunner.manager.getRepository(Board).create({
+        accountId: account.accountId,
+        boardTypeCode: '2',
+        title,
+        content,
+        viewCount: 0,
+      });
+
       await queryRunner.manager.getRepository(Board).save(board);
 
       const qna = this.qnaRepository.create({

@@ -40,15 +40,15 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
     // 트랜잭션 시작
     await queryRunner.startTransaction();
 
-    const board = this.boardRepository.create({
-      accountId: account.accountId,
-      boardTypeCode: '0',
-      title,
-      content,
-      viewCount: 0,
-    });
-
     try {
+      const board = queryRunner.manager.getRepository(Board).create({
+        accountId: account.accountId,
+        boardTypeCode: '0',
+        title,
+        content,
+        viewCount: 0,
+      });
+
       await queryRunner.manager.getRepository(Board).save(board);
 
       const notice = this.noticeRepository.create({

@@ -39,15 +39,15 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    const board = this.boardRepository.create({
-      accountId: account.accountId,
-      boardTypeCode: '1',
-      title,
-      content,
-      viewCount: 0,
-    });
-
     try {
+      const board = queryRunner.manager.getRepository(Board).create({
+        accountId: account.accountId,
+        boardTypeCode: '1',
+        title,
+        content,
+        viewCount: 0,
+      });
+
       await queryRunner.manager.getRepository(Board).save(board);
 
       const category = await this.categoryRepository.findOneBy({ categoryName: categoryName });
