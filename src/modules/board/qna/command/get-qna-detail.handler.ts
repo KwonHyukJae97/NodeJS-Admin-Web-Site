@@ -82,7 +82,7 @@ export class GetQnaDetailHandler implements ICommandHandler<GetQnaDetailCommand>
 
       // 문의 작성자 정보 조회
       const qnaAccount = await this.accountRepository.findOneBy({ accountId: qna.accountId });
-      const qnaWriter =
+      const writer =
         qnaAccount == null ? '탈퇴 회원(*****)' : qnaAccount.name + '(' + qnaAccount.nickname + ')';
 
       // 파일 정보 조회
@@ -110,18 +110,18 @@ export class GetQnaDetailHandler implements ICommandHandler<GetQnaDetailCommand>
             .select(['account.name AS name', 'account.nickname AS nickname'])
             .getRawOne();
 
-          const commentWriter =
+          const commenter =
             commentAccount == null
               ? '탈퇴 관리자(*****)'
               : commentAccount.name + '(' + commentAccount.nickname + ')';
 
-          return { ...comment, writer: commentWriter };
+          return { ...comment, commenter };
         }),
       );
 
       const getQnaDetailDto = {
-        qna: { ...qna, writer: qnaWriter, fileList: files },
-        comment: commentList,
+        qna: { ...qna, writer, fileList: files },
+        commentList,
       };
 
       await queryRunner.commitTransaction();

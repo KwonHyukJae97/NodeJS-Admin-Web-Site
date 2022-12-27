@@ -1,5 +1,4 @@
 import { IQuery } from '@nestjs/cqrs';
-import { Account } from '../../../account/entities/account';
 import { GetCommentRequestDto } from '../dto/get-comment-request.dto';
 
 /**
