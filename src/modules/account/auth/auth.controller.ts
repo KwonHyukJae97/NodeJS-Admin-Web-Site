@@ -368,14 +368,14 @@ export class AuthController {
    * @returns 로그아웃시 엑세스, 리프래쉬 토큰 옵션을 초기화 시키고 상태 값 리턴
    */
   @UseGuards(JwtAuthGuard)
-  @Post('/logout/admin')
-  async logoutAdmin(@Req() request, @Res() response) {
+  @Get('/logout/admin')
+  async logoutAdmin(@Req() request, @Res({ passthrough: true }) response) {
     const { accessOption, refreshOption } = this.authService.getCookiesForLogOut();
     await this.authService.removeRefreshToken(request.user.accountId);
     response.cookie('authentication', '', accessOption);
     response.cookie('Refresh', '', refreshOption);
 
-    return response.sendStatus(200), '로그아웃 완료';
+    return '로그아웃 완료(관리자)';
   }
 
   /**
@@ -385,7 +385,7 @@ export class AuthController {
    * @returns : 로그아웃시 엑세스, 리프래쉬 토큰 옵션을 초기화 시키고 상태 값 리턴
    */
   @UseGuards(JwtAuthGuard)
-  @Post('/logout/user')
+  @Get('/logout/user')
   async logoutUser(@Req() request, @Res() response) {
     const { accessOption, refreshOption } = this.authService.getCookiesForLogOut();
     await this.authService.removeRefreshToken(request.user.accountId);

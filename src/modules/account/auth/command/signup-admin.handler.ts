@@ -3,7 +3,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Admin } from 'src/modules/account/admin/entities/admin';
 import { Account } from 'src/modules/account/entities/account';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { SignUpAdminCommand } from './signup-admin.command';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import * as bcrypt from 'bcryptjs';
@@ -25,6 +25,7 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
     @Inject(ConvertException) private convertException: ConvertException,
+    private dataSource: DataSource,
   ) {}
 
   async execute(command: SignUpAdminCommand) {
@@ -53,19 +54,6 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
      */
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
-    const accountAdmin = this.accountRepository.create({
-      id,
-      password: hashedPassword,
-      name,
-      email,
-      phone,
-      nickname,
-      birth,
-      gender,
-      division: true,
-    });
-
-    console.log('어카운트 회원가입 데이터', accountAdmin);
 
     //중복체크
     const isIdExist = await this.accountRepository.findOne({ where: { id } });
@@ -88,44 +76,52 @@ export class SignUpAdminHandler implements ICommandHandler<SignUpAdminCommand> {
       return this.convertException.badInput('이미 존재하는 사업자번호입니다. ', 400);
     }
 
+    //트랜잭션 생성 후 연결 및 시작
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     //Account 저장
     try {
-      await this.accountRepository.save(accountAdmin);
+      const accountAdmin = this.accountRepository.create({
+        id,
+        password: hashedPassword,
+        name,
+        email,
+        phone,
+        nickname,
+        birth,
+        gender,
+        division: true,
+      });
+      console.log('어카운트 회원가입 데이터', accountAdmin.accountId);
+
+      await queryRunner.manager.getRepository(Account).save(accountAdmin);
+
+      const company = this.companyRepository.create({
+        companyName,
+        companyCode,
+        businessNumber,
+      });
+
+      await queryRunner.manager.getRepository(Company).save(company);
+
+      const admin = this.adminRepository.create({
+        accountId: accountAdmin.accountId,
+        companyId: company.companyId,
+        roleId: 0,
+        isSuper: false, //본사: true, 회원사: false
+      });
+
+      await queryRunner.manager.getRepository(Admin).save(admin);
+      await queryRunner.commitTransaction();
+      return '회원가입 완료(관리자)';
     } catch (err) {
       console.log(err);
+      await queryRunner.rollbackTransaction();
       return this.convertException.badRequestError('관리자 회원가입에 ', 400);
+    } finally {
+      await queryRunner.release();
     }
-
-    //회원가입 시 회원사 테이블 데이터저장
-    const company = this.companyRepository.create({
-      companyName,
-      companyCode,
-      businessNumber,
-    });
-
-    console.log('컴퍼니 회원가입 데이터', company);
-
-    try {
-      await this.companyRepository.save(company);
-    } catch (err) {
-      console.log(err);
-      return this.convertException.badRequestError('회원사 정보 가입에', 400);
-    }
-
-    const admin = this.adminRepository.create({
-      accountId: accountAdmin.accountId,
-      companyId: company.companyId,
-      roleId: 0,
-      isSuper: false, //본사: true, 회원사: false
-    });
-
-    console.log('어드민 회원가입 데이터', admin);
-    try {
-      await this.adminRepository.save(admin);
-    } catch (err) {
-      return this.convertException.CommonError(500);
-    }
-
-    return '회원가입 완료(관리자)';
   }
 }

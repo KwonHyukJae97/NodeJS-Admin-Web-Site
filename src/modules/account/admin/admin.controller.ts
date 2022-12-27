@@ -58,7 +58,7 @@ export class AdminController {
    * @param : adminId
    * @returns : 관리자 정보 수정 커맨드 전송
    */
-  @Patch('/admin/:id')
+  @Patch('/update/:id')
   @UseInterceptors(FileInterceptor('file'))
   updateAdmin(
     @Param('id') adminId: number,
