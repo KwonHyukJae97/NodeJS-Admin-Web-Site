@@ -371,8 +371,6 @@ export class AuthController {
   @Get('/logout/admin')
   async logoutAdmin(@Req() request, @Res({ passthrough: true }) response) {
     const { accessOption, refreshOption } = this.authService.getCookiesForLogOut();
-    console.log('로그아웃 데이터', request);
-    console.log('로그아웃 데이터2', request.user);
     await this.authService.removeRefreshToken(request.user.accountId);
     response.cookie('authentication', '', accessOption);
     response.cookie('Refresh', '', refreshOption);
