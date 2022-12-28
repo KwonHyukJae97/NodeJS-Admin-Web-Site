@@ -26,7 +26,7 @@ const QueryHandlers = [GetFaqListHandler, GetCategoryListHandler];
     ...CommandHandlers,
     ...QueryHandlers,
     ConvertException,
-    { provide: 'faqFile', useClass: BoardFileDb },
+    { provide: 'boardFile', useClass: BoardFileDb },
   ],
 })
 export class FaqModule {}

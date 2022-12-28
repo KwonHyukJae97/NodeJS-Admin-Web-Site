@@ -1,15 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
+import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreateFaqCommand } from './create-faq.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Faq } from '../entities/faq';
 import { DataSource, Repository } from 'typeorm';
 import { Board } from '../../entities/board';
 import { FaqCategory } from '../entities/faq_category';
-import { FilesCreateEvent } from '../../../file/event/files-create-event';
 import { BoardFileDb } from '../../board-file-db';
 import { FileType } from '../../../file/entities/file-type.enum';
 import { ConvertException } from '../../../../common/utils/convert-exception';
+import { CreateFilesCommand } from '../../../file/command/create-files.command';
 
 /**
  * FAQ 등록용 커맨드 핸들러
@@ -21,9 +21,9 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
     @InjectRepository(Faq) private faqRepository: Repository<Faq>,
     @InjectRepository(Board) private boardRepository: Repository<Board>,
     @InjectRepository(FaqCategory) private categoryRepository: Repository<FaqCategory>,
-    @Inject('faqFile') private boardFileDb: BoardFileDb,
+    @Inject('boardFile') private boardFileDb: BoardFileDb,
     @Inject(ConvertException) private convertException: ConvertException,
-    private eventBus: EventBus,
+    private commandBus: CommandBus,
     private dataSource: DataSource,
   ) {}
 
@@ -56,7 +56,7 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
         return this.convertException.notFoundError('카테고리', 404);
       }
 
-      const faq = this.faqRepository.create({
+      const faq = queryRunner.manager.getRepository(Faq).create({
         boardId: board.boardId,
         categoryId: category.categoryId,
         board: board,
@@ -66,9 +66,14 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
 
       if (files.length !== 0) {
         // 파일 업로드 이벤트 처리
-        this.eventBus.publish(
-          new FilesCreateEvent(board.boardId, FileType.FAQ, files, this.boardFileDb),
+        const command = new CreateFilesCommand(
+          board.boardId,
+          FileType.FAQ,
+          files,
+          this.boardFileDb,
+          queryRunner,
         );
+        await this.commandBus.execute(command);
       }
 
       await queryRunner.commitTransaction();

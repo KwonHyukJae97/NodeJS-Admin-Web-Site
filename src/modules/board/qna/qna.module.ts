@@ -26,7 +26,7 @@ const QueryHandlers = [GetQnaListHandler];
     ...CommandHandlers,
     ...QueryHandlers,
     ConvertException,
-    { provide: 'qnaFile', useClass: BoardFileDb },
+    { provide: 'boardFile', useClass: BoardFileDb },
   ],
 })
 export class QnaModule {}

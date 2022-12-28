@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
+import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DeleteQnaCommand } from './delete-qna.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
@@ -7,9 +7,9 @@ import { Qna } from '../entities/qna';
 import { Board } from '../../entities/board';
 import { BoardFile } from '../../../file/entities/board-file';
 import { Comment } from '../../comment/entities/comment';
-import { FilesDeleteEvent } from '../../../file/event/files-delete-event';
 import { BoardFileDb } from '../../board-file-db';
 import { ConvertException } from '../../../../common/utils/convert-exception';
+import { DeleteFilesCommand } from '../../../file/command/delete-files.command';
 
 /**
  * 1:1 문의 삭제용 커맨드 핸들러
@@ -22,9 +22,9 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
     @InjectRepository(Board) private boardRepository: Repository<Board>,
     @InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>,
     @InjectRepository(Comment) private commentRepository: Repository<Comment>,
-    @Inject('qnaFile') private boardFileDb: BoardFileDb,
+    @Inject('boardFile') private boardFileDb: BoardFileDb,
     @Inject(ConvertException) private convertException: ConvertException,
-    private eventBus: EventBus,
+    private commandBus: CommandBus,
     private dataSource: DataSource,
   ) {}
 
@@ -58,14 +58,15 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
 
     const boardFiles = await this.fileRepository.findBy({ boardId: board.boardId });
 
-    if (boardFiles.length !== 0) {
-      // 파일 삭제 이벤트 처리
-      this.eventBus.publish(new FilesDeleteEvent(board.boardId, this.boardFileDb));
-    }
-
-    const comments = await this.commentRepository.findBy({ qnaId });
-
     try {
+      if (boardFiles.length !== 0) {
+        // 파일 삭제 이벤트 처리
+        const command = new DeleteFilesCommand(board.boardId, this.boardFileDb, queryRunner);
+        await this.commandBus.execute(command);
+      }
+
+      const comments = await this.commentRepository.findBy({ qnaId });
+
       comments.map((comment) => {
         queryRunner.manager.getRepository(Comment).softDelete({ commentId: comment.commentId });
       });

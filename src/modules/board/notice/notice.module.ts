@@ -13,12 +13,19 @@ import { BoardFileDb } from '../board-file-db';
 import { GetNoticeDetailHandler } from './command/get-notice-detail.handler';
 import { ConvertException } from '../../../common/utils/convert-exception';
 import { Account } from '../../account/entities/account';
+import { CreateFilesHandler } from '../../file/command/create-files.handler';
+import { FileService } from '../../file/file.service';
+import { UpdateFilesHandler } from '../../file/command/update-files.handler';
+import { DeleteFilesHandler } from '../../file/command/delete-files.handler';
 
 const CommandHandlers = [
   CreateNoticeHandler,
   UpdateNoticeHandler,
   DeleteNoticeHandler,
   GetNoticeDetailHandler,
+  CreateFilesHandler,
+  UpdateFilesHandler,
+  DeleteFilesHandler,
 ];
 const QueryHandlers = [GetNoticeListHandler];
 
@@ -26,10 +33,11 @@ const QueryHandlers = [GetNoticeListHandler];
   imports: [TypeOrmModule.forFeature([Board, Notice, BoardFile, Account]), CqrsModule],
   controllers: [NoticeController],
   providers: [
+    FileService,
     ...CommandHandlers,
     ...QueryHandlers,
     ConvertException,
-    { provide: 'noticeFile', useClass: BoardFileDb },
+    { provide: 'boardFile', useClass: BoardFileDb },
   ],
 })
 export class NoticeModule {}

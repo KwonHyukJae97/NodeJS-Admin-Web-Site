@@ -1,17 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
+import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateQnaCommand } from './update-qna.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Qna } from '../entities/qna';
 import { DataSource, Repository } from 'typeorm';
 import { Board } from '../../entities/board';
-import { FilesUpdateEvent } from '../../../file/event/files-update-event';
 import { BoardFileDb } from '../../board-file-db';
 import { FileType } from '../../../file/entities/file-type.enum';
 import { ConvertException } from '../../../../common/utils/convert-exception';
-import { FilesDeleteEvent } from '../../../file/event/files-delete-event';
-import { FilesCreateEvent } from '../../../file/event/files-create-event';
 import { BoardFile } from '../../../file/entities/board-file';
+import { DeleteFilesCommand } from '../../../file/command/delete-files.command';
+import { CreateFilesCommand } from '../../../file/command/create-files.command';
+import { UpdateFilesCommand } from '../../../file/command/update-files.command';
 
 /**
  * 1:1 문의 정보 수정용 커맨드 핸들러
@@ -23,9 +23,9 @@ export class UpdateQnaHandler implements ICommandHandler<UpdateQnaCommand> {
     @InjectRepository(Qna) private qnaRepository: Repository<Qna>,
     @InjectRepository(Board) private boardRepository: Repository<Board>,
     @InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>,
-    @Inject('qnaFile') private boardFileDb: BoardFileDb,
+    @Inject('boardFile') private boardFileDb: BoardFileDb,
     @Inject(ConvertException) private convertException: ConvertException,
-    private eventBus: EventBus,
+    private commandBus: CommandBus,
     private dataSource: DataSource,
   ) {}
 
@@ -71,19 +71,30 @@ export class UpdateQnaHandler implements ICommandHandler<UpdateQnaCommand> {
       if (files.length === 0) {
         // 기존 파일만 존재하면 '삭제' 이벤트 처리
         if (boardFiles.length !== 0) {
-          this.eventBus.publish(new FilesDeleteEvent(board.boardId, this.boardFileDb));
+          const command = new DeleteFilesCommand(board.boardId, this.boardFileDb, queryRunner);
+          await this.commandBus.execute(command);
         }
       } else {
         // 신규 파일만 존재하면 '등록' 이벤트 처리
         if (boardFiles.length === 0) {
-          this.eventBus.publish(
-            new FilesCreateEvent(board.boardId, FileType.QNA, files, this.boardFileDb),
+          const command = new CreateFilesCommand(
+            board.boardId,
+            FileType.QNA,
+            files,
+            this.boardFileDb,
+            queryRunner,
           );
+          await this.commandBus.execute(command);
           // 신규 파일 & 기존 파일 모두 존재하면 '수정' 이벤트 처리
         } else {
-          this.eventBus.publish(
-            new FilesUpdateEvent(board.boardId, FileType.QNA, files, this.boardFileDb),
+          const command = new UpdateFilesCommand(
+            board.boardId,
+            FileType.QNA,
+            files,
+            this.boardFileDb,
+            queryRunner,
           );
+          await this.commandBus.execute(command);
         }
       }
 

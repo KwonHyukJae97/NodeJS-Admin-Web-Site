@@ -1,7 +1,7 @@
 import { FileDbInterface } from '../file/file-db.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Board } from './entities/board';
-import { Repository } from 'typeorm';
+import { QueryRunner, Repository } from 'typeorm';
 import { BoardFile } from '../file/entities/board-file';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConvertException } from '../../common/utils/convert-exception';
@@ -23,20 +23,20 @@ export class BoardFileDb implements FileDbInterface {
    * @param fileInfo : 파일 정보
    * @returns : DB처리 실패 시 에러 메시지 반환 / 저장 성공 시 void 반환
    */
-  async save(id: number, fileInfo: any) {
+  async save(id: number, fileInfo: any, queryRunner: QueryRunner) {
     const { originalFileName, fileName, fileExt, filePath, fileSize } = fileInfo;
 
-    const boardFile = this.fileRepository.create({
-      boardId: id,
-      originalFileName,
-      fileName,
-      fileExt,
-      filePath,
-      fileSize,
-    });
-
     try {
-      await this.fileRepository.save(boardFile);
+      const boardFile = queryRunner.manager.getRepository(BoardFile).create({
+        boardId: id,
+        originalFileName,
+        fileName,
+        fileExt,
+        filePath,
+        fileSize,
+      });
+
+      await queryRunner.manager.getRepository(BoardFile).save(boardFile);
     } catch (err) {
       console.log('DB 파일 저장 실패');
       return this.convertException.badRequestError('게시글 파일 정보에', 400);
@@ -48,7 +48,7 @@ export class BoardFileDb implements FileDbInterface {
    * @param id : board_id
    * @returns : DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 void 반환
    */
-  async delete(id: number) {
+  async delete(id: number, queryRunner: QueryRunner) {
     // 기존 파일 조회
     const files = await this.fileRepository.findBy({ boardId: id });
 
@@ -60,9 +60,10 @@ export class BoardFileDb implements FileDbInterface {
     }
 
     try {
-      files.map(async (file) => {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
         await this.fileRepository.softDelete({ boardFileId: file.boardFileId });
-      });
+      }
     } catch (err) {
       console.log('DB 파일 삭제 실패', err);
       return this.convertException.CommonError(500);

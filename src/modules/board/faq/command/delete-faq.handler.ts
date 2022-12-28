@@ -1,14 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
+import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DeleteFaqCommand } from './delete-faq.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Faq } from '../entities/faq';
 import { Board } from '../../entities/board';
 import { BoardFile } from '../../../file/entities/board-file';
-import { FilesDeleteEvent } from '../../../file/event/files-delete-event';
 import { BoardFileDb } from '../../board-file-db';
 import { ConvertException } from '../../../../common/utils/convert-exception';
+import { DeleteFilesCommand } from '../../../file/command/delete-files.command';
 
 /**
  * FAQ 삭제용 커맨드 핸들러
@@ -20,9 +20,9 @@ export class DeleteFaqHandler implements ICommandHandler<DeleteFaqCommand> {
     @InjectRepository(Faq) private faqRepository: Repository<Faq>,
     @InjectRepository(Board) private boardRepository: Repository<Board>,
     @InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>,
-    @Inject('faqFile') private boardFileDb: BoardFileDb,
+    @Inject('boardFile') private boardFileDb: BoardFileDb,
     @Inject(ConvertException) private convertException: ConvertException,
-    private eventBus: EventBus,
+    private commandBus: CommandBus,
     private dataSource: DataSource,
   ) {}
 
@@ -56,12 +56,13 @@ export class DeleteFaqHandler implements ICommandHandler<DeleteFaqCommand> {
 
     const boardFiles = await this.fileRepository.findBy({ boardId: board.boardId });
 
-    if (boardFiles.length !== 0) {
-      // 파일 삭제 이벤트 처리
-      this.eventBus.publish(new FilesDeleteEvent(board.boardId, this.boardFileDb));
-    }
-
     try {
+      if (boardFiles.length !== 0) {
+        // 파일 삭제 이벤트 처리
+        const command = new DeleteFilesCommand(board.boardId, this.boardFileDb, queryRunner);
+        await this.commandBus.execute(command);
+      }
+
       await queryRunner.manager.getRepository(Faq).delete(faq);
       await queryRunner.manager.getRepository(Board).softDelete({ boardId: board.boardId });
       await queryRunner.commitTransaction();

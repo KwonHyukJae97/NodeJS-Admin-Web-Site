@@ -1,7 +1,7 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { BoardFile } from '../entities/board-file';
 import * as AWS from 'aws-sdk';
 import { GetAllFileDownloadQuery } from './get-files-download.query';
@@ -11,9 +11,6 @@ import * as archiver from 'archiver';
 import { getTime } from '../../../common/utils/time-common-method';
 import { ConvertException } from '../../../common/utils/convert-exception';
 
-/**
- * 다중 파일 다운로드용 쿼리 핸들러
- */
 // S3 연결을 위한 설정
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -95,6 +92,9 @@ async function multiFilesStream(files) {
 //   return archive;
 // };
 
+/**
+ * 다중 파일 다운로드용 쿼리 핸들러
+ */
 @QueryHandler(GetAllFileDownloadQuery)
 export class GetAllFilesDownloadHandler implements IQueryHandler<GetAllFileDownloadQuery> {
   constructor(

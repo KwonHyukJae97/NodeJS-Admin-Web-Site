@@ -1,14 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
+import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreateQnaCommand } from './create-qna.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Qna } from '../entities/qna';
 import { DataSource, Repository } from 'typeorm';
 import { Board } from '../../entities/board';
-import { FilesCreateEvent } from '../../../file/event/files-create-event';
 import { BoardFileDb } from '../../board-file-db';
 import { FileType } from '../../../file/entities/file-type.enum';
 import { ConvertException } from '../../../../common/utils/convert-exception';
+import { CreateFilesCommand } from '../../../file/command/create-files.command';
 
 /**
  * 1:1 문의 등록용 커맨드 핸들러
@@ -19,9 +19,9 @@ export class CreateQnaHandler implements ICommandHandler<CreateQnaCommand> {
   constructor(
     @InjectRepository(Qna) private qnaRepository: Repository<Qna>,
     @InjectRepository(Board) private boardRepository: Repository<Board>,
-    @Inject('qnaFile') private boardFileDb: BoardFileDb,
+    @Inject('boardFile') private boardFileDb: BoardFileDb,
     @Inject(ConvertException) private convertException: ConvertException,
-    private eventBus: EventBus,
+    private commandBus: CommandBus,
     private dataSource: DataSource,
   ) {}
 
@@ -48,7 +48,7 @@ export class CreateQnaHandler implements ICommandHandler<CreateQnaCommand> {
 
       await queryRunner.manager.getRepository(Board).save(board);
 
-      const qna = this.qnaRepository.create({
+      const qna = queryRunner.manager.getRepository(Qna).create({
         boardId: board.boardId,
         board: board,
       });
@@ -56,9 +56,14 @@ export class CreateQnaHandler implements ICommandHandler<CreateQnaCommand> {
 
       if (files.length !== 0) {
         // 파일 업로드 이벤트 처리
-        this.eventBus.publish(
-          new FilesCreateEvent(board.boardId, FileType.QNA, files, this.boardFileDb),
+        const command = new CreateFilesCommand(
+          board.boardId,
+          FileType.QNA,
+          files,
+          this.boardFileDb,
+          queryRunner,
         );
+        await this.commandBus.execute(command);
       }
 
       await queryRunner.commitTransaction();

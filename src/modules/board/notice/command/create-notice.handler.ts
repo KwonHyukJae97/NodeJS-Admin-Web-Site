@@ -1,14 +1,14 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
+import { Inject, Injectable } from '@nestjs/common';
+import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreateNoticeCommand } from './create-notice.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Notice } from '../entities/notice';
-import { Repository, DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Board } from '../../entities/board';
-import { FilesCreateEvent } from '../../../file/event/files-create-event';
 import { BoardFileDb } from '../../board-file-db';
 import { FileType } from '../../../file/entities/file-type.enum';
 import { ConvertException } from '../../../../common/utils/convert-exception';
+import { CreateFilesCommand } from '../../../file/command/create-files.command';
 
 /**
  * 공지사항 등록용 커맨드 핸들러
@@ -19,9 +19,9 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
   constructor(
     @InjectRepository(Notice) private noticeRepository: Repository<Notice>,
     @InjectRepository(Board) private boardRepository: Repository<Board>,
-    @Inject('noticeFile') private boardFileDb: BoardFileDb,
+    @Inject('boardFile') private boardFileDb: BoardFileDb,
     @Inject(ConvertException) private convertException: ConvertException,
-    private eventBus: EventBus,
+    private commandBus: CommandBus,
     private dataSource: DataSource,
   ) {}
 
@@ -33,11 +33,8 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
   async execute(command: CreateNoticeCommand) {
     const { title, content, isTop, noticeGrant, files, account } = command;
 
-    // queryRunner 생성
     const queryRunner = this.dataSource.createQueryRunner();
-    // db 연결
     await queryRunner.connect();
-    // 트랜잭션 시작
     await queryRunner.startTransaction();
 
     try {
@@ -51,7 +48,7 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
 
       await queryRunner.manager.getRepository(Board).save(board);
 
-      const notice = this.noticeRepository.create({
+      const notice = queryRunner.manager.getRepository(Notice).create({
         noticeGrant,
         isTop,
         boardId: board.boardId,
@@ -60,21 +57,24 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
 
       await queryRunner.manager.getRepository(Notice).save(notice);
 
+      // board-file 트랜잭션 처리를 위해 event 방식에서 command 방식으로 변경
       if (files.length !== 0) {
-        // 파일 업로드 이벤트 처리
-        this.eventBus.publish(
-          new FilesCreateEvent(board.boardId, FileType.NOTICE, files, this.boardFileDb),
+        const command = new CreateFilesCommand(
+          board.boardId,
+          FileType.NOTICE,
+          files,
+          this.boardFileDb,
+          queryRunner,
         );
+        await this.commandBus.execute(command);
       }
-      // 정상 동작 시 데이터 커밋
+
       await queryRunner.commitTransaction();
       return notice;
     } catch (err) {
-      // 에러 발생 시 데이터 롤백
       await queryRunner.rollbackTransaction();
       return this.convertException.badInput('공지사항 정보에', 400);
     } finally {
-      // db 연결 해제 (필수)
       await queryRunner.release();
     }
   }
