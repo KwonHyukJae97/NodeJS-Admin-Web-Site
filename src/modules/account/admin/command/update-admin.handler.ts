@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Account } from '../../entities/account';
 import { Admin } from '../entities/admin';
 import { UpdateAdminCommand } from './update-admin.command';
@@ -26,6 +26,8 @@ export class UpdateAdminHandler implements ICommandHandler<UpdateAdminCommand> {
     @InjectRepository(AccountFile) private fileRepository: Repository<AccountFile>,
     @Inject('accountFile') private accountFileDb: AccountFileDb,
     private eventBus: EventBus,
+
+    private dataSource: DataSource,
   ) {}
 
   /**
@@ -40,58 +42,53 @@ export class UpdateAdminHandler implements ICommandHandler<UpdateAdminCommand> {
     const accountId = admin.accountId;
     const account = await this.accountRepository.findOneBy({ accountId: accountId });
 
-    //역할번호 수정
-    try {
-      admin.roleId = roleId;
-      // admin.isSuper = isSuper;
-      await this.adminRepository.save(admin);
-    } catch (err) {
-      console.log(err);
-      return this.convertException.badRequestError('역할번호에', 400);
-    }
-
-    //관리자타입 수정
-    try {
-      admin.isSuper = isSuper;
-      await this.adminRepository.save(admin);
-    } catch (err) {
-      console.log(err);
-      return this.convertException.badRequestError('관리자타입에', 400);
-    }
+    //트랜잭션 생성 후 연결 및 시작
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     // 비밀번호 암호화 저장 (bcrypt)
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    //역할번호 수정
     try {
+      admin.roleId = roleId;
+      admin.isSuper = isSuper;
+      // admin.isSuper = isSuper;
+      await queryRunner.manager.getRepository(Admin).save(admin);
+
       account.password = hashedPassword;
       account.email = email;
       account.phone = phone;
       account.nickname = nickname;
-      await this.accountRepository.save(account);
+
+      await queryRunner.manager.getRepository(Account).save(account);
+
+      const accountFile = await this.fileRepository.findOneBy({ accountId: accountId });
+
+      if (file) {
+        // 저장되어 있는 프로필 이미지가 있다면 '수정' 이벤트 호출
+        if (accountFile) {
+          this.eventBus.publish(
+            new FileUpdateEvent(accountId, FileType.ACCOUNT, file, this.accountFileDb),
+          );
+          // 저장되어 있는 프로필 이미지가 없다면 '등록' 이벤트 호출
+        } else {
+          this.eventBus.publish(
+            new FileCreateEvent(accountId, FileType.ACCOUNT, file, this.accountFileDb),
+          );
+        }
+      }
+
+      await queryRunner.commitTransaction();
+      return account;
     } catch (err) {
       console.log(err);
-      //저장 실패 에러 메시지 반환
-      return this.convertException.CommonError(500);
+      await queryRunner.rollbackTransaction();
+      return this.convertException.badRequestError('정보 수정에 ', 400);
+    } finally {
+      await queryRunner.release();
     }
-
-    const accountFile = await this.fileRepository.findOneBy({ accountId: accountId });
-
-    if (file) {
-      // 저장되어 있는 프로필 이미지가 있다면 '수정' 이벤트 호출
-      if (accountFile) {
-        this.eventBus.publish(
-          new FileUpdateEvent(accountId, FileType.ACCOUNT, file, this.accountFileDb),
-        );
-        // 저장되어 있는 프로필 이미지가 없다면 '등록' 이벤트 호출
-      } else {
-        this.eventBus.publish(
-          new FileCreateEvent(accountId, FileType.ACCOUNT, file, this.accountFileDb),
-        );
-      }
-    }
-
-    //수정된 내용 반환
-    return account;
   }
 }

@@ -3,7 +3,7 @@ import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account } from 'src/modules/account/entities/account';
 import { User } from 'src/modules/account/user/entities/user';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { SignUpUserCommand } from './signup-user.command';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import * as bcrypt from 'bcryptjs';
@@ -21,6 +21,7 @@ export class SignUpUserHandler implements ICommandHandler<SignUpUserCommand> {
     private accountRepository: Repository<Account>,
 
     @Inject(ConvertException) private convertException: ConvertException,
+    private dataSource: DataSource,
   ) {}
 
   async execute(command: SignUpUserCommand) {
@@ -31,17 +32,6 @@ export class SignUpUserHandler implements ICommandHandler<SignUpUserCommand> {
      */
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
-
-    const accountUser = this.accountRepository.create({
-      id,
-      password: hashedPassword,
-      name,
-      email,
-      phone,
-      nickname,
-      birth,
-      gender,
-    });
 
     const isIdExist = await this.accountRepository.findOne({ where: { id } });
     const isEmailExist = await this.accountRepository.findOne({ where: { email } });
@@ -57,26 +47,39 @@ export class SignUpUserHandler implements ICommandHandler<SignUpUserCommand> {
     } else if (isNicknameExist) {
       return this.convertException.badInput('이미 존재하는 닉네임입니다. ', 400);
     }
-    {
-      //Account 저장
-      try {
-        await this.accountRepository.save(accountUser);
-      } catch (err) {
-        console.log(err);
-        return this.convertException.badRequestError('사용자 회원가입에 ', 400);
-      }
-    }
 
-    const user = this.userRepository.create({
-      accountId: accountUser.accountId,
-      grade,
-    });
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      await this.userRepository.save(user);
-    } catch (err) {
-      return this.convertException.CommonError(500);
-    }
+      const accountUser = this.accountRepository.create({
+        id,
+        password: hashedPassword,
+        name,
+        email,
+        phone,
+        nickname,
+        birth,
+        gender,
+      });
 
-    return '회원가입 완료 (사용자)';
+      await queryRunner.manager.getRepository(Account).save(accountUser);
+
+      const user = this.userRepository.create({
+        accountId: accountUser.accountId,
+        grade,
+      });
+
+      await queryRunner.manager.getRepository(User).save(user);
+      await queryRunner.commitTransaction();
+      return '회원가입 완료 (사용자)';
+    } catch (err) {
+      console.log(err);
+      await queryRunner.rollbackTransaction();
+      return this.convertException.badRequestError('사용자 회원가입에 ', 400);
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

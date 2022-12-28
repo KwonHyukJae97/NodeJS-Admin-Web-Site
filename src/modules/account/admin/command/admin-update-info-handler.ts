@@ -3,7 +3,6 @@ import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { Repository } from 'typeorm';
-import { Admin } from '../entities/admin';
 import { Account } from '../../entities/account';
 import { AdminUpdateInfoCommand } from './admin-update-info.command';
 import { FileUpdateEvent } from '../../../file/event/file-update-event';
@@ -21,7 +20,6 @@ export class AdminUpdateInfoHandler implements ICommandHandler<AdminUpdateInfoCo
   constructor(
     @InjectRepository(Account) private accountRepository: Repository<Account>,
     @Inject(ConvertException) private convertException: ConvertException,
-    @InjectRepository(Admin) private adminRepository: Repository<Admin>,
     @InjectRepository(AccountFile) private fileRepository: Repository<AccountFile>,
     @Inject('accountFile') private accountFileDb: AccountFileDb,
     private eventBus: EventBus,

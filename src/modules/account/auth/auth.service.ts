@@ -4,7 +4,7 @@ import { compare, hash } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account } from 'src/modules/account/entities/account';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { SignInUserDto } from './dto/signin-user.dto';
 import { SignInAdminDto } from './dto/signin-admin.dto';
 import { ConfigService } from '@nestjs/config';
@@ -14,7 +14,6 @@ import { UserNaverDto } from './dto/user.naver.dto';
 import { UserGoogleDto } from './dto/user.google.dto';
 import { EmailService } from 'src/modules/email/email.service';
 import * as uuid from 'uuid';
-import { Connection } from 'typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import moment from 'moment';
 
@@ -30,7 +29,7 @@ export class AuthService {
     private accountRepository: Repository<Account>,
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
-    private connection: Connection,
+    private readonly dataSource: DataSource,
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
@@ -604,19 +603,22 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(tempPassword, salt);
     console.log('수정된 비밀번호 확인', hashedPassword);
     const accountId = user.accountId;
-    // const queryRunner = this.connection.createQueryRunner();
-    // await queryRunner.connect();
-    // await queryRunner.startTransaction();
 
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
-      await this.accountRepository.update(accountId, { password: hashedPassword });
+      console.log('이메일 트랜잭션 ', Dto);
+      await queryRunner.manager.getRepository(Account).update(Dto, { password: hashedPassword });
+      // await this.accountRepository.update(accountId, { password: hashedPassword });
       await this.emailService.sendTempPassword(email, tempPassword);
+      await queryRunner.commitTransaction();
       console.log('임시 코드 확인', tempPassword);
     } catch (e) {
-      // await queryRunner.rollbackTransaction();
+      await queryRunner.rollbackTransaction();
       throw new ConflictException({ message: '비밀번호 찾기 오류입니다. 다시 시도해주세요.' });
     } finally {
-      // await queryRunner.release();
+      await queryRunner.release();
       return { success: true, message: '이메일을 확인해주세요.' };
     }
   }
@@ -627,7 +629,6 @@ export class AuthService {
    */
   public isNeedRefreshTokenChange(refreshToken: string) {
     // 만약, refresh token 갱신이 필요하면 갱신 처리
-    console.log('expexpexpe', refreshToken);
     const jwtRefreshToken = this.jwtService.decode(refreshToken);
     const exp = jwtRefreshToken['exp'];
 
