@@ -29,7 +29,7 @@ export class UpdateAdminRoleHandler implements ICommandHandler<UpdateAdminRoleCo
   async execute(command: UpdateAdminRoleCommand) {
     const { roleName, roleDto, roleId, updateBy } = command;
 
-    // 역할정보 찾기
+    // 역할 정보 조회
     const adminrole = await this.adminroleRepository.findOneBy({ roleId: roleId });
     if (!adminrole) {
       return this.convertException.notFoundError('역할', 404);
@@ -38,64 +38,120 @@ export class UpdateAdminRoleHandler implements ICommandHandler<UpdateAdminRoleCo
     adminrole.roleName = roleName;
     adminrole.updateBy = updateBy;
 
-    // roleId찾기
+    // 역할_권한정보에 등록된 roleId 조회
     const findRoleId = await this.rolePermissionRepository.findBy({ roleId: roleId });
     if (!findRoleId) {
       return this.convertException.notFoundError('역할_권한정보에 ', 404);
     }
 
-    // 역할_권한 정보 찾기
-    roleDto.forEach(async (value: rolePermissionDto) => {
-      const findRolePermission = await this.rolePermissionRepository
-        .createQueryBuilder('rolePermission')
-        .where('rolePermission.roleId=:roleId', { roleId: roleId })
-        .andWhere('rolePermission.permissionId=:permissionId', { permissionId: value.permissionId })
-        .andWhere('rolePermission.grantType=:grantType', { grantType: value.grantType })
-        .getOne();
+    // 역할_권한 정보 (permissionId, grantType) 조회
+    const findRolePermissionList = await this.rolePermissionRepository
+      .createQueryBuilder('rolePermission')
+      .select(
+        `rolePermission.permission_id AS permissionId, rolePermission.grant_type AS grantType`,
+      )
+      .where('rolePermission.roleId=:roleId', { roleId: roleId })
+      .getRawMany();
 
-      //transaction처리
-      const queryRunner = this.dataSource.createQueryRunner();
-      await queryRunner.connect();
-      await queryRunner.startTransaction();
+    const tempDeleteRoleDtoList = [];
+    tempDeleteRoleDtoList.push(...findRolePermissionList);
+    const tempInsertRoleDtoList = [];
+    const tempUpdateRoleDtoList = [];
 
-      try {
-        // 역할 정보(역할이름) DB저장
-        await queryRunner.manager.getRepository(AdminRole).save(adminrole);
+    // 기존 데이터에 값이 없을 경우
+    roleDto.forEach((role: RolePermission) => {
+      const isExistData =
+        findRolePermissionList.filter((rolePermission: rolePermissionDto) => {
+          return (
+            rolePermission.permissionId == role.permissionId &&
+            rolePermission.grantType == role.grantType
+          );
+        }).length > 0;
+      if (!isExistData) {
+        tempInsertRoleDtoList.push(role);
+      }
+    });
 
-        // 역할_권한 정보가 존재하지 않을 경우 데이터 추가
-        if (!findRolePermission) {
-          // 역할_권한 정보 DB저장
+    // 역할_권한 정보 수정 처리
+    findRolePermissionList.forEach(async (value: RolePermission) => {
+      const filterList = roleDto.filter((role: rolePermissionDto) => {
+        return value.permissionId == role.permissionId && value.grantType == role.grantType;
+      });
+
+      const isExistData = filterList.length > 0;
+
+      if (isExistData) {
+        // 기존 데이터 = 신규데이터 있으면 해당 데이터는 update 날짜만 수정
+        tempUpdateRoleDtoList.push(value);
+        tempDeleteRoleDtoList.splice(tempDeleteRoleDtoList.indexOf(value), 1);
+      }
+    });
+
+    //transaction처리
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 역할 정보(역할이름) DB저장
+      await queryRunner.manager.getRepository(AdminRole).save(adminrole);
+
+      // 기존 데이터와 수정할 데이터 비교 후 체크박스 해제된 값이 있을 경우 삭제
+      tempDeleteRoleDtoList.forEach(async (role) => {
+        const filterList = roleDto.filter((value: rolePermissionDto) => {
+          return role.permissionId == value.permissionId;
+        });
+        const isExistData = filterList.length > 0;
+        if (isExistData) {
+          await this.rolePermissionRepository.delete({
+            grantType: role.grantType,
+            permissionId: role.permissionId,
+            roleId: roleId,
+          });
+        }
+      });
+
+      // 기존 데이터와 수정할 데이터 비교 후 체크박스가 0개로 수정될 경우 삭제
+      tempInsertRoleDtoList.forEach(async (role) => {
+        if (role.grantType == '4') {
+          await this.rolePermissionRepository.delete({
+            grantType: role.grantType,
+            permissionId: role.permissionId,
+            roleId: roleId,
+          });
+        }
+      });
+
+      tempUpdateRoleDtoList.forEach(async (role) => {
+        // 역할_권한 정보 DB수정
+        await queryRunner.manager.getRepository(RolePermission).update(
+          {
+            permissionId: role.permissionId,
+          },
+          {},
+        );
+      });
+      tempInsertRoleDtoList.forEach(async (role) => {
+        if (role.grantType != 4) {
           const createRole = await queryRunner.manager.getRepository(RolePermission).create({
             roleId,
-            permissionId: value.permissionId,
-            grantType: value.grantType,
+            permissionId: role.permissionId,
+            grantType: role.grantType,
           });
 
           await queryRunner.manager.getRepository(RolePermission).insert(createRole);
+        }
+      });
 
-          // 역할_권한 정보가 존재할 경우 데이터 수정
-        } else if (
-          (findRolePermission != null && findRolePermission.permissionId != value.permissionId) ||
-          (findRolePermission != null && findRolePermission.grantType != value.grantType)
-        )
-          // 역할_권한 정보 DB수정
-          await queryRunner.manager.getRepository(RolePermission).update(
-            {
-              permissionId: value.permissionId,
-            },
-            { grantType: value.grantType },
-          );
+      await queryRunner.commitTransaction();
+    } catch (err) {
+      // 실패시 rollback
+      await queryRunner.rollbackTransaction();
+      return this.convertException.CommonError(500);
+    } finally {
+      await queryRunner.release();
+    }
 
-        await queryRunner.commitTransaction();
-      } catch (err) {
-        // 실패시 rollback
-        await queryRunner.rollbackTransaction();
-        return this.convertException.CommonError(500);
-      } finally {
-        await queryRunner.release();
-      }
-
-      return findRolePermission;
-    });
+    return '수정이 완료 되었습니다.';
   }
 }
