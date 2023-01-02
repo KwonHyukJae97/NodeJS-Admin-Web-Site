@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Put,
   UploadedFile,
   UseInterceptors,
   ValidationPipe,
@@ -58,7 +59,7 @@ export class AdminController {
    * @param : adminId
    * @returns : 관리자 정보 수정 커맨드 전송
    */
-  @Patch('/update/:id')
+  @Put(':id')
   @UseInterceptors(FileInterceptor('file'))
   updateAdmin(
     @Param('id') adminId: number,
@@ -82,17 +83,12 @@ export class AdminController {
 
   /**
    * 관리자 상세 내정보 수정
-   * @param : adminId
    * @returns : 관리자 정보 수정 커맨드 전송
    */
-  @Patch(':id')
+  @Patch('me')
   @UseInterceptors(FileInterceptor('file'))
-  updateInfo(
-    @Param('id') accountId: number,
-    @Body() dto: AdminUpdateInfoDto,
-    @UploadedFile() file: Express.MulterS3.File,
-  ) {
-    const { email, phone, nickname } = dto;
+  updateInfo(@Body() dto: AdminUpdateInfoDto, @UploadedFile() file: Express.MulterS3.File) {
+    const { accountId, email, phone, nickname } = dto;
     const command = new AdminUpdateInfoCommand(accountId, email, phone, nickname, file);
 
     return this.commandBus.execute(command);

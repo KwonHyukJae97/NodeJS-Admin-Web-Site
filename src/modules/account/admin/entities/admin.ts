@@ -2,18 +2,10 @@ import { Account } from 'src/modules/account/entities/account';
 import { AdminRole } from 'src/modules/adminRole/entities/adminRole.entity';
 import { RolePermission } from 'src/modules/adminRole/entities/rolePermission.entity';
 import { Company } from 'src/modules/company/entities/company.entity';
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('admin')
-export class Admin extends BaseEntity {
+export class Admin {
   //관리자 번호
   @PrimaryGeneratedColumn({
     name: 'admin_id',

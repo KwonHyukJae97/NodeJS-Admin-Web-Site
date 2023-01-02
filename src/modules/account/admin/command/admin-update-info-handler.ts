@@ -39,75 +39,46 @@ export class AdminUpdateInfoHandler implements ICommandHandler<AdminUpdateInfoCo
       return this.convertException.notFoundError('관리자', 404);
     }
 
-    if (email) {
-      try {
-        // const isEmailExist = this.accountRepository.findOneBy( {email} )
-        const isEmailExist = await this.accountRepository.findOne({ where: { email } });
-        if (isEmailExist) {
-          return this.convertException.badRequestAccountError(
-            '이미 존재하는 이메일이므로 수정',
-            400,
-          );
-        } else {
-          const updateEmail = this.accountRepository.update(
-            { accountId },
-            {
-              email: email,
-            },
-          );
-          console.log(updateEmail);
-        }
-      } catch (err) {
-        console.log(err);
-      }
+    let result = await this.commonUpdate(
+      accountId,
+      email,
+      { email },
+      {
+        email: email,
+      },
+      '이미 존재하는 이메일이므로 수정',
+    );
+
+    if (result != null) {
+      return result;
     }
 
-    if (phone) {
-      try {
-        const isPhoneExist = await this.accountRepository.findOne({ where: { phone } });
-        if (isPhoneExist) {
-          return this.convertException.badRequestAccountError(
-            '이미 존재하는 연락처이므로 수정',
-            400,
-          );
-        } else {
-          const updatePhone = this.accountRepository.update(
-            {
-              accountId,
-            },
-            {
-              phone: phone,
-            },
-          );
-          console.log(updatePhone);
-        }
-      } catch (err) {
-        console.log(err);
-      }
+    result = await this.commonUpdate(
+      accountId,
+      phone,
+      { phone },
+      {
+        phone: phone,
+      },
+      '이미 존재하는 연락처이므로 수정',
+    );
+
+    if (result != null) {
+      return result;
     }
 
-    if (nickname) {
-      try {
-        const isNicknameExist = await this.accountRepository.findOne({ where: { nickname } });
-        if (isNicknameExist) {
-          return this.convertException.badRequestAccountError(
-            '이미 존재하는 닉네임이므로 수정',
-            400,
-          );
-        } else {
-          const updateNickname = this.accountRepository.update(
-            {
-              accountId,
-            },
-            {
-              nickname: nickname,
-            },
-          );
-          console.log(updateNickname);
-        }
-      } catch (err) {
-        console.log(err);
-      }
+    result = await this.commonUpdate(
+      accountId,
+      nickname,
+      { nickname },
+      {
+        nickname: nickname,
+      },
+      '이미 존재하는 닉네임이므로 수정',
+    );
+
+    if (result != null) {
+      return result;
     }
 
     const accountFile = await this.fileRepository.findOneBy({ accountId: accountId });
@@ -128,4 +99,25 @@ export class AdminUpdateInfoHandler implements ICommandHandler<AdminUpdateInfoCo
 
     return account;
   }
+
+  //수정하는 기능 동일한 작업을 하는 부분을 메소드로 따로 빼기
+  commonUpdate = async function (accountId, targetObj, whereObj, updateObj, errorMsg) {
+    if (!targetObj) {
+      return null;
+    }
+
+    try {
+      const isExist = await this.accountRepository.findOne({ where: whereObj });
+      if (isExist) {
+        return this.convertException.badRequestAccountError(errorMsg, 400);
+      } else {
+        const updateResult = this.accountRepository.update({ accountId }, updateObj);
+        console.log(updateResult);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+
+    return null;
+  };
 }
