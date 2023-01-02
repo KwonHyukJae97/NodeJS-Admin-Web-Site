@@ -57,7 +57,6 @@ export class UpdateAdminRoleHandler implements ICommandHandler<UpdateAdminRoleCo
     const tempInsertRoleDtoList = [];
     const tempUpdateRoleDtoList = [];
 
-    // 기존 데이터(findRolePermissionList)에 신규 데이터(roleDto)값이 없을 경우 tempInsertRoleDtoList에 값을 담아 insert 처리
     roleDto.forEach((role: RolePermission) => {
       const isExistData =
         findRolePermissionList.filter((rolePermission: rolePermissionDto) => {
@@ -71,35 +70,29 @@ export class UpdateAdminRoleHandler implements ICommandHandler<UpdateAdminRoleCo
       }
     });
 
+    findRolePermissionList.forEach(async (value: RolePermission) => {
+      const filterList = roleDto.filter((role: rolePermissionDto) => {
+        return value.permissionId == role.permissionId && value.grantType == role.grantType;
+      });
+
+      const isExistData = filterList.length > 0;
+
+      if (isExistData) {
+        tempUpdateRoleDtoList.push(value);
+      } else {
+        tempDeleteRoleDtoList.push(value);
+      }
+    });
+
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      findRolePermissionList.forEach(async (value: RolePermission) => {
-        const filterList = roleDto.filter((role: rolePermissionDto) => {
-          return value.permissionId == role.permissionId && value.grantType == role.grantType;
-        });
-
-        const isExistData = filterList.length > 0;
-
-        if (isExistData) {
-          // 기존 데이터에 신규 데이터가 있으면 해당 데이터는 update 날짜만 수정
-          tempUpdateRoleDtoList.push(value);
-          tempDeleteRoleDtoList.splice(tempDeleteRoleDtoList.indexOf(value), 1);
-        } else {
-          // 기존 데이터에 신규 데이터가 없으면 해당 데이터는 delete 처리
-          await queryRunner.manager.getRepository(RolePermission).delete({
-            grantType: value.grantType,
-            permissionId: value.permissionId,
-            roleId: roleId,
-          });
-        }
-      });
-
       // 역할 정보(역할이름) DB저장
       await queryRunner.manager.getRepository(AdminRole).save(adminrole);
 
+      // 기존 데이터와 수정할 데이터를 비교하여 수정된 데이터가 있으면 해당 데이터는 update 날짜만 수정
       tempUpdateRoleDtoList.forEach(async (role) => {
         await queryRunner.manager.getRepository(RolePermission).update(
           {
@@ -109,6 +102,7 @@ export class UpdateAdminRoleHandler implements ICommandHandler<UpdateAdminRoleCo
         );
       });
 
+      // 기존 데이터와 수정할 데이터를 비교하여 신규 데이터가 있으면 insert처리
       tempInsertRoleDtoList.forEach(async (role) => {
         const createRole = await queryRunner.manager.getRepository(RolePermission).create({
           roleId,
@@ -117,6 +111,15 @@ export class UpdateAdminRoleHandler implements ICommandHandler<UpdateAdminRoleCo
         });
 
         await queryRunner.manager.getRepository(RolePermission).insert(createRole);
+      });
+
+      // 기존 데이터와 수정할 데이터를 비교하여 삭제할 데이터가 있으면 해당 데이터는 delete 처리
+      tempDeleteRoleDtoList.forEach(async (role) => {
+        await queryRunner.manager.getRepository(RolePermission).delete({
+          grantType: role.grantType,
+          permissionId: role.permissionId,
+          roleId: roleId,
+        });
       });
 
       await queryRunner.commitTransaction();
