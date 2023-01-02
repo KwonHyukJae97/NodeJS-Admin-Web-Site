@@ -68,19 +68,19 @@ export class GoogleSignUpAdminHandler implements ICommandHandler<GoogleSignUpAdm
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    const accountGoogleAdmin = this.accountRepository.create({
-      name,
-      phone,
-      nickname,
-      birth,
-      gender,
-      snsId,
-      snsType: '02',
-      snsToken,
-      division: true,
-    });
-
     try {
+      const accountGoogleAdmin = this.accountRepository.create({
+        name,
+        phone,
+        nickname,
+        birth,
+        gender,
+        snsId,
+        snsType: '02',
+        snsToken,
+        division: true,
+      });
+
       await queryRunner.manager.getRepository(Account).save(accountGoogleAdmin);
 
       const company = this.companyRepository.create({

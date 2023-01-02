@@ -68,19 +68,19 @@ export class NaverSignUpAdminHandler implements ICommandHandler<NaverSignUpAdmin
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    const accountNaverAdmin = this.accountRepository.create({
-      name,
-      phone,
-      nickname,
-      birth,
-      gender,
-      snsId,
-      snsType: '00',
-      snsToken,
-      division: true,
-    });
-
     try {
+      const accountNaverAdmin = this.accountRepository.create({
+        name,
+        phone,
+        nickname,
+        birth,
+        gender,
+        snsId,
+        snsType: '00',
+        snsToken,
+        division: true,
+      });
+
       await queryRunner.manager.getRepository(Account).save(accountNaverAdmin);
 
       //회원가입 시 회원사 테이블 데이터저장

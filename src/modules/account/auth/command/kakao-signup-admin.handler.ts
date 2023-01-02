@@ -69,19 +69,19 @@ export class KakaoSignUpAdminHandler implements ICommandHandler<KakaoSignUpAdmin
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    const accountKakaoAdmin = this.accountRepository.create({
-      name,
-      phone,
-      nickname,
-      birth,
-      gender,
-      snsId,
-      snsType: '01',
-      snsToken,
-      division: true,
-    });
-
     try {
+      const accountKakaoAdmin = this.accountRepository.create({
+        name,
+        phone,
+        nickname,
+        birth,
+        gender,
+        snsId,
+        snsType: '01',
+        snsToken,
+        division: true,
+      });
+
       await queryRunner.manager.getRepository(Account).save(accountKakaoAdmin);
 
       //회원가입 시 회원사 테이블 데이터저장
