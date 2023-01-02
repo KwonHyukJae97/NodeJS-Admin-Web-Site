@@ -1,7 +1,7 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 /**
- * 단어레벨 등록 dto
+ * 단어레벨 등록 dto 정의
  */
 export class CreateWordLevelDto {
   @IsNotEmpty()

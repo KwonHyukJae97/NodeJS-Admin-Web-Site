@@ -93,10 +93,8 @@ export class AdminController {
     @UploadedFile() file: Express.MulterS3.File,
   ) {
     const { email, phone, nickname } = dto;
-    console.log('수정 데이터 email?', email);
-    console.log('수정 데이터 phone?', phone);
-    console.log('수정 데이터 nickname?', nickname);
     const command = new AdminUpdateInfoCommand(accountId, email, phone, nickname, file);
+
     return this.commandBus.execute(command);
   }
 

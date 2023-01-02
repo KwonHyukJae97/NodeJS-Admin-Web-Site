@@ -34,10 +34,15 @@ export class GetProjectListQueryHandler implements IQueryHandler<GetProjectListQ
       .groupBy('wordLevel.wordLevelId')
       .getQuery();
 
-    //단어레벨명 같이 조회
+    //단어레벨번호, 단어레벨명, 프로젝트번호, 프로젝트명, 서비스 여부 조회
     const project = await this.projectRepository
       .createQueryBuilder('project')
-      // .leftJoinAndSelect('project.wordLevel', 'wordLevel')
+      .select([
+        `project.projectId AS projectId,
+        project.projectName AS projectName,
+        project.isService AS isService
+        `,
+      ])
       .leftJoinAndSelect(wordLevel, 'wordLevel', 'wordLevel.wordLevelId = project.wordLevelId')
       .orderBy('project.projectId', 'ASC');
 
