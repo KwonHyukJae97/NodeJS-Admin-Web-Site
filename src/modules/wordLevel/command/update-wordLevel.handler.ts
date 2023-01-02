@@ -30,9 +30,10 @@ export class UpdateWordLevelHandler implements ICommandHandler<UpdateWordLevelCo
     }
 
     try {
-      await this.wordLevelRepository.update({ wordLevelId }, { wordLevelSequence });
-      await this.wordLevelRepository.update({ wordLevelId }, { wordLevelName });
-      await this.wordLevelRepository.update({ wordLevelId }, { isService });
+      await this.wordLevelRepository.update(
+        { wordLevelId },
+        { wordLevelSequence, wordLevelName, isService },
+      );
     } catch (err) {
       console.log(err);
     }
