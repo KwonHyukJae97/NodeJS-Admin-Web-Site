@@ -59,7 +59,6 @@ export class AdminRoleController {
     const { roleName, roleDto, updateBy } = updateAdminRoleDto;
     const command = new UpdateAdminRoleCommand(roleName, roleDto, roleId, updateBy);
 
-    console.log('updateAdminRoleDto??????', updateAdminRoleDto);
     return this.commandBus.execute(command);
   }
 
