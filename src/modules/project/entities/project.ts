@@ -1,6 +1,5 @@
 import { WordLevel } from 'src/modules/wordLevel/entities/wordLevel';
 import {
-  BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -12,7 +11,7 @@ import {
 } from 'typeorm';
 
 @Entity('project')
-export class Project extends BaseEntity {
+export class Project {
   //프로젝트 번호
   @PrimaryGeneratedColumn({
     name: 'project_id',
