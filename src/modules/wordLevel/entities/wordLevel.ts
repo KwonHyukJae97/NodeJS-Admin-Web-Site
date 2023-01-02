@@ -1,5 +1,4 @@
 import {
-  BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -9,7 +8,7 @@ import {
 } from 'typeorm';
 
 @Entity('word_level')
-export class WordLevel extends BaseEntity {
+export class WordLevel {
   //단어레벨 번호
   @PrimaryGeneratedColumn({
     name: 'word_level_id',
