@@ -8,6 +8,7 @@ import { Example } from '../entities/example';
 import { SimilarWord } from '../entities/similar-word';
 import { ConvertException } from '../../../common/utils/convert-exception';
 import { Page } from '../../../common/utils/page';
+import { WordFile } from '../../file/entities/word-file';
 
 /**
  * 단어 전체 & 검색어에 해당하는 리스트 조회용 쿼리 핸들러
@@ -31,65 +32,23 @@ export class GetWordListHandler implements IQueryHandler<GetWordListQuery> {
   async execute(query: GetWordListQuery) {
     const { param } = query;
 
-    // 단어에 대한 예문 정보 조회
-    const exampleQb = this.exampleRepository
-      .createQueryBuilder('example')
-      .subQuery()
-      .select([
-        'example.wordId AS wordId',
-        'example.exampleId AS exampleId',
-        'example.sentence',
-        'example.translation',
-        'example.source',
-        'example.exampleSequence',
-      ])
-      .from(Example, 'example')
-      .groupBy('example.wordId')
-      .getQuery();
-
-    // 단어에 대한 비슷하지만 다른말 정보 조회
-    const similarQb = this.similarRepository
-      .createQueryBuilder('similar')
-      .subQuery()
-      .leftJoin(Word, 'word', 'similar.similarWordId = word.wordId')
-      .select([
-        'similar.wordId AS wordId',
-        'similar.wordName AS similar_wordName',
-        'similar.mean AS similar_mean',
-        'similar.wordStatus AS similar_wordStatus',
-        'similar.connectWordId AS similar_connectWordId',
-      ])
-      .from(SimilarWord, 'similar')
-      .groupBy('similar.wordId')
-      .getQuery();
-
-    // 비슷하지만 다른말 단어에 대한 예문 조회
-    const similarExampleQb = this.exampleRepository
-      .createQueryBuilder('similarExample')
-      .subQuery()
-      .leftJoin(SimilarWord, 'similarWord', 'similarExample.wordId = similarWord.wordId')
-      .select([
-        'similarExample.wordId AS similar_wordId',
-        'similarExample.exampleId AS similar_exampleId',
-        'similarExample.similar_sentence',
-        'similarExample.similar_translation',
-        'similarExample.similar_source',
-        'similarExample.similar_exampleSequence',
-      ])
-      .from(Example, 'similarExample')
-      .groupBy('similarWord.wordId')
-      .getQuery();
-
-    // 단어 정보 조회 (한 단어에 대한 단어정보/예문정보/비슷하지만 다른말(단어정보/예문정보))
-    const word = await this.wordRepository
+    // 단어 정보 조회 (한 단어에 대한 단어정보/예문정보/파일정보/비슷하지만 다른말(단어정보/예문정보/파일정보))
+    const word = this.wordRepository
       .createQueryBuilder('word')
-      .leftJoinAndSelect(exampleQb, 'example', 'word.wordId = example.wordId')
-      .leftJoinAndSelect(similarQb, 'similar', 'word.wordId = similar.wordId')
-      .leftJoinAndSelect(SimilarWord, 'similarWord', 'word.wordId = similarWord.wordId')
-      .leftJoinAndSelect(
-        similarExampleQb,
-        'similarExample',
-        'similarWord.wordId = similarExample.wordId',
+      .leftJoinAndMapMany('word.wordFiles', WordFile, 'wordFile', 'word.wordId = wordFile.wordId')
+      .leftJoinAndSelect('word.examples', 'example')
+      .leftJoin('word.similarWords', 'similarWords')
+      .leftJoinAndMapMany(
+        'word.similarWords',
+        Word,
+        'similarWord',
+        'similarWords.similarWordId = similarWord.wordId',
+      )
+      .leftJoinAndMapMany(
+        'similarWord.similarWordFiles',
+        WordFile,
+        'similarWordFile',
+        'similarWords.similarWordId = similarWordFile.wordId',
       )
       .orderBy('word.wordId', 'DESC');
 
