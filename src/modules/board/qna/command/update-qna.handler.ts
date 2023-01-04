@@ -80,6 +80,7 @@ export class UpdateQnaHandler implements ICommandHandler<UpdateQnaCommand> {
           const command = new CreateFilesCommand(
             board.boardId,
             FileType.QNA,
+            null,
             files,
             this.boardFileDb,
             queryRunner,
@@ -90,6 +91,7 @@ export class UpdateQnaHandler implements ICommandHandler<UpdateQnaCommand> {
           const command = new UpdateFilesCommand(
             board.boardId,
             FileType.QNA,
+            null,
             files,
             this.boardFileDb,
             queryRunner,

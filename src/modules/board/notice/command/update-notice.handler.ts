@@ -83,6 +83,7 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
           const command = new CreateFilesCommand(
             board.boardId,
             FileType.NOTICE,
+            null,
             files,
             this.boardFileDb,
             queryRunner,
@@ -93,6 +94,7 @@ export class UpdateNoticeHandler implements ICommandHandler<UpdateNoticeCommand>
           const command = new UpdateFilesCommand(
             board.boardId,
             FileType.NOTICE,
+            null,
             files,
             this.boardFileDb,
             queryRunner,
