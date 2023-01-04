@@ -1,11 +1,15 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
-import { ExampleDto } from './example.dto';
 import { SimilarInfoDto } from './similar-info.dto';
+import { UpdateExampleDto } from './update-example.dto';
 
 /**
- * 단어 등록에 필요한 요청 Dto 정의
+ * 단어 수정에 필요한 요청 Dto 정의
  */
-export class CreateWordDto {
+export class UpdateWordDto {
+  @IsNotEmpty()
+  @IsNumber()
+  wordId: number;
+
   @IsOptional()
   @IsNumber()
   wordLevelId: number;
@@ -24,7 +28,7 @@ export class CreateWordDto {
   mean: string;
 
   @IsNotEmpty()
-  exampleList: ExampleDto[];
+  exampleList: UpdateExampleDto[];
 
   @IsOptional()
   similarInfoList: SimilarInfoDto[];
@@ -33,6 +37,14 @@ export class CreateWordDto {
   @IsNotEmpty()
   @IsBoolean()
   isRealWordConnect: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  isMainWord: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  isAutoMain: boolean;
 
   @IsString()
   @IsOptional()
@@ -46,7 +58,7 @@ export class CreateWordDto {
   @IsOptional()
   soundFileKey: string;
 
-  pictureImageFile: Express.Multer.File;
-  descImageFile: Express.Multer.File;
-  soundFile: Express.Multer.File;
+  // pictureImageFile: Express.Multer.File;
+  // descImageFile: Express.Multer.File;
+  // soundFile: Express.Multer.File;
 }

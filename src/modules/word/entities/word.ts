@@ -3,9 +3,13 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Example } from './example';
+import { WordFile } from '../../file/entities/word-file';
+import { SimilarWord } from './similar-word';
 
 /**
  * 단어에 대한 엔티티 정의
@@ -100,4 +104,13 @@ export class Word {
     nullable: true,
   })
   delDate: Date;
+
+  @OneToMany((type) => Example, (example) => example.wordId, { eager: true })
+  examples: Example[];
+
+  @OneToMany((type) => WordFile, (wordFile) => wordFile.wordId, { eager: true })
+  wordFiles: WordFile[];
+
+  @OneToMany(() => SimilarWord, (similarWord) => similarWord.wordId, { eager: true })
+  similarWords: SimilarWord[];
 }

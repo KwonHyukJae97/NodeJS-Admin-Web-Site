@@ -3,9 +3,12 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Word } from './word';
 
 /**
  * 예문에 대한 엔티티 정의
@@ -20,9 +23,11 @@ export class Example {
   exampleId: number;
 
   // 단어 번호
-  @Column({
+  @ManyToOne((type) => Word, (word) => word.examples, {
+    createForeignKeyConstraints: false,
+  })
+  @JoinColumn({
     name: 'word_id',
-    type: 'bigint',
   })
   wordId!: number;
 
@@ -87,4 +92,9 @@ export class Example {
   //
   // @OneToOne((type) => Qna, (qna) => qna.boardId)
   // qnaId: number;
+  //
+  // @ManyToOne((type) => Word, (word) => word.examples, {
+  //   createForeignKeyConstraints: false,
+  // })
+  // word: Word;
 }

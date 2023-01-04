@@ -3,9 +3,14 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Word } from './word';
+import { WordFile } from '../../file/entities/word-file';
 
 /**
  * 비슷하지만 다른말에 대한 엔티티 정의
@@ -20,9 +25,11 @@ export class SimilarWord {
   similarInfoId: number;
 
   // 단어 번호
-  @Column({
+  @ManyToOne((type) => Word, (word) => word.similarWords, {
+    createForeignKeyConstraints: false,
+  })
+  @JoinColumn({
     name: 'word_id',
-    type: 'bigint',
   })
   wordId!: number;
 
@@ -55,4 +62,7 @@ export class SimilarWord {
     nullable: true,
   })
   delDate: Date;
+
+  @OneToMany((type) => WordFile, (wordFile) => wordFile.wordId, { eager: true })
+  similarWordFiles: WordFile[];
 }

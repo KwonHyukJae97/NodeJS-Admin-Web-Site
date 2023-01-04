@@ -24,4 +24,20 @@ export class SimilarInfoDto {
 
   @IsNotEmpty()
   exampleList: ExampleDto[];
+
+  @IsString()
+  @IsOptional()
+  pictureImageFileKey: string;
+
+  @IsString()
+  @IsOptional()
+  descImageFileKey: string;
+
+  @IsString()
+  @IsOptional()
+  soundFileKey: string;
+
+  pictureImageFile: Express.Multer.File;
+  descImageFile: Express.Multer.File;
+  soundFile: Express.Multer.File;
 }
