@@ -1,21 +1,9 @@
 import { ICommand } from '@nestjs/cqrs';
-import { SimilarInfoDto } from '../dto/similar-info.dto';
-import { ExampleDto } from '../dto/example.dto';
+import { CreateWordDto } from '../dto/create-word.dto';
 
 /**
  * 단어 등록용 커맨드 정의
  */
 export class CreateWordCommand implements ICommand {
-  constructor(
-    readonly wordLevelId: number | null,
-    readonly projectId: number | null,
-    readonly wordName: string,
-    readonly mean: string,
-    readonly exampleList: ExampleDto[],
-    readonly wordId: number | null,
-    readonly isRealWordConnect: boolean | null,
-    readonly pictureImageFile: Express.MulterS3.File | null,
-    readonly descImageFile: Express.MulterS3.File | null,
-    readonly soundFile: Express.MulterS3.File | null,
-  ) {}
+  constructor(readonly createWordDto: CreateWordDto[], readonly files: Express.MulterS3.File[]) {}
 }
