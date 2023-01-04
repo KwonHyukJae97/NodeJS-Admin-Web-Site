@@ -105,19 +105,25 @@ export class FileService {
     id: number,
     fileType: string,
     files: Express.MulterS3.File[],
+    file: Express.MulterS3.File,
     fileDbInterface: FileDbInterface,
     queryRunner: QueryRunner,
   ) {
-    // 한글 파일명 인코딩
-    files.map((file) => {
-      file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf-8');
-    });
+    // 단어에 대한 파일 정보가 있을 경우
+    let wordFile = [];
+    if (file) {
+      wordFile.push(file);
+      files = wordFile;
+    }
 
     let fileKeyList = [];
 
     try {
       for (let i = 0; i < files.length; i++) {
         let file = files[i];
+
+        // 한글 파일명 인코딩
+        file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf-8');
 
         const today = getToday();
         const time = getTime();
@@ -138,6 +144,7 @@ export class FileService {
           fileExt: ext,
           filePath: url,
           fileSize: file.size,
+          fieldName: file.fieldname,
         };
 
         // 신규 파일 정보 DB 저장
@@ -166,20 +173,26 @@ export class FileService {
   async updateFiles(
     id: number,
     fileType: string,
+    file: Express.MulterS3.File,
     files: Express.MulterS3.File[],
     fileDbInterface: FileDbInterface,
     queryRunner: QueryRunner,
   ) {
-    // 한글 파일명 인코딩
-    files.map((file) => {
-      file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf-8');
-    });
+    // 단어에 대한 파일 정보가 있을 경우
+    let wordFile = [];
+    if (file) {
+      wordFile.push(file);
+      files = wordFile;
+    }
 
     let fileKeyList = [];
 
     try {
       for (let i = 0; i < files.length; i++) {
         let file = files[i];
+
+        // 한글 파일명 인코딩
+        file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf-8');
 
         const today = getToday();
         const time = getTime();

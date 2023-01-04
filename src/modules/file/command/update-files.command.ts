@@ -10,7 +10,8 @@ export class UpdateFilesCommand implements ICommand {
   constructor(
     readonly id: number,
     readonly fileType: FileType,
-    readonly files: Express.MulterS3.File[],
+    readonly file: Express.MulterS3.File | null,
+    readonly files: Express.MulterS3.File[] | null,
     readonly fileDbInterface: FileDbInterface,
     readonly queryRunner: QueryRunner,
   ) {}

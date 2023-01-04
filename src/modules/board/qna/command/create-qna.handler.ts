@@ -59,6 +59,7 @@ export class CreateQnaHandler implements ICommandHandler<CreateQnaCommand> {
         const command = new CreateFilesCommand(
           board.boardId,
           FileType.QNA,
+          null,
           files,
           this.boardFileDb,
           queryRunner,

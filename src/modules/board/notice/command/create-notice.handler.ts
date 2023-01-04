@@ -62,6 +62,7 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
         const command = new CreateFilesCommand(
           board.boardId,
           FileType.NOTICE,
+          null,
           files,
           this.boardFileDb,
           queryRunner,

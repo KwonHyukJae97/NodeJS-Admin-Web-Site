@@ -23,10 +23,10 @@ export class UpdateFilesHandler implements ICommandHandler<UpdateFilesCommand> {
    * @returns : 파일 수정 실패 시 에러 메시지 반환 / 수정 완료 시 void 반환
    */
   async execute(command: UpdateFilesCommand) {
-    const { id, fileType, files, fileDbInterface, queryRunner } = command;
+    const { id, fileType, file, files, fileDbInterface, queryRunner } = command;
 
     try {
-      await this.fileService.updateFiles(id, fileType, files, fileDbInterface, queryRunner);
+      await this.fileService.updateFiles(id, fileType, file, files, fileDbInterface, queryRunner);
     } catch (err) {
       return this.convertException.badRequestS3Error('수정에', 400);
     }

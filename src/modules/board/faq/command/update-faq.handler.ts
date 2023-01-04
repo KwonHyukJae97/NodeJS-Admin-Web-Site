@@ -89,6 +89,7 @@ export class UpdateFaqHandler implements ICommandHandler<UpdateFaqCommand> {
           const command = new CreateFilesCommand(
             board.boardId,
             FileType.FAQ,
+            null,
             files,
             this.boardFileDb,
             queryRunner,
@@ -99,6 +100,7 @@ export class UpdateFaqHandler implements ICommandHandler<UpdateFaqCommand> {
           const command = new UpdateFilesCommand(
             board.boardId,
             FileType.FAQ,
+            null,
             files,
             this.boardFileDb,
             queryRunner,

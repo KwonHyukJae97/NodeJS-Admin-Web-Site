@@ -69,6 +69,7 @@ export class CreateFaqHandler implements ICommandHandler<CreateFaqCommand> {
         const command = new CreateFilesCommand(
           board.boardId,
           FileType.FAQ,
+          null,
           files,
           this.boardFileDb,
           queryRunner,

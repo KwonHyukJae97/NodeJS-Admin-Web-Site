@@ -21,10 +21,10 @@ export class CreateFilesHandler implements ICommandHandler<CreateFilesCommand> {
    * @returns : 파일 등록 실패 시 에러 메시지 반환 / 등록 완료 시 공지사항 정보 반환
    */
   async execute(command: CreateFilesCommand) {
-    const { id, fileType, files, fileDbInterface, queryRunner } = command;
+    const { id, fileType, files, file, fileDbInterface, queryRunner } = command;
 
     try {
-      await this.fileService.uploadFiles(id, fileType, files, fileDbInterface, queryRunner);
+      await this.fileService.uploadFiles(id, fileType, files, file, fileDbInterface, queryRunner);
     } catch (err) {
       return this.convertException.badRequestS3Error('등록에', 400);
     }
