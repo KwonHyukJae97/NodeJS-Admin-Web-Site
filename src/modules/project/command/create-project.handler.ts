@@ -29,11 +29,12 @@ export class CreateProjectHandler implements ICommandHandler<CreateProjectComman
     try {
       const project = queryRunner.manager.getRepository(Project).create({
         projectName,
-        wordLevelId: 13,
+        wordLevelId: 17,
         regBy,
       });
 
       await queryRunner.manager.getRepository(Project).save(project);
+
       await queryRunner.commitTransaction();
 
       return project;

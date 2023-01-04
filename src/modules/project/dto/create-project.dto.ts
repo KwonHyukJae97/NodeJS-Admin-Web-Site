@@ -10,10 +10,6 @@ export class CreateProjectDto {
 
   @IsNotEmpty()
   @IsString()
-  wordLevelName: string;
-
-  @IsNotEmpty()
-  @IsString()
   regBy: string;
 
   //단어정보 등록 추가하기

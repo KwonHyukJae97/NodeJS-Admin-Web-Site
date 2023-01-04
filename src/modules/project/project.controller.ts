@@ -27,10 +27,15 @@ export class ProjectController {
     return this.queryBus.execute(getProjectListQuery);
   }
 
+  /**
+   * 프로젝트 등록
+   * @param createProjectDto : projectName, regBy
+   * @returns 프로젝트 등록 커멘드 전송
+   */
   @Post()
   createProject(@Body() createProjectDto: CreateProjectDto) {
-    const { projectName, wordLevelName, regBy } = createProjectDto;
-    const command = new CreateProjectCommand(projectName, wordLevelName, regBy);
+    const { projectName, regBy } = createProjectDto;
+    const command = new CreateProjectCommand(projectName, regBy);
 
     return this.commandBus.execute(command);
   }
@@ -38,7 +43,7 @@ export class ProjectController {
   /**
    * 프로젝트 수정
    * @param projectId
-   * @param updateProjectDto
+   * @param updateProjectDto : wordLevelName, projectName, isService, updateBy
    * @returns 프로젝트 수정 커멘드 전송
    */
   @Patch(':id')

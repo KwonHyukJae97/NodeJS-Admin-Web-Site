@@ -40,11 +40,13 @@ export class GetProjectListQueryHandler implements IQueryHandler<GetProjectListQ
       .select([
         `project.projectId AS projectId,
         project.projectName AS projectName,
-        project.isService AS isService
+        project.isService AS isService,
+        project.regBy AS regBy,
+        project.regDate AS regDate
         `,
       ])
       .leftJoinAndSelect(wordLevel, 'wordLevel', 'wordLevel.wordLevelId = project.wordLevelId')
-      .orderBy('project.projectId', 'ASC');
+      .orderBy('project.projectId', 'DESC');
 
     if (param.searchWord) {
       project.where('project.projectName like :projectName', {

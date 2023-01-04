@@ -28,7 +28,7 @@ export class WordLevelController {
 
   /**
    * 단어레벨 등록
-   * @param: 단어레벨등록 dto
+   * @param createWordLevelDto : wordLevelName, isService, wordLevelSequence, regBy
    * @returns  단어레벨 등록 정보 커맨드 전송
    */
   @Post()
@@ -40,7 +40,7 @@ export class WordLevelController {
 
   /**
    * 단어레벨 정보 수정
-   * @param wordLevelId
+   * @param dto : wordLevelName, wordLevelSequence, isService, updateBy
    * @returns : 단어레벨 정보 수정 커멘드 전송
    */
   @Patch(':id')

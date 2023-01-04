@@ -20,12 +20,16 @@ export class GetWordLevelListQueryHandler implements IQueryHandler<GetWordLevelL
   async execute(query: GetWordLevelListQuery) {
     const { param } = query;
 
-    const wordLevel = await this.wordLevelRepository.createQueryBuilder('wordLevel').select([
-      `wordLevel.wordLevelId AS wordLevelId,
+    const wordLevel = await this.wordLevelRepository
+      .createQueryBuilder('wordLevel')
+      .select([
+        `wordLevel.wordLevelId AS wordLevelId,
       wordLevel.wordLevelName AS wordLevelName,
       wordLevel.wordLevelSequence AS wordLevelSequence,
+      wordLevel.isService AS isService,
       wordLevel.regBy AS regBy`,
-    ]);
+      ])
+      .orderBy('wordLevel.wordLevelId', 'ASC');
 
     if (param.searchWord) {
       wordLevel.where('wordLevel.wordLevelName like :wordLevelName', {
