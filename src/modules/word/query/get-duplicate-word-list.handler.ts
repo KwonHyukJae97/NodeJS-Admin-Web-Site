@@ -8,6 +8,7 @@ import { SimilarWord } from '../entities/similar-word';
 import { ConvertException } from '../../../common/utils/convert-exception';
 import { Page } from '../../../common/utils/page';
 import { GetDuplicateWordListQuery } from './get-duplicate-word-list.query';
+import { WordFile } from '../../file/entities/word-file';
 
 /**
  * 중복 단어 리스트 조회용 쿼리 핸들러
@@ -42,6 +43,8 @@ export class GetDuplicateWordListHandler implements IQueryHandler<GetDuplicateWo
           .getQuery();
         return 'word.wordName IN' + subQuery;
       })
+      .leftJoinAndSelect('word.examples', 'example')
+      .leftJoinAndMapMany('word.wordFiles', WordFile, 'wordFile', 'word.wordId = wordFile.wordId')
       .orderBy('word.wordName', 'ASC');
 
     if (param.searchKey) {

@@ -50,6 +50,12 @@ export class GetWordListHandler implements IQueryHandler<GetWordListQuery> {
         'similarWordFile',
         'similarWords.similarWordId = similarWordFile.wordId',
       )
+      .leftJoinAndMapMany(
+        'similarWord.examples',
+        Example,
+        'similarExample',
+        'similarWords.similarWordId = similarExample.wordId',
+      )
       .orderBy('word.wordId', 'DESC');
 
     // // 검색 키워드가 있을 경우
