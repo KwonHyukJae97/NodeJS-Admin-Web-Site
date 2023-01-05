@@ -50,99 +50,99 @@ export class CreateWordHandler implements ICommandHandler<CreateWordCommand> {
       };
 
       // 단어 저장 함수
-      const wordSave = async (
-        wordLevelId,
-        projectId,
-        wordName,
-        mean,
-        exampleList,
-        isRealWordConnect,
-        pictureImageFile,
-        descImageFile,
-        soundFile,
-        wordId,
-      ) => {
-        // 단어 정보 저장
-        const word = queryRunner.manager.getRepository(Word).create({
-          wordLevelId,
-          projectId,
-          wordName,
-          mean,
-          // 본단어와 연결되어 있으면 '연결된 단어' 아니면 '일반 단어'
-          wordStatus: isRealWordConnect ? '2' : '1',
-          isMainWord: true,
-          isAutoMain: true,
-        });
-
-        await queryRunner.manager.getRepository(Word).save(word);
-
-        // 단어에 대한 파일 정보 저장
-        if (pictureImageFile) {
-          const command = new CreateFilesCommand(
-            word.wordId,
-            FileType.WORD,
-            pictureImageFile,
-            null,
-            this.wordFileDb,
-            queryRunner,
-          );
-          await this.commandBus.execute(command);
-        }
-
-        if (descImageFile) {
-          const command = new CreateFilesCommand(
-            word.wordId,
-            FileType.WORD,
-            descImageFile,
-            null,
-            this.wordFileDb,
-            queryRunner,
-          );
-          await this.commandBus.execute(command);
-        }
-
-        if (soundFile) {
-          const command = new CreateFilesCommand(
-            word.wordId,
-            FileType.WORD,
-            soundFile,
-            null,
-            this.wordFileDb,
-            queryRunner,
-          );
-          await this.commandBus.execute(command);
-        }
-
-        // 단어에 대한 예문 정보 저장
-        for (const exampleInfo of exampleList) {
-          const example = queryRunner.manager.getRepository(Example).create({
-            wordId: word.wordId,
-            sentence: exampleInfo.sentence,
-            translation: exampleInfo.translation,
-            source: exampleInfo.source,
-            exampleSequence: exampleInfo.exampleSequence,
-          });
-          await queryRunner.manager.getRepository(Example).save(example);
-        }
-
-        if (wordId) {
-          // 비슷하지만 다른말 정보 저장
-          const similarWordInfo = queryRunner.manager.getRepository(SimilarWord).create({
-            wordId,
-            similarWordId: word.wordId,
-          });
-          await queryRunner.manager.getRepository(SimilarWord).save(similarWordInfo);
-        }
-
-        return word;
-      };
+      // const saveWord = async (
+      //   wordLevelId,
+      //   projectId,
+      //   wordName,
+      //   mean,
+      //   exampleList,
+      //   isRealWordConnect,
+      //   pictureImageFile,
+      //   descImageFile,
+      //   soundFile,
+      //   wordId,
+      // ) => {
+      //   // 단어 정보 저장
+      //   const word = queryRunner.manager.getRepository(Word).create({
+      //     wordLevelId,
+      //     projectId,
+      //     wordName,
+      //     mean,
+      //     // 본단어와 연결되어 있으면 '연결된 단어' 아니면 '일반 단어'
+      //     wordStatus: isRealWordConnect ? '2' : '1',
+      //     isMainWord: true,
+      //     isAutoMain: true,
+      //   });
+      //
+      //   await queryRunner.manager.getRepository(Word).save(word);
+      //
+      //   // 단어에 대한 파일 정보 저장
+      //   if (pictureImageFile) {
+      //     const command = new CreateFilesCommand(
+      //       word.wordId,
+      //       FileType.WORD,
+      //       pictureImageFile,
+      //       null,
+      //       this.wordFileDb,
+      //       queryRunner,
+      //     );
+      //     await this.commandBus.execute(command);
+      //   }
+      //
+      //   if (descImageFile) {
+      //     const command = new CreateFilesCommand(
+      //       word.wordId,
+      //       FileType.WORD,
+      //       descImageFile,
+      //       null,
+      //       this.wordFileDb,
+      //       queryRunner,
+      //     );
+      //     await this.commandBus.execute(command);
+      //   }
+      //
+      //   if (soundFile) {
+      //     const command = new CreateFilesCommand(
+      //       word.wordId,
+      //       FileType.WORD,
+      //       soundFile,
+      //       null,
+      //       this.wordFileDb,
+      //       queryRunner,
+      //     );
+      //     await this.commandBus.execute(command);
+      //   }
+      //
+      //   // 단어에 대한 예문 정보 저장
+      //   for (const exampleInfo of exampleList) {
+      //     const example = queryRunner.manager.getRepository(Example).create({
+      //       wordId: word.wordId,
+      //       sentence: exampleInfo.sentence,
+      //       translation: exampleInfo.translation,
+      //       source: exampleInfo.source,
+      //       exampleSequence: exampleInfo.exampleSequence,
+      //     });
+      //     await queryRunner.manager.getRepository(Example).save(example);
+      //   }
+      //
+      //   if (wordId) {
+      //     // 비슷하지만 다른말 정보 저장
+      //     const similarWordInfo = queryRunner.manager.getRepository(SimilarWord).create({
+      //       wordId,
+      //       similarWordId: word.wordId,
+      //     });
+      //     await queryRunner.manager.getRepository(SimilarWord).save(similarWordInfo);
+      //   }
+      //
+      //   return word;
+      // };
 
       for (let i = 0; i < createWordDto['createWordDto'].length; i++) {
         const pictureImageFile = findKeyFile(createWordDto['createWordDto'][i].pictureImageFileKey);
         const descImageFile = findKeyFile(createWordDto['createWordDto'][i].descImageFileKey);
         const soundFile = findKeyFile(createWordDto['createWordDto'][i].soundFileKey);
 
-        const word = await wordSave(
+        const word = await saveWord(
           createWordDto['createWordDto'][i].wordLevelId,
           createWordDto['createWordDto'][i].projectId,
           createWordDto['createWordDto'][i].wordName,
@@ -153,6 +153,9 @@ export class CreateWordHandler implements ICommandHandler<CreateWordCommand> {
           descImageFile,
           soundFile,
           null,
+          queryRunner,
+          this.wordFileDb,
+          this.commandBus,
         );
 
         // 비슷하지만 다른말에 대한 정보 조회 후 신규일 경우 단어 저장 (단어 저장과 동일한 로직)
@@ -177,7 +180,7 @@ export class CreateWordHandler implements ICommandHandler<CreateWordCommand> {
               const descImageFile = findKeyFile(similarInfo.descImageFileKey);
               const soundFile = findKeyFile(similarInfo.soundFileKey);
 
-              await wordSave(
+              await saveWord(
                 similarInfo.wordLevelId,
                 similarInfo.projectId,
                 similarInfo.wordName,
@@ -188,11 +191,12 @@ export class CreateWordHandler implements ICommandHandler<CreateWordCommand> {
                 descImageFile,
                 soundFile,
                 word.wordId,
+                queryRunner,
+                this.wordFileDb,
+                this.commandBus,
               );
             } else {
               // 기존에 있는 단어일 경우 비슷하지만 다른말 정보만 저장
-              console.log('wordId', word.wordId);
-              console.log('similarId', similarWord.wordId);
               const similarWordInfo = queryRunner.manager.getRepository(SimilarWord).create({
                 wordId: word.wordId,
                 similarWordId: similarWord.wordId,
@@ -213,3 +217,94 @@ export class CreateWordHandler implements ICommandHandler<CreateWordCommand> {
     }
   }
 }
+
+// 단어 저장 메서드
+export const saveWord = async (
+  wordLevelId,
+  projectId,
+  wordName,
+  mean,
+  exampleList,
+  isRealWordConnect,
+  pictureImageFile,
+  descImageFile,
+  soundFile,
+  wordId,
+  queryRunner,
+  wordFileDb,
+  commandBus,
+) => {
+  // 단어 정보 저장
+  const word = queryRunner.manager.getRepository(Word).create({
+    wordLevelId,
+    projectId,
+    wordName,
+    mean,
+    // 본단어와 연결되어 있으면 '연결된 단어' 아니면 '일반 단어'
+    wordStatus: isRealWordConnect ? '2' : '1',
+    isMainWord: true,
+    isAutoMain: true,
+  });
+
+  await queryRunner.manager.getRepository(Word).save(word);
+
+  // 단어에 대한 파일 정보 저장
+  if (pictureImageFile) {
+    const command = new CreateFilesCommand(
+      word.wordId,
+      FileType.WORD,
+      pictureImageFile,
+      null,
+      wordFileDb,
+      queryRunner,
+    );
+    await commandBus.execute(command);
+  }
+
+  if (descImageFile) {
+    const command = new CreateFilesCommand(
+      word.wordId,
+      FileType.WORD,
+      descImageFile,
+      null,
+      wordFileDb,
+      queryRunner,
+    );
+    await commandBus.execute(command);
+  }
+
+  if (soundFile) {
+    const command = new CreateFilesCommand(
+      word.wordId,
+      FileType.WORD,
+      soundFile,
+      null,
+      wordFileDb,
+      queryRunner,
+    );
+    await commandBus.execute(command);
+  }
+
+  // 단어에 대한 예문 정보 저장
+  for (const exampleInfo of exampleList) {
+    const example = queryRunner.manager.getRepository(Example).create({
+      wordId: word.wordId,
+      sentence: exampleInfo.sentence,
+      translation: exampleInfo.translation,
+      source: exampleInfo.source,
+      exampleSequence: exampleInfo.exampleSequence,
+    });
+    await queryRunner.manager.getRepository(Example).save(example);
+  }
+
+  if (wordId) {
+    // 비슷하지만 다른말 정보 저장
+    const similarWordInfo = queryRunner.manager.getRepository(SimilarWord).create({
+      wordId,
+      similarWordId: word.wordId,
+    });
+    await queryRunner.manager.getRepository(SimilarWord).save(similarWordInfo);
+  }
+
+  return word;
+};

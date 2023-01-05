@@ -1,6 +1,7 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
-import { SimilarInfoDto } from './similar-info.dto';
 import { UpdateExampleDto } from './update-example.dto';
+import { UpdateSimilarInfoDto } from './update-similar-info.dto';
+import { ToBoolean } from '../../../common/decorator/boolean.decorator';
 
 /**
  * 단어 수정에 필요한 요청 Dto 정의
@@ -18,23 +19,23 @@ export class UpdateWordDto {
   @IsNumber()
   projectId: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   wordName: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @MaxLength(100)
   mean: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   exampleList: UpdateExampleDto[];
 
   @IsOptional()
-  similarInfoList: SimilarInfoDto[];
+  similarInfoList: UpdateSimilarInfoDto[];
 
   // 본단어 연결 여부
-  @IsNotEmpty()
+  @IsOptional()
   @IsBoolean()
   isRealWordConnect: boolean;
 
@@ -46,17 +47,22 @@ export class UpdateWordDto {
   @IsBoolean()
   isAutoMain: boolean;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   pictureImageFileKey: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   descImageFileKey: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   soundFileKey: string;
+
+  // 단어 삭제 여부
+  @IsOptional()
+  @ToBoolean()
+  isDelete: boolean;
 
   // pictureImageFile: Express.Multer.File;
   // descImageFile: Express.Multer.File;

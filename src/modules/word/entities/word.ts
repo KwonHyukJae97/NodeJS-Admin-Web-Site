@@ -105,12 +105,21 @@ export class Word {
   })
   delDate: Date;
 
-  @OneToMany((type) => Example, (example) => example.wordId, { eager: true })
+  @OneToMany((type) => Example, (example) => example.wordId, {
+    eager: true,
+    cascade: ['soft-remove'], // word 삭제 시, 자동 삭제 처리
+  })
   examples: Example[];
 
-  @OneToMany((type) => WordFile, (wordFile) => wordFile.wordId, { eager: true })
+  @OneToMany((type) => WordFile, (wordFile) => wordFile.wordId, {
+    eager: true,
+    // cascade: ['soft-remove'],
+  })
   wordFiles: WordFile[];
 
-  @OneToMany(() => SimilarWord, (similarWord) => similarWord.wordId, { eager: true })
+  @OneToMany(() => SimilarWord, (similarWord) => similarWord.wordId, {
+    eager: true,
+    cascade: ['soft-remove'],
+  })
   similarWords: SimilarWord[];
 }
