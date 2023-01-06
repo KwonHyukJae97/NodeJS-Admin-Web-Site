@@ -13,11 +13,29 @@ import { AccountFileDb } from '../account/account-file-db';
 import { AccountFile } from './entities/account-file';
 import { Account } from '../account/entities/account';
 import { ConvertException } from '../../common/utils/convert-exception';
+import { StudyFileDb } from '../study/study-file-db';
+import { StudyPlanFileDb } from '../studyPlan/studyPlan-file-db';
+import { Study } from '../study/entities/study';
+import { StudyFile } from './entities/study-file';
+import { StudyPlan } from '../studyPlan/entities/studyPlan';
+import { StudyPlanFile } from './entities/studyPlan-file';
 
 const QueryHandlers = [GetAllFilesDownloadHandler, GetFileDownloadHandler];
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Board, BoardFile, Account, AccountFile]), CqrsModule],
+  imports: [
+    TypeOrmModule.forFeature([
+      Board,
+      BoardFile,
+      Account,
+      AccountFile,
+      Study,
+      StudyFile,
+      StudyPlan,
+      StudyPlanFile,
+    ]),
+    CqrsModule,
+  ],
   controllers: [FileController],
   providers: [
     FileService,
@@ -26,6 +44,8 @@ const QueryHandlers = [GetAllFilesDownloadHandler, GetFileDownloadHandler];
     ConvertException,
     { provide: 'boardFile', useClass: BoardFileDb },
     { provide: 'accountFile', useClass: AccountFileDb },
+    { provide: 'studyFile', useClass: StudyFileDb },
+    { provide: 'studyPlanFile', useClass: StudyPlanFileDb },
   ],
 })
 export class FileModule {}

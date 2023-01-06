@@ -48,10 +48,15 @@ export class GetProjectListQueryHandler implements IQueryHandler<GetProjectListQ
       .leftJoinAndSelect(wordLevel, 'wordLevel', 'wordLevel.wordLevelId = project.wordLevelId')
       .orderBy('project.projectId', 'DESC');
 
+    //단어레벨명 OR 프로젝트명으로 검색 가능
     if (param.searchWord) {
-      project.where('project.projectName like :projectName', {
-        projectName: `%${param.searchWord}%`,
-      });
+      project.where(
+        'project.projectName like :projectName OR wordLevel.wordLevelName like :wordLevelName',
+        {
+          wordLevelName: `%${param.searchWord}%`,
+          projectName: `%${param.searchWord}%`,
+        },
+      );
     }
     let tempQuery = project;
 

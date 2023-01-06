@@ -12,6 +12,11 @@ import { GetStudyListQuery } from './query/get-study-list.query';
 export class StudyController {
   constructor(private commandBus: CommandBus, private queryBus: QueryBus) {}
 
+  /**
+   * 학습관리 리스트 조회
+   * @param param
+   * @returns
+   */
   @Get()
   getStudyList(@Body() param: GetStudyRequestDto) {
     const getStudyListQuery = new GetStudyListQuery(param);
@@ -19,6 +24,11 @@ export class StudyController {
     return this.queryBus.execute(getStudyListQuery);
   }
 
+  /**
+   * 학습관리 등록
+   * @param createStudyDto
+   * @returns 학습관리 등록 커멘드 전송
+   */
   @Post()
   createStudy(@Body() createStudyDto: CreateStudyDto) {
     const {
