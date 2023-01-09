@@ -6,23 +6,26 @@ import { Page } from 'src/common/utils/page';
 import { WordLevel } from 'src/modules/wordLevel/entities/wordLevel';
 import { Repository } from 'typeorm';
 import { Project } from '../entities/project';
-import { GetProjectListQuery } from './get-project-list.query';
+import { GetWordLevelNameProjcetQuery } from './get-wordLevelName-project.query';
 
 /**
  * 프로젝트 정보 조회용 쿼리 핸들러
  */
-@QueryHandler(GetProjectListQuery)
-export class GetProjectListQueryHandler implements IQueryHandler<GetProjectListQuery> {
+@QueryHandler(GetWordLevelNameProjcetQuery)
+export class GetWordLevelNameProjectQueryHandler
+  implements IQueryHandler<GetWordLevelNameProjcetQuery>
+{
   constructor(
     @InjectRepository(Project) private projectRepository: Repository<Project>,
     @InjectRepository(WordLevel) private wordLevelRepository: Repository<WordLevel>,
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
-  async execute(query: GetProjectListQuery) {
-    const { param } = query;
+  async execute(query: GetWordLevelNameProjcetQuery) {
+    const { param, wordLevelName } = query;
 
-    console.log('핸들러 에서 찾기122!!!', param);
+    console.log('핸들러 에서 찾기1221202!!!', wordLevelName);
+    //여기 워드레벨 아이디랑 프로젝트.워드레벨아이디랑 같은 값으로 조회
 
     //단어레벨아이디, 단어레벨명 조회
     const wordLevel = this.wordLevelRepository
@@ -50,15 +53,18 @@ export class GetProjectListQueryHandler implements IQueryHandler<GetProjectListQ
       .leftJoinAndSelect(wordLevel, 'wordLevel', 'wordLevel.wordLevelId = project.wordLevelId')
       .orderBy('project.projectId', 'DESC');
 
+    if (wordLevelName) {
+      project.where('wordLevel.wordLevelName like :wordLevelName', {
+        wordLevelName: `%${wordLevelName}%`,
+        // projectName: `%${param.searchWord}%`,
+      });
+    }
+
     //단어레벨명 OR 프로젝트명으로 검색 가능
     if (param.searchWord) {
-      project.where(
-        'project.projectName like :projectName OR wordLevel.wordLevelName like :wordLevelName',
-        {
-          wordLevelName: `%${param.searchWord}%`,
-          projectName: `%${param.searchWord}%`,
-        },
-      );
+      project.where('project.projectName like :projectName', {
+        projectName: `%${param.searchWord}%`,
+      });
     }
     let tempQuery = project;
 
