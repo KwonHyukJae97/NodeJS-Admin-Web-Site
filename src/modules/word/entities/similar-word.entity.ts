@@ -9,8 +9,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Word } from './word';
-import { WordFile } from '../../file/entities/word-file';
+import { Word } from './word.entity';
+import { WordFile } from '../../file/entities/word-file.entity';
 
 /**
  * 비슷하지만 다른말에 대한 엔티티 정의

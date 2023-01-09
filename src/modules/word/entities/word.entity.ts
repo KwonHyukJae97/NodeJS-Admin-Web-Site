@@ -7,9 +7,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Example } from './example';
-import { WordFile } from '../../file/entities/word-file';
-import { SimilarWord } from './similar-word';
+import { Example } from './example.entity';
+import { WordFile } from '../../file/entities/word-file.entity';
+import { SimilarWord } from './similar-word.entity';
 
 /**
  * 단어에 대한 엔티티 정의

@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Word } from './word';
+import { Word } from './word.entity';
 
 /**
  * 예문에 대한 엔티티 정의
@@ -84,13 +84,13 @@ export class Example {
   delDate: Date;
 
   // 부모 엔티티에서 자식 정보 조회가 필요할 경우, 아래와 같이 사용
-  // @OneToOne((type) => Notice, (notice) => notice.boardId)
+  // @OneToOne((type) => NoticeEntity, (notice) => notice.boardId)
   // noticeId: number;
   //
-  // @OneToOne((type) => Faq, (faq) => faq.boardId)
+  // @OneToOne((type) => FaqEntity, (faq) => faq.boardId)
   // faqId: number;
   //
-  // @OneToOne((type) => Qna, (qna) => qna.boardId)
+  // @OneToOne((type) => QnaEntity, (qna) => qna.boardId)
   // qnaId: number;
   //
   // @ManyToOne((type) => Word, (word) => word.examples, {

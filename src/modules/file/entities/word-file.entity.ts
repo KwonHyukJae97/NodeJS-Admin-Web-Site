@@ -8,8 +8,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Word } from '../../word/entities/word';
-import { SimilarWord } from '../../word/entities/similar-word';
+import { Word } from '../../word/entities/word.entity';
+import { SimilarWord } from '../../word/entities/similar-word.entity';
 
 /**
  * 단어 파일에 대한 엔티티 정의
