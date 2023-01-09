@@ -48,7 +48,7 @@ export class AccountFileDb implements FileDbInterface {
    * @param id : account_id
    * @returns : DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 void 반환
    */
-  async delete(id: number, queryRunner: QueryRunner) {
+  async delete(id: number, fieldName: null, queryRunner: QueryRunner) {
     // 기존 파일 조회
     const file = await this.fileRepository.findOneBy({ accountId: id });
 

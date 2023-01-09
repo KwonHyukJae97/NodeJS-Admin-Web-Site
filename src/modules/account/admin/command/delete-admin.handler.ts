@@ -1,14 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
+import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Account } from '../../entities/account';
 import { Admin } from '../entities/admin';
 import { DeleteAdminCommand } from './delete-admin.command';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { FileDeleteEvent } from '../../../file/event/file-delete-event';
 import { AccountFileDb } from '../../account-file-db';
 import { AccountFile } from '../../../file/entities/account-file';
+import { DeleteFilesCommand } from '../../../file/command/delete-files.command';
 
 /**
  * 관리자 정보 삭제용 커맨드 핸들러
@@ -22,7 +22,8 @@ export class DeleteAdminHandler implements ICommandHandler<DeleteAdminCommand> {
     @Inject(ConvertException) private convertException: ConvertException,
     @InjectRepository(AccountFile) private fileRepository: Repository<AccountFile>,
     @Inject('accountFile') private accountFileDb: AccountFileDb,
-    private eventBus: EventBus,
+    private commandBus: CommandBus,
+    private dataSource: DataSource,
   ) {}
 
   /**
@@ -32,6 +33,10 @@ export class DeleteAdminHandler implements ICommandHandler<DeleteAdminCommand> {
    */
   async execute(command: DeleteAdminCommand) {
     const { adminId, delDate } = command;
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     const admin = await this.adminRepository.findOneBy({ adminId: adminId });
     const accountId = admin.accountId;
@@ -55,7 +60,8 @@ export class DeleteAdminHandler implements ICommandHandler<DeleteAdminCommand> {
 
     // 저장되어 있는 프로필 이미지가 있다면 '삭제' 이벤트 호출
     if (accountFile) {
-      this.eventBus.publish(new FileDeleteEvent(accountId, this.accountFileDb));
+      const command = new DeleteFilesCommand(accountId, this.accountFileDb, queryRunner);
+      await this.commandBus.execute(command);
     }
 
     //탈퇴회원의 개인정보 유출가능한 데이터는 *표로 표시 (기준:휴면계정 데이터)

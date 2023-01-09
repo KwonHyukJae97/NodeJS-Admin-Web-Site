@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
+import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { DataSource, Repository } from 'typeorm';
@@ -7,11 +7,11 @@ import { Account } from '../../entities/account';
 import { Admin } from '../entities/admin';
 import { UpdateAdminCommand } from './update-admin.command';
 import * as bcrypt from 'bcryptjs';
-import { FileUpdateEvent } from '../../../file/event/file-update-event';
 import { FileType } from '../../../file/entities/file-type.enum';
-import { FileCreateEvent } from '../../../file/event/file-create-event';
 import { AccountFile } from '../../../file/entities/account-file';
 import { AccountFileDb } from '../../account-file-db';
+import { UpdateFilesCommand } from '../../../file/command/update-files.command';
+import { CreateFilesCommand } from '../../../file/command/create-files.command';
 
 /**
  * 관리자 정보 수정용 커맨드 핸들러
@@ -25,8 +25,7 @@ export class UpdateAdminHandler implements ICommandHandler<UpdateAdminCommand> {
     @Inject(ConvertException) private convertException: ConvertException,
     @InjectRepository(AccountFile) private fileRepository: Repository<AccountFile>,
     @Inject('accountFile') private accountFileDb: AccountFileDb,
-    private eventBus: EventBus,
-
+    private commandBus: CommandBus,
     private dataSource: DataSource,
   ) {}
 
@@ -36,7 +35,7 @@ export class UpdateAdminHandler implements ICommandHandler<UpdateAdminCommand> {
    * @returns : DB처리 실패 시 에러 메시지 반환 / 수정 성공 시 수정된 정보 반환
    */
   async execute(command: UpdateAdminCommand) {
-    const { password, email, phone, nickname, roleId, isSuper, adminId, file } = command;
+    const { password, email, phone, nickname, roleId, isSuper, adminId, files } = command;
 
     const admin = await this.adminRepository.findOneBy({ adminId: adminId });
     const accountId = admin.accountId;
@@ -67,17 +66,29 @@ export class UpdateAdminHandler implements ICommandHandler<UpdateAdminCommand> {
 
       const accountFile = await this.fileRepository.findOneBy({ accountId: accountId });
 
-      if (file) {
+      if (files.length !== 0) {
         // 저장되어 있는 프로필 이미지가 있다면 '수정' 이벤트 호출
         if (accountFile) {
-          this.eventBus.publish(
-            new FileUpdateEvent(accountId, FileType.ACCOUNT, file, this.accountFileDb),
+          const command = new UpdateFilesCommand(
+            accountId,
+            FileType.ACCOUNT,
+            null,
+            files,
+            this.accountFileDb,
+            queryRunner,
           );
+          await this.commandBus.execute(command);
           // 저장되어 있는 프로필 이미지가 없다면 '등록' 이벤트 호출
         } else {
-          this.eventBus.publish(
-            new FileCreateEvent(accountId, FileType.ACCOUNT, file, this.accountFileDb),
+          const command = new CreateFilesCommand(
+            accountId,
+            FileType.ACCOUNT,
+            null,
+            files,
+            this.accountFileDb,
+            queryRunner,
           );
+          await this.commandBus.execute(command);
         }
       }
 

@@ -28,7 +28,7 @@ export class UpdateFilesHandler implements ICommandHandler<UpdateFilesCommand> {
     try {
       await this.fileService.updateFiles(id, fileType, file, files, fileDbInterface, queryRunner);
     } catch (err) {
-      return this.convertException.badRequestS3Error('수정에', 400);
+      return this.convertException.badRequestS3Error('수정', 400);
     }
   }
 }
