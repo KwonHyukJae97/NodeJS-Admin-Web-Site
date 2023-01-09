@@ -8,5 +8,5 @@ export interface FileDbInterface {
   save(id: number, fileInfo: any, queryRunner: QueryRunner);
 
   // file 삭제 메서드 정의
-  delete(id: number, queryRunner: QueryRunner);
+  delete(id: number, fieldName: string | null, queryRunner: QueryRunner);
 }

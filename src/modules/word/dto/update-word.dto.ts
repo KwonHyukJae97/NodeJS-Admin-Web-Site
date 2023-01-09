@@ -36,15 +36,15 @@ export class UpdateWordDto {
 
   // 본단어 연결 여부
   @IsOptional()
-  @IsBoolean()
+  @ToBoolean()
   isRealWordConnect: boolean;
 
   @IsOptional()
-  @IsBoolean()
+  @ToBoolean()
   isMainWord: boolean;
 
   @IsOptional()
-  @IsBoolean()
+  @ToBoolean()
   isAutoMain: boolean;
 
   @IsOptional()

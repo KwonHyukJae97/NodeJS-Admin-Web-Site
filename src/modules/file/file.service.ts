@@ -212,13 +212,14 @@ export class FileService {
           fileExt: ext,
           filePath: url,
           fileSize: file.size,
+          fieldName: file.fieldname,
         };
 
         // 신규 파일 정보 DB 저장
         await fileDbInterface.save(id, fileInfo, queryRunner);
 
         // 기존 파일 정보 DB 삭제
-        const deleteList = await fileDbInterface.delete(id, queryRunner);
+        const deleteList = await fileDbInterface.delete(id, file.fieldname, queryRunner);
 
         for (let i = 0; i < deleteList.length; i++) {
           const file = deleteList[i];
@@ -244,7 +245,7 @@ export class FileService {
    */
   async deleteFiles(id: number, fileDbInterface: FileDbInterface, queryRunner: QueryRunner) {
     // S3 key값이 담긴 배열 받기
-    const deleteList = await fileDbInterface.delete(id, queryRunner);
+    const deleteList = await fileDbInterface.delete(id, null, queryRunner);
 
     // S3에 저장되어 있는 기존 파일 삭제
     try {

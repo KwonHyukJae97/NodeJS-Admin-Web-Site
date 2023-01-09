@@ -3,9 +3,9 @@ import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, DataSource, Repository } from 'typeorm';
 import { CreateWordCommand } from './create-word.command';
-import { Example } from '../entities/example';
-import { Word } from '../entities/word';
-import { SimilarWord } from '../entities/similar-word';
+import { Example } from '../entities/example.entity';
+import { Word } from '../entities/word.entity';
+import { SimilarWord } from '../entities/similar-word.entity';
 import { ConvertException } from '../../../common/utils/convert-exception';
 import { CreateFilesCommand } from '../../file/command/create-files.command';
 import { FileType } from '../../file/entities/file-type.enum';
@@ -34,6 +34,8 @@ export class CreateWordHandler implements ICommandHandler<CreateWordCommand> {
    */
   async execute(command: CreateWordCommand) {
     const { createWordDto, files } = command;
+
+    console.log('file', files);
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -138,9 +140,9 @@ export class CreateWordHandler implements ICommandHandler<CreateWordCommand> {
       // };
 
       for (let i = 0; i < createWordDto['createWordDto'].length; i++) {
-        const pictureImageFile = findKeyFile(createWordDto['createWordDto'][i].pictureImageFileKey);
-        const descImageFile = findKeyFile(createWordDto['createWordDto'][i].descImageFileKey);
-        const soundFile = findKeyFile(createWordDto['createWordDto'][i].soundFileKey);
+        let pictureImageFile = findKeyFile(createWordDto['createWordDto'][i].pictureImageFileKey);
+        let descImageFile = findKeyFile(createWordDto['createWordDto'][i].descImageFileKey);
+        let soundFile = findKeyFile(createWordDto['createWordDto'][i].soundFileKey);
 
         const word = await saveWord(
           createWordDto['createWordDto'][i].wordLevelId,
@@ -205,10 +207,10 @@ export class CreateWordHandler implements ICommandHandler<CreateWordCommand> {
             }
           }
         }
-
-        await queryRunner.commitTransaction();
-        return '등록이 완료 되었습니다.';
       }
+
+      await queryRunner.commitTransaction();
+      return '등록이 완료 되었습니다.';
     } catch (err) {
       await queryRunner.rollbackTransaction();
       return this.convertException.badInput('단어 정보에', 400);

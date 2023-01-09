@@ -2,15 +2,15 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, DataSource, Repository } from 'typeorm';
-import { Example } from '../entities/example';
-import { Word } from '../entities/word';
-import { SimilarWord } from '../entities/similar-word';
+import { Example } from '../entities/example.entity';
+import { Word } from '../entities/word.entity';
+import { SimilarWord } from '../entities/similar-word.entity';
 import { ConvertException } from '../../../common/utils/convert-exception';
 import { WordFileDb } from '../word-file-db';
 import { UpdateWordCommand } from './update-word.command';
 import { UpdateFilesCommand } from '../../file/command/update-files.command';
 import { FileType } from '../../file/entities/file-type.enum';
-import { WordFile } from '../../file/entities/word-file';
+import { WordFile } from '../../file/entities/word-file.entity';
 import { saveWord } from './create-word.handler';
 import { DeleteFilesCommand } from '../../file/command/delete-files.command';
 
@@ -69,9 +69,10 @@ export class UpdateWordHandler implements ICommandHandler<UpdateWordCommand> {
         soundFile,
       ) => {
         // 단어 정보 조회
-        const word = await this.wordRepository.findOneBy({
-          wordId: wordId,
-        });
+        const word = await this.wordRepository
+          .createQueryBuilder('word')
+          .where('word.wordId like :wordId', { wordId: wordId })
+          .getOne();
 
         if (!word) {
           return this.convertException.notFoundError('단어', 404);
@@ -90,7 +91,7 @@ export class UpdateWordHandler implements ICommandHandler<UpdateWordCommand> {
         // 단어에 대한 파일 정보 수정
         if (pictureImageFile) {
           const command = new UpdateFilesCommand(
-            word.wordId,
+            Number(word.wordId),
             FileType.WORD,
             pictureImageFile,
             null,
@@ -124,35 +125,37 @@ export class UpdateWordHandler implements ICommandHandler<UpdateWordCommand> {
           await this.commandBus.execute(command);
         }
 
-        // 단어에 대한 예문 정보 수정
-        for (const exampleInfo of exampleList) {
-          if (!exampleInfo.exampleId) {
-            // example dto에 exampleId가 없으면 신규 등록
-            const newExample = queryRunner.manager.getRepository(Example).create({
-              wordId: word.wordId,
-              sentence: exampleInfo.sentence,
-              translation: exampleInfo.translation,
-              source: exampleInfo.source,
-              exampleSequence: exampleInfo.exampleSequence,
-            });
+        if (exampleList) {
+          // 단어에 대한 예문 정보 수정
+          for (const exampleInfo of exampleList) {
+            if (!exampleInfo.exampleId) {
+              // example dto에 exampleId가 없으면 신규 등록
+              const newExample = queryRunner.manager.getRepository(Example).create({
+                wordId: word.wordId,
+                sentence: exampleInfo.sentence,
+                translation: exampleInfo.translation,
+                source: exampleInfo.source,
+                exampleSequence: exampleInfo.exampleSequence,
+              });
 
-            await queryRunner.manager.getRepository(Example).save(newExample);
-          } else if (exampleInfo.exampleId && !exampleInfo.isDelete) {
-            // example dto에 exampleId가 있고, isDelete가 false라면 수정
-            const editExample = await this.exampleRepository.findOneBy({
-              exampleId: exampleInfo.exampleId,
-            });
-            editExample.sentence = exampleInfo.sentence;
-            editExample.translation = exampleInfo.translation;
-            editExample.source = exampleInfo.source;
-            editExample.exampleSequence = exampleInfo.exampleSequence;
+              await queryRunner.manager.getRepository(Example).save(newExample);
+            } else if (exampleInfo.exampleId && !exampleInfo.isDelete) {
+              // example dto에 exampleId가 있고, isDelete가 false라면 수정
+              const editExample = await this.exampleRepository.findOneBy({
+                exampleId: exampleInfo.exampleId,
+              });
+              editExample.sentence = exampleInfo.sentence;
+              editExample.translation = exampleInfo.translation;
+              editExample.source = exampleInfo.source;
+              editExample.exampleSequence = exampleInfo.exampleSequence;
 
-            await queryRunner.manager.getRepository(Example).save(editExample);
-          } else if (exampleInfo.isDelete) {
-            // example dto에 isDelete가 true라면 삭제
-            await queryRunner.manager
-              .getRepository(Example)
-              .delete({ exampleId: exampleInfo.exampleId });
+              await queryRunner.manager.getRepository(Example).save(editExample);
+            } else if (exampleInfo.isDelete) {
+              // example dto에 isDelete가 true라면 삭제
+              await queryRunner.manager
+                .getRepository(Example)
+                .delete({ exampleId: exampleInfo.exampleId });
+            }
           }
         }
       };
@@ -165,15 +168,15 @@ export class UpdateWordHandler implements ICommandHandler<UpdateWordCommand> {
         // word dto에 isDelete가 false라면 수정 로직 실행
         if (!updateWordDto['updateWordDto'][i].isDelete) {
           await editWord(
-            updateWordDto['updateWordDto'][i].wordId,
+            Number(updateWordDto['updateWordDto'][i].wordId),
             updateWordDto['updateWordDto'][i].wordLevelId,
             updateWordDto['updateWordDto'][i].projectId,
             updateWordDto['updateWordDto'][i].wordName,
             updateWordDto['updateWordDto'][i].mean,
             updateWordDto['updateWordDto'][i].exampleList,
             updateWordDto['updateWordDto'][i].isRealWordConnect,
-            updateWordDto['updateWordDto'][i].isMainWord,
-            updateWordDto['updateWordDto'][i].isAutoMain,
+            Boolean(updateWordDto['updateWordDto'][i].isMainWord),
+            Boolean(updateWordDto['updateWordDto'][i].isAutoMain),
             pictureImageFile,
             descImageFile,
             soundFile,
