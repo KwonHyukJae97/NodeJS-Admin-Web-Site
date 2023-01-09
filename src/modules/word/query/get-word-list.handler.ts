@@ -3,12 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Inject } from '@nestjs/common';
 import { GetWordListQuery } from './get-word-list.query';
-import { Word } from '../entities/word';
-import { Example } from '../entities/example';
-import { SimilarWord } from '../entities/similar-word';
+import { Word } from '../entities/word.entity';
+import { Example } from '../entities/example.entity';
+import { SimilarWord } from '../entities/similar-word.entity';
 import { ConvertException } from '../../../common/utils/convert-exception';
 import { Page } from '../../../common/utils/page';
-import { WordFile } from '../../file/entities/word-file';
+import { WordFile } from '../../file/entities/word-file.entity';
 
 /**
  * 단어 전체 & 검색어에 해당하는 리스트 조회용 쿼리 핸들러
