@@ -3,14 +3,15 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CreateQnaHandler } from './create-qna.handler';
 import { CreateQnaCommand } from './create-qna.command';
 import { Repository } from 'typeorm';
-import { Qna } from '../entities/qna';
-import { Board } from '../../entities/board';
+import { Qna } from '../entities/qna.entity';
+import { Board } from '../../entities/board.entity';
 import { BoardFileDb } from '../../board-file-db';
-import { BoardFile } from '../../../file/entities/board-file';
+import { BoardFile } from '../../../file/entities/board-file.entity';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
 import { EventBus } from '@nestjs/cqrs';
+import { Account } from '../../../account/entities/account';
 
 // Repository mocking
 const mockRepository = () => ({
@@ -99,7 +100,9 @@ describe('CreateQna', () => {
       qnaRepository.save.mockResolvedValue(qna);
 
       // When
-      const result = await createQnaHandler.execute(new CreateQnaCommand(title, content, files));
+      const result = await createQnaHandler.execute(
+        new CreateQnaCommand(title, content, new Account(), files),
+      );
 
       // Then
       expect(result).toEqual(qna);
@@ -109,7 +112,9 @@ describe('CreateQna', () => {
       try {
         boardRepository.save.mockRejectedValue(board);
 
-        const result = await createQnaHandler.execute(new CreateQnaCommand(title, content, files));
+        const result = await createQnaHandler.execute(
+          new CreateQnaCommand(title, content, new Account(), files),
+        );
         expect(result).toBeUndefined();
       } catch (err) {
         expect(err.status).toBe(400);
@@ -124,7 +129,9 @@ describe('CreateQna', () => {
         qnaRepository.create.mockResolvedValue(qna);
         qnaRepository.save.mockRejectedValue(qna);
 
-        const result = await createQnaHandler.execute(new CreateQnaCommand(title, content, files));
+        const result = await createQnaHandler.execute(
+          new CreateQnaCommand(title, content, new Account(), files),
+        );
         expect(result).toBeUndefined();
       } catch (err) {
         expect(err.status).toBe(400);

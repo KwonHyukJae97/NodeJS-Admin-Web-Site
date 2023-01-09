@@ -5,7 +5,7 @@ import { TranslatorModule } from 'nestjs-translator';
 import { DeleteUserHandler } from './delete-user.handler';
 import { User } from '../entities/user';
 import { Account } from '../../entities/account';
-import { AccountFile } from '../../../file/entities/account-file';
+import { AccountFile } from '../../../file/entities/account-file.entity';
 import { EventBus } from '@nestjs/cqrs';
 import { AccountFileDb } from '../../account-file-db';
 import { DeleteUserCommand } from './delete-user.command';

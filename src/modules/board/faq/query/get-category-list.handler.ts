@@ -1,7 +1,7 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetCategoryListQuery } from './get-category-list.query';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FaqCategory } from '../entities/faq_category';
+import { FaqCategory } from '../entities/faq_category.entity';
 import { Repository } from 'typeorm';
 import { Inject } from '@nestjs/common';
 import { ConvertException } from '../../../../common/utils/convert-exception';

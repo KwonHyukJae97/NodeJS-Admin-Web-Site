@@ -1,6 +1,5 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Board } from '../../entities/board';
-import { Comment } from '../../comment/entities/comment';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Board } from '../../entities/board.entity';
 
 /**
  * 1:1 문의에 대한 엔티티 정의

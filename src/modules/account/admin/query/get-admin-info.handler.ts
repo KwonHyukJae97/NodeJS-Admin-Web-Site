@@ -1,11 +1,11 @@
-import { Inject, NotFoundException } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Admin } from '../entities/admin';
 import { GetAdminInfoQuery } from './get-admin-info.query';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { AccountFile } from '../../../file/entities/account-file';
+import { AccountFile } from '../../../file/entities/account-file.entity';
 
 /**
  * 관리자 상세 정보 조회용 쿼리 핸들러

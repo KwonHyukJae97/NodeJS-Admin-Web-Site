@@ -2,11 +2,11 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { GetFaqDetailCommand } from './get-faq-detail.command';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Faq } from '../entities/faq';
+import { Faq } from '../entities/faq.entity';
 import { DataSource, Repository } from 'typeorm';
-import { Board } from '../../entities/board';
-import { BoardFile } from '../../../file/entities/board-file';
-import { FaqCategory } from '../entities/faq_category';
+import { Board } from '../../entities/board.entity';
+import { BoardFile } from '../../../file/entities/board-file.entity';
+import { FaqCategory } from '../entities/faq_category.entity';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { Account } from '../../../account/entities/account';
 

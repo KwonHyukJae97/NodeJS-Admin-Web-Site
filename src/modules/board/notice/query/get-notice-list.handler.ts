@@ -1,8 +1,8 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Notice } from '../entities/notice';
+import { Notice } from '../entities/notice.entity';
 import { Repository } from 'typeorm';
-import { BadRequestException, Inject } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { GetNoticeListQuery } from './get-notice-list.query';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { Page } from '../../../../common/utils/page';

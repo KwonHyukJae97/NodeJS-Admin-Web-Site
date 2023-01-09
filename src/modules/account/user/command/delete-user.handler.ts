@@ -7,7 +7,7 @@ import { Account } from '../../entities/account';
 import { User } from '../entities/user';
 import { DeleteUserCommand } from './delete-user.command';
 import { AccountFileDb } from '../../account-file-db';
-import { AccountFile } from '../../../file/entities/account-file';
+import { AccountFile } from '../../../file/entities/account-file.entity';
 import { DeleteFilesCommand } from '../../../file/command/delete-files.command';
 
 /**

@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { QueryRunner, Repository } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import { Account } from './entities/account';
-import { AccountFile } from '../file/entities/account-file';
+import { AccountFile } from '../file/entities/account-file.entity';
 import { ConvertException } from '../../common/utils/convert-exception';
 
 /**

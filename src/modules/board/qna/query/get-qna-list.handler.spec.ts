@@ -6,7 +6,8 @@ import { TranslatorModule } from 'nestjs-translator';
 import { GetQnaListHandler } from './get-Qna-list.handler';
 import { GetQnaListQuery } from './get-Qna-list.query';
 import { Comment } from '../../comment/entities/comment';
-import { Qna } from '../entities/qna';
+import { Qna } from '../entities/qna.entity';
+import { Account } from '../../../account/entities/account';
 
 // Repository에서 사용되는 함수 복제
 const mockRepository = () => ({
@@ -137,7 +138,7 @@ describe('GetQnaList', () => {
       });
 
       // When
-      const result = await getQnaListHandler.execute(new GetQnaListQuery(param));
+      const result = await getQnaListHandler.execute(new GetQnaListQuery(param, new Account()));
 
       // Then
       expect(result).toEqual(resultQnaList);
@@ -173,7 +174,7 @@ describe('GetQnaList', () => {
             getCount: () => 0,
           };
         });
-        const result = await getQnaListHandler.execute(new GetQnaListQuery(param));
+        const result = await getQnaListHandler.execute(new GetQnaListQuery(param, new Account()));
         expect(result).toBeUndefined();
       } catch (err) {
         expect(err.status).toBe(404);

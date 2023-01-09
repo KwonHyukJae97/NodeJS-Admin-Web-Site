@@ -5,7 +5,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { GetNoticeListHandler } from './get-notice-list.handler';
-import { Notice } from '../entities/notice';
+import { Notice } from '../entities/notice.entity';
 import { GetNoticeListQuery } from './get-notice-list.query';
 
 const mockRepository = () => ({

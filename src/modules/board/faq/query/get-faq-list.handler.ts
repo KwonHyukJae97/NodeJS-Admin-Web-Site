@@ -1,6 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Faq } from '../entities/faq';
+import { Faq } from '../entities/faq.entity';
 import { Repository } from 'typeorm';
 import { GetFaqListQuery } from './get-faq-list.query';
 import { Inject } from '@nestjs/common';

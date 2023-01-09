@@ -7,7 +7,7 @@ import { Admin } from '../entities/admin';
 import { DeleteAdminCommand } from './delete-admin.command';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { AccountFileDb } from '../../account-file-db';
-import { AccountFile } from '../../../file/entities/account-file';
+import { AccountFile } from '../../../file/entities/account-file.entity';
 import { DeleteFilesCommand } from '../../../file/command/delete-files.command';
 
 /**

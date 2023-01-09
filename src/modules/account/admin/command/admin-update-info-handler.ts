@@ -6,7 +6,7 @@ import { DataSource, Repository } from 'typeorm';
 import { Account } from '../../entities/account';
 import { AdminUpdateInfoCommand } from './admin-update-info.command';
 import { FileType } from '../../../file/entities/file-type.enum';
-import { AccountFile } from '../../../file/entities/account-file';
+import { AccountFile } from '../../../file/entities/account-file.entity';
 import { AccountFileDb } from '../../account-file-db';
 import { UpdateFilesCommand } from '../../../file/command/update-files.command';
 import { CreateFilesCommand } from '../../../file/command/create-files.command';

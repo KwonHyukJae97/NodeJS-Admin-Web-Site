@@ -8,7 +8,7 @@ import { Admin } from '../entities/admin';
 import { UpdateAdminCommand } from './update-admin.command';
 import * as bcrypt from 'bcryptjs';
 import { FileType } from '../../../file/entities/file-type.enum';
-import { AccountFile } from '../../../file/entities/account-file';
+import { AccountFile } from '../../../file/entities/account-file.entity';
 import { AccountFileDb } from '../../account-file-db';
 import { UpdateFilesCommand } from '../../../file/command/update-files.command';
 import { CreateFilesCommand } from '../../../file/command/create-files.command';

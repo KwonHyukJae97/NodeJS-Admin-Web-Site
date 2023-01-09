@@ -1,7 +1,7 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetQnaListQuery } from './get-qna-list.query';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Qna } from '../entities/qna';
+import { Qna } from '../entities/qna.entity';
 import { Repository } from 'typeorm';
 import { Inject } from '@nestjs/common';
 import { ConvertException } from '../../../../common/utils/convert-exception';

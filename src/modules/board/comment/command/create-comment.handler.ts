@@ -4,7 +4,7 @@ import { CreateCommentCommand } from './create-comment.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from '../entities/comment';
 import { DataSource, Repository } from 'typeorm';
-import { Qna } from '../../qna/entities/qna';
+import { Qna } from '../../qna/entities/qna.entity';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { Admin } from '../../../account/admin/entities/admin';
 

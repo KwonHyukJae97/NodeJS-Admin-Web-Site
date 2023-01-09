@@ -1,8 +1,8 @@
 import { FileDbInterface } from '../file/file-db.interface';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Board } from './entities/board';
+import { Board } from './entities/board.entity';
 import { QueryRunner, Repository } from 'typeorm';
-import { BoardFile } from '../file/entities/board-file';
+import { BoardFile } from '../file/entities/board-file.entity';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConvertException } from '../../common/utils/convert-exception';
 
@@ -48,7 +48,7 @@ export class BoardFileDb implements FileDbInterface {
    * @param id : board_id
    * @returns : DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 void 반환
    */
-  async delete(id: number, queryRunner: QueryRunner) {
+  async delete(id: number, fieldName: null, queryRunner: QueryRunner) {
     // 기존 파일 조회
     const files = await this.fileRepository.findBy({ boardId: id });
 

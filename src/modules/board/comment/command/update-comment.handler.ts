@@ -4,7 +4,7 @@ import { UpdateCommentCommand } from './update-comment.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from '../entities/comment';
 import { Repository } from 'typeorm';
-import { Board } from '../../entities/board';
+import { Board } from '../../entities/board.entity';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { Admin } from '../../../account/admin/entities/admin';
 

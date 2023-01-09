@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UpdateCommentHandler } from './update-comment.handler';
 import { UpdateCommentCommand } from './update-comment.command';
 import { Repository } from 'typeorm';
-import { Board } from '../../entities/board';
+import { Board } from '../../entities/board.entity';
 import { Comment } from '../entities/comment';
 import { Admin } from '../../../account/admin/entities/admin';
 import { ConvertException } from '../../../../common/utils/convert-exception';

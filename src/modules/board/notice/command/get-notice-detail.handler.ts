@@ -2,10 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { GetNoticeDetailCommand } from './get-notice-detail.command';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Notice } from '../entities/notice';
+import { Notice } from '../entities/notice.entity';
 import { DataSource, Repository } from 'typeorm';
-import { Board } from '../../entities/board';
-import { BoardFile } from '../../../file/entities/board-file';
+import { Board } from '../../entities/board.entity';
+import { BoardFile } from '../../../file/entities/board-file.entity';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { Account } from '../../../account/entities/account';
 

@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Inject } from '@nestjs/common';
 import { GetFileDownloadQuery } from './get-file-download.query';
-import { BoardFile } from '../entities/board-file';
+import { BoardFile } from '../entities/board-file.entity';
 import * as AWS from 'aws-sdk';
 import { ConvertException } from '../../../common/utils/convert-exception';
 
