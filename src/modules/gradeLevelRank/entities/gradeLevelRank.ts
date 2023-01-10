@@ -1,11 +1,13 @@
 import { LevelStandard } from 'src/modules/levelStandard/entities/levelStandard';
 import { Percent } from 'src/modules/percent/entities/percent';
+import { Study } from 'src/modules/study/entities/study';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -20,12 +22,20 @@ export class GradeLevelRank {
   })
   gradeLevelRankId: number;
 
-  //레벨 수준 번호
-  @Column({
+  @OneToOne((type) => LevelStandard, (levelStandard) => levelStandard.gradeLevelRanks, {
+    createForeignKeyConstraints: false,
+  })
+  @JoinColumn({
     name: 'level_standard_id',
-    type: 'bigint',
   })
   levelStandardId: number;
+
+  //레벨 수준 번호
+  // @Column({
+  //   name: 'level_standard_id',
+  //   type: 'bigint',
+  // })
+  // levelStandardId: number;
 
   //백분율 번호
   @Column({

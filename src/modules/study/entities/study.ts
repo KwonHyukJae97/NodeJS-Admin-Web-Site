@@ -1,10 +1,16 @@
+import { GradeLevelRank } from 'src/modules/gradeLevelRank/entities/gradeLevelRank';
+import { LevelStandard } from 'src/modules/levelStandard/entities/levelStandard';
+import { Percent } from 'src/modules/percent/entities/percent';
+import { StudyPlan } from 'src/modules/studyPlan/entities/studyPlan';
 import { StudyType } from 'src/modules/studyType/entities/studyType';
+import { StudyUnit } from 'src/modules/studyUnit/entities/studyUnit';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -120,4 +126,39 @@ export class Study {
   @OneToOne(() => StudyType)
   @JoinColumn({ name: 'study_type_code' })
   studyType: StudyType;
+
+  //백분율 정보
+  @OneToMany((type) => Percent, (percent) => percent.studyId, {
+    eager: true,
+    cascade: ['soft-remove'],
+  })
+  percents: Percent[];
+
+  // 레벨수준정보
+  @OneToMany((type) => LevelStandard, (levelStandard) => levelStandard.studyId, {
+    eager: true,
+    cascade: ['soft-remove'],
+  })
+  levelStandards: LevelStandard;
+
+  //학년별 레벨별 등급 정보
+  // @OneToMany((type) => GradeLevelRank, (gradeLevelRank) => gradeLevelRank.studyId, {
+  //   eager: true,
+  //   cascade: ['soft-remove'],
+  // })
+  // gradeLevelRanks: GradeLevelRank;
+
+  //학습구성 정보
+  @OneToMany((type) => StudyPlan, (studyPlan) => studyPlan.studyId, {
+    eager: true,
+    cascade: ['soft-remove'],
+  })
+  studyPlans: StudyPlan;
+
+  //학습단원 정보
+  // @OneToMany((type) => StudyUnit, (studyUnit) => studyUnit.studyId, {
+  //   eager: true,
+  //   cascade: ['soft-remove'],
+  // })
+  // studyUnits: StudyUnit;
 }

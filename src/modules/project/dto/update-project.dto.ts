@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { ToBoolean } from 'src/common/decorator/boolean.decorator';
 
 /**
@@ -8,6 +8,10 @@ export class UpdateProjectDto {
   @IsOptional()
   @IsString()
   wordLevelName: string;
+
+  @IsOptional()
+  @IsNumber()
+  wordLevelId: number;
 
   @IsOptional()
   @IsString()

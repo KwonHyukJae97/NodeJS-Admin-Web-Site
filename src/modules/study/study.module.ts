@@ -12,12 +12,28 @@ import { GetStudyListQueryHandler } from './query/get-study-list.handler';
 import { GetStudyInfoQueryHandler } from './query/get-study-info.handler';
 import { StudyController } from './study.controller';
 import { StudyPlan } from '../studyPlan/entities/studyPlan';
+import { Percent } from '../percent/entities/percent';
+import { LevelStandard } from '../levelStandard/entities/levelStandard';
+import { GradeLevelRank } from '../gradeLevelRank/entities/gradeLevelRank';
+import { StudyUnit } from '../studyUnit/entities/studyUnit';
 
 const CommandHandler = [CreateStudyHandler, UpdateStudyHandler, DeleteStudytHandler];
 
 const QueryHandler = [GetStudyListQueryHandler, GetStudyInfoQueryHandler];
 @Module({
-  imports: [TypeOrmModule.forFeature([Study, StudyPlan, WordLevel, StudyType]), CqrsModule],
+  imports: [
+    TypeOrmModule.forFeature([
+      Study,
+      Percent,
+      LevelStandard,
+      GradeLevelRank,
+      StudyPlan,
+      StudyUnit,
+      WordLevel,
+      StudyType,
+    ]),
+    CqrsModule,
+  ],
   controllers: [StudyController],
 
   providers: [...CommandHandler, ...QueryHandler, ConvertException],

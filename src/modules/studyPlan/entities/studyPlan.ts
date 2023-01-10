@@ -1,10 +1,13 @@
 import { Study } from 'src/modules/study/entities/study';
+import { StudyUnit } from 'src/modules/studyUnit/entities/studyUnit';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -20,11 +23,18 @@ export class StudyPlan {
   studyPlanId: number;
 
   //학습 관리 번호
-  @Column({
+  @ManyToOne((type) => Study, (study) => study.studyPlans, {
+    createForeignKeyConstraints: false,
+  })
+  @JoinColumn({
     name: 'study_id',
-    type: 'bigint',
   })
   studyId: number;
+  // @Column({
+  //   name: 'study_id',
+  //   type: 'bigint',
+  // })
+  // studyId: number;
 
   //등록 진행방식
   @Column({
@@ -84,4 +94,10 @@ export class StudyPlan {
   @OneToOne(() => Study)
   @JoinColumn({ name: 'study_id' })
   study: Study;
+
+  @OneToMany((type) => StudyUnit, (studyUnit) => studyUnit.studyPlanId, {
+    eager: true,
+    cascade: ['soft-remove'],
+  })
+  studyUnits: StudyUnit;
 }

@@ -1,3 +1,4 @@
+import { Study } from 'src/modules/study/entities/study';
 import { StudyPlan } from 'src/modules/studyPlan/entities/studyPlan';
 import {
   Column,
@@ -5,6 +6,7 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -19,12 +21,21 @@ export class StudyUnit {
   })
   studyUnitId: number;
 
-  //학습 구성 번호
-  @Column({
+  //학습관리 정보
+  @ManyToOne((type) => StudyPlan, (studyPlan) => studyPlan.studyUnits, {
+    createForeignKeyConstraints: false,
+  })
+  @JoinColumn({
     name: 'study_plan_id',
-    type: 'bigint',
   })
   studyPlanId: number;
+
+  //학습 구성 번호
+  // @Column({
+  //   name: 'study_plan_id',
+  //   type: 'bigint',
+  // })
+  // studyPlanId: number;
 
   //단원명
   @Column({
@@ -65,7 +76,7 @@ export class StudyUnit {
   delDate: Date;
 
   //학습구성 정보 가져오기
-  @OneToOne(() => StudyPlan)
-  @JoinColumn({ name: 'study_plan_id' })
-  studyPlan: StudyPlan;
+  // @OneToOne(() => StudyPlan)
+  // @JoinColumn({ name: 'study_plan_id' })
+  // studyPlan: StudyPlan;
 }

@@ -5,6 +5,7 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -20,11 +21,18 @@ export class Percent {
   percentId: number;
 
   //학습 관리 번호
-  @Column({
-    name: 'study_id',
-    type: 'bigint',
+  @ManyToOne((type) => Study, (study) => study.percents, {
+    createForeignKeyConstraints: false,
   })
-  studyId: number;
+  @JoinColumn({
+    name: 'study_id',
+  })
+  studyId!: number;
+  // @Column({
+  //   name: 'study_id',
+  //   type: 'bigint',
+  // })
+  // studyId: number;
 
   //등급명
   @Column({

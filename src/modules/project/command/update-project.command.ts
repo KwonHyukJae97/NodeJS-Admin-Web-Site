@@ -7,6 +7,7 @@ export class UpdateProjectCommand implements ICommand {
   constructor(
     readonly projectId: number,
     readonly wordLevelName: string,
+    readonly wordLevelId: number,
     readonly projectName: string,
     readonly isService: boolean,
     readonly updateBy: string,

@@ -1,4 +1,6 @@
 import { ICommand } from '@nestjs/cqrs';
+import { CreateStudyDto } from '../dto/create-study.dto';
+import { PercentDto } from '../dto/percent.dto';
 
 /**
  * 학습관리 생성 커멘드 정의
@@ -14,9 +16,10 @@ export class CreateStudyCommand implements ICommand {
     readonly checkLevelUnder: string,
     readonly checkLevel: string,
     readonly regBy: string,
-    readonly rankName: string,
-    readonly percent: number,
-    readonly percentSequence: number,
+    readonly percentList: PercentDto[],
+    // readonly rankName: string,
+    // readonly percent: number,
+    // readonly percentSequence: number,
     readonly standard: string,
     readonly knownError: number,
     readonly levelStandardSequence: number,
@@ -27,5 +30,6 @@ export class CreateStudyCommand implements ICommand {
     readonly textbookSequence: number,
     readonly unitName: string,
     readonly unitSequence: number,
-  ) {}
+  ) // readonly createStudyDto: CreateStudyDto[]
+  {}
 }

@@ -59,11 +59,12 @@ export class ProjectController {
    */
   @Patch(':id')
   updateProject(@Param('id') projectId: number, @Body() updateProjectDto: UpdateProjectDto) {
-    const { wordLevelName, projectName, isService, updateBy } = updateProjectDto;
+    const { wordLevelName, wordLevelId, projectName, isService, updateBy } = updateProjectDto;
 
     const command = new UpdateProjectCommand(
       projectId,
       wordLevelName,
+      wordLevelId,
       projectName,
       isService,
       updateBy,

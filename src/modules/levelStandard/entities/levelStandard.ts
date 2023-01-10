@@ -1,3 +1,4 @@
+import { GradeLevelRank } from 'src/modules/gradeLevelRank/entities/gradeLevelRank';
 import { Study } from 'src/modules/study/entities/study';
 import { WordLevel } from 'src/modules/wordLevel/entities/wordLevel';
 import {
@@ -6,6 +7,8 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -21,11 +24,18 @@ export class LevelStandard {
   levelStandardId: number;
 
   //학습 관리 번호
-  @Column({
+  @ManyToOne((type) => Study, (study) => study.levelStandards, {
+    createForeignKeyConstraints: false,
+  })
+  @JoinColumn({
     name: 'study_id',
-    type: 'bigint',
   })
   studyId: number;
+  // @Column({
+  //   name: 'study_id',
+  //   type: 'bigint',
+  // })
+  // studyId: number;
 
   //단어 레벨 번호
   @Column({
@@ -88,4 +98,10 @@ export class LevelStandard {
   @OneToOne(() => WordLevel)
   @JoinColumn({ name: 'word_level_id' })
   wordLevel: WordLevel;
+
+  @OneToMany((type) => GradeLevelRank, (gradeLevelRank) => gradeLevelRank.levelStandardId, {
+    eager: true,
+    cascade: ['soft-remove'],
+  })
+  gradeLevelRanks: GradeLevelRank;
 }
