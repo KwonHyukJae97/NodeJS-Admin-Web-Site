@@ -26,7 +26,6 @@ export class CreateProjectHandler implements ICommandHandler<CreateProjectComman
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    //현재는 wordLevelId 값을 하드코딩으로 주입, 프론트 연동 이후에 선택박스에서 해당 단어레벨에 맞는 단어레벨 번호를 가져와서 wordLevelId에 주입
     try {
       const project = queryRunner.manager.getRepository(Project).create({
         projectName,
