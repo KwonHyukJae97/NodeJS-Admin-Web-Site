@@ -25,15 +25,13 @@ export class UpdateProjectHandler implements ICommandHandler<UpdateProjectComman
 
   //프론트 연동 후 수정자 내정보에서 가져와서 대입
   async execute(command: UpdateProjectCommand) {
-    const { projectId, wordLevelName, projectName, isService, updateBy } = command;
+    const { projectId, wordLevelName, wordLevelId, projectName, isService, updateBy } = command;
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     const project = await this.projectRepository.findOneBy({ projectId });
-
-    const wordLevelId = project.wordLevelId;
 
     const wordLevel = await this.wordLevelRepository.findOneBy({ wordLevelId });
 
@@ -42,12 +40,9 @@ export class UpdateProjectHandler implements ICommandHandler<UpdateProjectComman
     }
 
     try {
-      wordLevel.wordLevelName = wordLevelName;
-
-      await queryRunner.manager.getRepository(WordLevel).save(wordLevel);
-
       project.projectName = projectName;
       project.isService = isService;
+      project.wordLevelId = wordLevelId;
 
       await queryRunner.manager.getRepository(Project).save(project);
       await queryRunner.commitTransaction();

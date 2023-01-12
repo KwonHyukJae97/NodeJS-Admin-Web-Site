@@ -10,10 +10,11 @@ import { UpdateProjectHandler } from './command/update-project.handler';
 import { Project } from './entities/project';
 import { ProjectController } from './project.controller';
 import { GetProjectListQueryHandler } from './query/get-project-list.handler';
+import { GetWordLevelNameProjectQueryHandler } from './query/get-wordLevelName-project.handler';
 
 const CommandHandler = [CreateProjectHandler, UpdateProjectHandler, DeleteProjectHandler];
 
-const QueryHandler = [GetProjectListQueryHandler];
+const QueryHandler = [GetProjectListQueryHandler, GetWordLevelNameProjectQueryHandler];
 @Module({
   imports: [TypeOrmModule.forFeature([WordLevel, Project]), CqrsModule],
   controllers: [ProjectController],

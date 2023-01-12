@@ -44,6 +44,7 @@ export class Project {
   @Column({
     name: 'reg_by',
     type: 'varchar',
+    length: '20',
   })
   regBy: string;
 
@@ -51,6 +52,7 @@ export class Project {
   @Column({
     name: 'update_by',
     type: 'varchar',
+    length: '20',
   })
   updateBy: string;
 

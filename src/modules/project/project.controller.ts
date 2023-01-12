@@ -7,6 +7,7 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { GetProjectRequestDto } from './dto/get-project-request.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { GetProjectListQuery } from './query/get-project-list.query';
+import { GetWordLevelNameProjcetQuery } from './query/get-wordLevelName-project.query';
 
 /**
  * 프로젝트 컨트롤러 정의
@@ -24,13 +25,26 @@ export class ProjectController {
   getProjectList(@Body() param: GetProjectRequestDto) {
     const getProjectListQuery = new GetProjectListQuery(param);
 
+    console.log('검색어 조회 테스트', getProjectListQuery);
     return this.queryBus.execute(getProjectListQuery);
   }
 
+  @Get(':id')
+  getWordLevelProjectList(@Param('id') wordLevelName: string, @Body() param: GetProjectRequestDto) {
+    // const getWordLevelProject = new GetProjectListQuery(param);
+    const wordLevelNameTest = new GetWordLevelNameProjcetQuery(wordLevelName, param);
+    return this.queryBus.execute(wordLevelNameTest);
+  }
+
+  /**
+   * 프로젝트 등록
+   * @param createProjectDto : projectName, regBy
+   * @returns 프로젝트 등록 커멘드 전송
+   */
   @Post()
   createProject(@Body() createProjectDto: CreateProjectDto) {
-    const { projectName, wordLevelName, regBy } = createProjectDto;
-    const command = new CreateProjectCommand(projectName, wordLevelName, regBy);
+    const { projectName, regBy, wordLevelId } = createProjectDto;
+    const command = new CreateProjectCommand(projectName, regBy, wordLevelId);
 
     return this.commandBus.execute(command);
   }
@@ -38,16 +52,17 @@ export class ProjectController {
   /**
    * 프로젝트 수정
    * @param projectId
-   * @param updateProjectDto
+   * @param updateProjectDto : wordLevelName, projectName, isService, updateBy
    * @returns 프로젝트 수정 커멘드 전송
    */
   @Patch(':id')
   updateProject(@Param('id') projectId: number, @Body() updateProjectDto: UpdateProjectDto) {
-    const { wordLevelName, projectName, isService, updateBy } = updateProjectDto;
+    const { wordLevelName, wordLevelId, projectName, isService, updateBy } = updateProjectDto;
 
     const command = new UpdateProjectCommand(
       projectId,
       wordLevelName,
+      wordLevelId,
       projectName,
       isService,
       updateBy,
