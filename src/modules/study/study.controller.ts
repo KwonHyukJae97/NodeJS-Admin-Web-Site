@@ -1,5 +1,16 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UploadedFiles,
+  UseInterceptors,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { CreateStudyCommand } from './command/create-study.command';
 import { DeleteStudyCommand } from './command/delete-study.command';
 import { UpdateStudyCommand } from './command/update-study.command';
@@ -44,7 +55,11 @@ export class StudyController {
    * @returns 학습관리 등록 커멘드 전송
    */
   @Post()
-  async createStudy(@Body() createStudyDto: CreateStudyDto) {
+  @UseInterceptors(FilesInterceptor('files'))
+  createStudy(
+    @Body() createStudyDto: CreateStudyDto,
+    @UploadedFiles() files: Express.MulterS3.File[],
+  ) {
     const {
       studyTypeCode,
       studyName,
@@ -93,8 +108,10 @@ export class StudyController {
       textbookSequence,
       unitName,
       unitSequence,
+      files,
     );
-    console.log('퍼센트 데이터 배열', percentList);
+    console.log('파일 테스트', files);
+    console.log('퍼센트 데이터 테스트', percentList);
 
     return this.commandBus.execute(command);
   }
@@ -106,7 +123,12 @@ export class StudyController {
    * @returns 학습관리 수정 커멘드 전송
    */
   @Patch(':id')
-  async updateStudy(@Param('id') studyId: number, @Body() updateStudyDto: UpdateStudyDto) {
+  @UseInterceptors(FilesInterceptor('files'))
+  updateStudy(
+    @Param('id') studyId: number,
+    @Body() updateStudyDto: UpdateStudyDto,
+    @UploadedFiles() files: Express.MulterS3.File[],
+  ) {
     const {
       percentId,
       levelStandardId,
@@ -164,6 +186,7 @@ export class StudyController {
       textbookSequence,
       unitName,
       unitSequence,
+      files,
     );
     console.log('학습관리 컨트롤러 수정 데이터', percentList);
     console.log('학습관리 컨트롤러 수정 데이터', studyId);

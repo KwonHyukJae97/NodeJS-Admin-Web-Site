@@ -16,8 +16,18 @@ import { Percent } from '../percent/entities/percent';
 import { LevelStandard } from '../levelStandard/entities/levelStandard';
 import { GradeLevelRank } from '../gradeLevelRank/entities/gradeLevelRank';
 import { StudyUnit } from '../studyUnit/entities/studyUnit';
+import { StudyFileDb } from './study-file-db';
+import { StudyFile } from '../file/entities/study-file';
+// import { CreateFilesHandler } from '../file/command/create-file.handler';
+import { FileService } from '../file/file.service';
 
-const CommandHandler = [CreateStudyHandler, UpdateStudyHandler, DeleteStudytHandler];
+const CommandHandler = [
+  CreateStudyHandler,
+  UpdateStudyHandler,
+  DeleteStudytHandler,
+  // CreateFilesHandler,
+  FileService,
+];
 
 const QueryHandler = [GetStudyListQueryHandler, GetStudyInfoQueryHandler];
 @Module({
@@ -31,11 +41,17 @@ const QueryHandler = [GetStudyListQueryHandler, GetStudyInfoQueryHandler];
       StudyUnit,
       WordLevel,
       StudyType,
+      StudyFile,
     ]),
     CqrsModule,
   ],
   controllers: [StudyController],
 
-  providers: [...CommandHandler, ...QueryHandler, ConvertException],
+  providers: [
+    ...CommandHandler,
+    ...QueryHandler,
+    ConvertException,
+    { provide: 'studyFile', useClass: StudyFileDb },
+  ],
 })
 export class StudyModule {}

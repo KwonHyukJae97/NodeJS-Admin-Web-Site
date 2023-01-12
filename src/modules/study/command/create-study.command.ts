@@ -1,5 +1,4 @@
 import { ICommand } from '@nestjs/cqrs';
-import { CreateStudyDto } from '../dto/create-study.dto';
 import { PercentDto } from '../dto/percent.dto';
 
 /**
@@ -30,6 +29,6 @@ export class CreateStudyCommand implements ICommand {
     readonly textbookSequence: number,
     readonly unitName: string,
     readonly unitSequence: number,
-  ) // readonly createStudyDto: CreateStudyDto[]
-  {}
+    readonly files: Express.MulterS3.File[], // readonly createStudyDto: CreateStudyDto[]
+  ) {}
 }

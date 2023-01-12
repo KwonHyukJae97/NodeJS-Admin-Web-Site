@@ -36,5 +36,6 @@ export class UpdateStudyCommand implements ICommand {
     readonly textbookSequence: number,
     readonly unitName: string,
     readonly unitSequence: number,
+    readonly files: Express.MulterS3.File[],
   ) {}
 }

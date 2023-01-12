@@ -138,6 +138,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
+// import { CreateFilesCommand } from 'src/modules/file/command/create-file.command';
+import { FileType } from 'src/modules/file/entities/file-type.enum';
 import { GradeLevelRank } from 'src/modules/gradeLevelRank/entities/gradeLevelRank';
 import { LevelStandard } from 'src/modules/levelStandard/entities/levelStandard';
 import { Percent } from 'src/modules/percent/entities/percent';
@@ -145,6 +147,7 @@ import { StudyPlan } from 'src/modules/studyPlan/entities/studyPlan';
 import { StudyUnit } from 'src/modules/studyUnit/entities/studyUnit';
 import { DataSource, Repository } from 'typeorm';
 import { Study } from '../entities/study';
+import { StudyFileDb } from '../study-file-db';
 import { CreateStudyCommand } from './create-study.command';
 
 /**
@@ -160,6 +163,7 @@ export class CreateStudyHandler implements ICommandHandler<CreateStudyCommand> {
     @InjectRepository(StudyUnit) private studyUnitRepository: Repository<StudyUnit>,
     @InjectRepository(LevelStandard) private levelStandardRepository: Repository<LevelStandard>,
     @InjectRepository(GradeLevelRank) private gradeLevelRankRepository: Repository<GradeLevelRank>,
+    @Inject('studyFile') private studyFileDb: StudyFileDb,
     @Inject(ConvertException) private convertException: ConvertException,
     private dataSource: DataSource,
     private commandBus: CommandBus,
@@ -186,17 +190,18 @@ export class CreateStudyHandler implements ICommandHandler<CreateStudyCommand> {
       textbookSequence,
       unitName,
       unitSequence,
+      files,
     } = command;
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
+    console.log('핸들러 첫번째 데이터', percentList);
 
     try {
-      // for (let i = 0; i < createStudyDto['createStudyDto'].length; i++) {
       //파일 설정넣기
 
-      const study = await saveStudy(
+      const studyData = await saveStudy(
         studyTypeCode,
         studyName,
         studyTarget,
@@ -219,8 +224,11 @@ export class CreateStudyHandler implements ICommandHandler<CreateStudyCommand> {
         unitSequence,
         // null,
         queryRunner,
-        // this.commandBus,
+        this.studyFileDb,
+        this.commandBus,
+        files,
       );
+      console.log(studyData);
       // }
       await queryRunner.commitTransaction();
       return '학습관리 등록이 완료되었습니다.';
@@ -256,7 +264,9 @@ export const saveStudy = async (
   unitName,
   unitSequence,
   queryRunner,
-  // commandBus,
+  studyFileDb,
+  commandBus,
+  files,
 ) => {
   const study = queryRunner.manager.getRepository(Study).create({
     studyTypeCode,
@@ -271,6 +281,18 @@ export const saveStudy = async (
   });
 
   await queryRunner.manager.getRepository(Study).save(study);
+
+  //파일정보저장
+  // if (files) {
+  //   const command = new CreateFilesCommand(
+  //     study.studyId,
+  //     FileType.STUDY,
+  //     files,
+  //     studyFileDb,
+  //     queryRunner,
+  //   );
+  //   await commandBus.execute(command);
+  // }
 
   const levelStandard = queryRunner.manager.getRepository(LevelStandard).create({
     studyId: study.studyId,
@@ -290,6 +312,10 @@ export const saveStudy = async (
       percent: percentInfo.percent,
       percentSequence: percentInfo.percentSequence,
     });
+
+    console.log('핸들러 퍼센트', percentData);
+    console.log('핸들러 퍼센트', percentList);
+    console.log('핸들러 퍼센트', percentInfo);
 
     await queryRunner.manager.getRepository(Percent).save(percentData);
 

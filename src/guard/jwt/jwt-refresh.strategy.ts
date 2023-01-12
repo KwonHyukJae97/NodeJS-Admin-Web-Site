@@ -14,6 +14,10 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh-
       // jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request) => {
+          console.log(
+            '만료된 엑세스 토큰을 갱신하기 위한 리프레쉬 토큰 검즘',
+            request.cookies.Refresh,
+          );
           return request?.cookies?.Refresh;
         },
       ]),
