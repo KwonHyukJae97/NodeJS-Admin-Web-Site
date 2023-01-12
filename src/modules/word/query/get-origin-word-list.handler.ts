@@ -2,12 +2,11 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, Repository } from 'typeorm';
 import { Inject } from '@nestjs/common';
-import { Word } from '../entities/word';
-import { Example } from '../entities/example';
-import { SimilarWord } from '../entities/similar-word';
+import { Word } from '../entities/word.entity';
+import { Example } from '../entities/example.entity';
+import { SimilarWord } from '../entities/similar-word.entity';
 import { ConvertException } from '../../../common/utils/convert-exception';
-import { Page } from '../../../common/utils/page';
-import { WordFile } from '../../file/entities/word-file';
+import { WordFile } from '../../file/entities/word-file.entity';
 import { GetOriginWordListQuery } from './get-origin-word-list.query';
 
 /**
@@ -32,41 +31,23 @@ export class GetOriginWordListHandler implements IQueryHandler<GetOriginWordList
     const { param } = query;
 
     // 본단어 정보 조회 (한 단어에 대한 단어정보/예문정보/파일정보)
-    const word = this.wordRepository
+    const word = await this.wordRepository
       .createQueryBuilder('word')
-      .where('word.wordName like :wordName', { wordName: `%${param.searchWord}%` })
+      .where('word.wordName like :wordName', { wordName: `${param['wordName']}` })
       .andWhere(
         new Brackets((qb) => {
-          qb.where('word.wordStatus like :wordStatus', { wordStatus: '0' }).orWhere(
-            'word.wordStatus like :wordStatus',
-            { wordStatus: '1' },
+          qb.where('word.wordStatus like :wordStatus0', { wordStatus0: '0' }).orWhere(
+            'word.wordStatus like :wordStatus1',
+            { wordStatus1: '1' },
           );
         }),
       )
       .leftJoinAndSelect('word.examples', 'example')
       .leftJoinAndMapMany('word.wordFiles', WordFile, 'wordFile', 'word.wordId = wordFile.wordId')
-      .orderBy('word.wordId', 'DESC');
+      .orderBy('word.wordStatus', 'ASC')
+      .addOrderBy('word.wordId', 'DESC')
+      .getMany();
 
-    // 검색
-    // if (param.searchKey === '') {
-    //   word.andWhere('board.title like :title', { title: `%${param.searchWord}%` });
-    // }
-
-    let tempQuery = word;
-
-    if (!param.totalData) {
-      tempQuery = tempQuery.take(param.getLimit()).skip(param.getOffset());
-    }
-
-    const list = await tempQuery.getMany();
-    const total = await tempQuery.getCount();
-    const pageNo = param.totalData ? 1 : param.pageNo;
-    const pageSize = param.totalData ? total : param.pageSize;
-
-    if (total === 0) {
-      return this.convertException.notFoundError('단어', 404);
-    }
-
-    return new Page(pageNo, pageSize, total, list);
+    return word;
   }
 }
