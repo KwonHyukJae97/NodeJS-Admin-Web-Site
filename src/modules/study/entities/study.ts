@@ -141,24 +141,10 @@ export class Study {
   })
   levelStandards: LevelStandard;
 
-  //학년별 레벨별 등급 정보
-  // @OneToMany((type) => GradeLevelRank, (gradeLevelRank) => gradeLevelRank.studyId, {
-  //   eager: true,
-  //   cascade: ['soft-remove'],
-  // })
-  // gradeLevelRanks: GradeLevelRank;
-
   //학습구성 정보
   @OneToMany((type) => StudyPlan, (studyPlan) => studyPlan.studyId, {
     eager: true,
     cascade: ['soft-remove'],
   })
   studyPlans: StudyPlan;
-
-  //학습단원 정보
-  // @OneToMany((type) => StudyUnit, (studyUnit) => studyUnit.studyId, {
-  //   eager: true,
-  //   cascade: ['soft-remove'],
-  // })
-  // studyUnits: StudyUnit;
 }

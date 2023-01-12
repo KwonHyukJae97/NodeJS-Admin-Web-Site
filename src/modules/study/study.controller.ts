@@ -71,9 +71,6 @@ export class StudyController {
       checkLevel,
       regBy,
       percentList,
-      // rankName,
-      // percent,
-      // percentSequence,
       standard,
       knownError,
       levelStandardSequence,
@@ -87,7 +84,6 @@ export class StudyController {
     } = createStudyDto;
 
     const command = new CreateStudyCommand(
-      // createStudyDto,
       studyTypeCode,
       studyName,
       studyTarget,
@@ -110,8 +106,6 @@ export class StudyController {
       unitSequence,
       files,
     );
-    console.log('파일 테스트', files);
-    console.log('퍼센트 데이터 테스트', percentList);
 
     return this.commandBus.execute(command);
   }
@@ -188,8 +182,6 @@ export class StudyController {
       unitSequence,
       files,
     );
-    console.log('학습관리 컨트롤러 수정 데이터', percentList);
-    console.log('학습관리 컨트롤러 수정 데이터', studyId);
 
     return this.commandBus.execute(command);
   }

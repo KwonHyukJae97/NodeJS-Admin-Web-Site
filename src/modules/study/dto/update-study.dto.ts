@@ -87,24 +87,9 @@ export class UpdateStudyDto {
   @IsOptional()
   readonly regBy: string;
 
-  //등급명
+  //백분율
   @IsOptional()
   readonly percentList: UpdatePercentDto[];
-  // @IsString()
-  // @IsOptional()
-  // readonly rankName: string;
-
-  // //백분율
-
-  // @IsNumber()
-  // @IsOptional()
-  // readonly percent: number;
-
-  // //백분율 순번
-
-  // @IsNumber()
-  // @IsOptional()
-  // readonly percentSequence: number;
 
   //----레벨수준정보----
 

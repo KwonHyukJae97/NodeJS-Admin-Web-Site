@@ -30,11 +30,6 @@ export class StudyPlan {
     name: 'study_id',
   })
   studyId: number;
-  // @Column({
-  //   name: 'study_id',
-  //   type: 'bigint',
-  // })
-  // studyId: number;
 
   //등록 진행방식
   @Column({

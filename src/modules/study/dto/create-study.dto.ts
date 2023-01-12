@@ -47,49 +47,9 @@ export class CreateStudyDto {
   @IsString()
   readonly regBy: string;
 
-  //----학습설정정보----
-
-  //   //학년범위시작
-  // @IsNotEmpty()
-  // @IsString()
-  // readonly gradeStart: string;
-
-  // //학년범위종료
-  // @IsNotEmpty()
-  // @IsString()
-  // readonly gradeEnd: string;
-
-  //   //----백분율 정보----
-  // 부모 엔티티에서 자식 정보 조회가 필요할 경우, 아래와 같이 사용
-  // @OneToOne((type) => Notice, (notice) => notice.boardId)
-  // noticeId: number;
-  //
-  // @OneToOne((type) => Faq, (faq) => faq.boardId)
-  // faqId: number;
-  //
-  // @OneToOne((type) => Qna, (qna) => qna.boardId)
-  // qnaId: number;
-  //
-  // @ManyToOne((type) => Word, (word) => word.examples, {
-  //   createForeignKeyConstraints: false,
-  // })
-  // word: Word;
+  //----백분율 정보----
   @IsNotEmpty()
   readonly percentList: PercentDto[];
-  //등급명
-  // @IsNotEmpty()
-  // @IsString()
-  // readonly rankName: string;
-
-  // //백분율
-  // @IsNotEmpty()
-  // @IsNumber()
-  // readonly percent: number;
-
-  // //백분율 순번
-  // @IsNotEmpty()
-  // @IsNumber()
-  // readonly percentSequence: number;
 
   //----레벨수준정보----
 

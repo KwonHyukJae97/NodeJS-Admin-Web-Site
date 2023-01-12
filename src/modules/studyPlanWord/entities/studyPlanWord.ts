@@ -42,8 +42,4 @@ export class StudyPlanWord {
   @OneToOne(() => StudyUnit)
   @JoinColumn({ name: 'study_unit_id' })
   studyUnit: StudyUnit;
-
-  // @OneToOne(() => Word)
-  // @JoinColumn({ name: 'word_id' })
-  // word: Word;
 }

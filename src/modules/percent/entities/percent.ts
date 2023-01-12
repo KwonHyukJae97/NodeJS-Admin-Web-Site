@@ -28,11 +28,6 @@ export class Percent {
     name: 'study_id',
   })
   studyId!: number;
-  // @Column({
-  //   name: 'study_id',
-  //   type: 'bigint',
-  // })
-  // studyId: number;
 
   //등급명
   @Column({

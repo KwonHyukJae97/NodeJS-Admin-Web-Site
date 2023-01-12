@@ -16,9 +16,6 @@ export class CreateStudyCommand implements ICommand {
     readonly checkLevel: string,
     readonly regBy: string,
     readonly percentList: PercentDto[],
-    // readonly rankName: string,
-    // readonly percent: number,
-    // readonly percentSequence: number,
     readonly standard: string,
     readonly knownError: number,
     readonly levelStandardSequence: number,
@@ -29,6 +26,6 @@ export class CreateStudyCommand implements ICommand {
     readonly textbookSequence: number,
     readonly unitName: string,
     readonly unitSequence: number,
-    readonly files: Express.MulterS3.File[], // readonly createStudyDto: CreateStudyDto[]
+    readonly files: Express.MulterS3.File[],
   ) {}
 }

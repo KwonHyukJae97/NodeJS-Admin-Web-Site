@@ -33,8 +33,6 @@ export class UpdateProjectHandler implements ICommandHandler<UpdateProjectComman
 
     const project = await this.projectRepository.findOneBy({ projectId });
 
-    // const wordLevelId = project.wordLevelId;
-
     const wordLevel = await this.wordLevelRepository.findOneBy({ wordLevelId });
 
     if (!project) {

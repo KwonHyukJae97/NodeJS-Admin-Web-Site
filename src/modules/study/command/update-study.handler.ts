@@ -6,6 +6,7 @@ import { GradeLevelRank } from 'src/modules/gradeLevelRank/entities/gradeLevelRa
 import { LevelStandard } from 'src/modules/levelStandard/entities/levelStandard';
 import { Percent } from 'src/modules/percent/entities/percent';
 import { StudyPlan } from 'src/modules/studyPlan/entities/studyPlan';
+import { StudyType } from 'src/modules/studyType/entities/studyType';
 import { StudyUnit } from 'src/modules/studyUnit/entities/studyUnit';
 import { DataSource, Repository } from 'typeorm';
 import { Study } from '../entities/study';
@@ -24,6 +25,7 @@ export class UpdateStudyHandler implements ICommandHandler<UpdateStudyCommand> {
     @InjectRepository(GradeLevelRank) private gradeLevelRankRepository: Repository<GradeLevelRank>,
     @InjectRepository(StudyPlan) private studyPlanRepository: Repository<StudyPlan>,
     @InjectRepository(StudyUnit) private studyUnitRepository: Repository<StudyUnit>,
+    @InjectRepository(StudyType) private studyTypeRepository: Repository<StudyType>,
     @Inject(ConvertException) private convertException: ConvertException,
     private dataSource: DataSource,
   ) {}
@@ -37,7 +39,7 @@ export class UpdateStudyHandler implements ICommandHandler<UpdateStudyCommand> {
       studyPlanId,
       studyUnitId,
       wordLevelId,
-      studyTypeCode = '17',
+      studyTypeCode,
       studyName,
       studyTarget,
       studyInformation,
@@ -64,6 +66,7 @@ export class UpdateStudyHandler implements ICommandHandler<UpdateStudyCommand> {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
+    const studyType = await this.studyTypeRepository.findOneBy({ studyTypeCode });
     const studyData = await this.studyRepository.findOneBy({ studyId });
     const percentData = await this.percentRepository.findOneBy({ percentId });
     const levelStandardData = await this.levelStandardRepository.findOneBy({ levelStandardId });
@@ -82,22 +85,9 @@ export class UpdateStudyHandler implements ICommandHandler<UpdateStudyCommand> {
       return this.convertException.notFoundError('학습관리 ', 404);
     }
 
-    //여기까지임
-
     try {
       //학습관리 정보 수정
-      // const study = queryRunner.manager.getRepository(Study).create({
-      //   studyTypeCode,
-      //   studyName: studyData.studyName,
-      //   studyTarget: studyData.studyTarget,
-      //   studyInformation: studyData.studyInformation,
-      //   testScore: studyData.testScore,
-      //   isService: studyData.isService,
-      //   checkLevelUnder: studyData.checkLevelUnder,
-      //   checkLevel: studyData.checkLevel,
-      //   regBy: studyData.regBy,
-      // });
-      studyData.studyTypeCode = studyTypeCode;
+      studyData.studyTypeCode = studyType.studyTypeCode;
       studyData.studyName = studyName;
       studyData.studyTarget = studyTarget;
       studyData.studyInformation = studyInformation;
@@ -139,59 +129,10 @@ export class UpdateStudyHandler implements ICommandHandler<UpdateStudyCommand> {
               );
             }
           }
-
-          console.log('백분율 데이터 수정 테스트 percentList', percentList);
-          console.log('백분율 데이터 수정 테스트 percentInfo', percentInfo);
-
-          // const percentDatas = queryRunner.manager.getRepository(Percent).create({
-          //   studyId: studyData.studyId,
-          //   rankName: percentInfo.rankName,
-          //   percent: percentInfo.percent,
-          //   percentSequence: percentInfo.percentSequence,
-          // });
-
-          // percentData.studyId;
-          // percentData.rankName;
-          // percentData.percent;
-          // percentData.percentSequence;
-
-          // await queryRunner.manager.getRepository(Percent).save(percentData);
-
-          // if (!percentInfo.studyId) {
-          //   console.log('여기임?1', percentInfo.rankName);
-          //   console.log('여기임?1', percentInfo.percentId);
-          //   const newPercentData = queryRunner.manager.getRepository(Percent).create({
-          //     studyId: studyData.studyId,
-          //     rankName: percentInfo.rankName,
-          //     percent: percentInfo.percent,
-          //     percentSequence: percentInfo.percentSequence,
-          //   });
-
-          //   await queryRunner.manager.getRepository(Percent).save(newPercentData);
-          // } else if (percentInfo.studyId) {
-          //   console.log('여기임?2', percentInfo.studyId);
-          //   const editPercent = await this.percentRepository.findOneBy({
-          //     percentId: percentInfo.percentId,
-          //   });
-          //   editPercent.rankName = percentInfo.rankName;
-          //   editPercent.percent = percentInfo.percent;
-          //   editPercent.percentSequence = percentInfo.percentSequence;
-
-          //   await queryRunner.manager.getRepository(Percent).save(editPercent);
-          // }
         }
       }
 
       //레벨 수준 정보 수정
-      // const levelStandard = queryRunner.manager.getRepository(LevelStandard).create({
-      //   studyId: studyData.studyId,
-      //   //단어레베아이디 값 프로튼 단에서 넘겨서 보내주기
-      //   wordLevelId: 18,
-      //   standard: levelStandardData.standard,
-      //   knownError: levelStandardData.knownError,
-      //   levelStandardSequence: levelStandardData.levelStandardSequence,
-      // });
-
       levelStandardData.studyId = studyData.studyId;
       levelStandardData.wordLevelId = 18;
       levelStandardData.standard = standard;
@@ -201,12 +142,6 @@ export class UpdateStudyHandler implements ICommandHandler<UpdateStudyCommand> {
       await queryRunner.manager.getRepository(LevelStandard).save(levelStandardData);
 
       //학년별 레벨별 등급정보 수정
-      // const gradeLevelRank = queryRunner.manager.getRepository(GradeLevelRank).create({
-      //   levelStandardId: levelStandardData.levelStandardId,
-      //   percentId: percentData.percentId,
-      //   gradeRank: gradeLevelRankData.gradeRank,
-      // });
-
       gradeLevelRankData.levelStandardId = levelStandardData.levelStandardId;
       gradeLevelRankData.percentId = percentData.percentId;
       gradeLevelRankData.gradeRank = gradeRank;
@@ -214,19 +149,6 @@ export class UpdateStudyHandler implements ICommandHandler<UpdateStudyCommand> {
       await queryRunner.manager.getRepository(GradeLevelRank).save(gradeLevelRankData);
 
       //학습 구성 정보 수정
-      // const studyPlan = queryRunner.manager.getRepository(StudyPlan).create({
-      //   studyId: studyData.studyId,
-      //   registerMode: registerMode,
-      //   studyMode: studyMode,
-      //   textbookName: textbookName,
-      //   textbookSequence: textbookSequence,
-      // });
-
-      // console.log('박지성의 꿈~--------', textbookName);
-      // console.log('박지성의 꿈~--------', studyPlan.textbookName);
-      // console.log('박지성의 꿈~--------', studyPlanData.textbookName);
-      // console.log('박지성의 꿈~--------', studyMode);
-
       studyPlanData.studyId = studyData.studyId;
       studyPlanData.registerMode = registerMode;
       studyPlanData.studyMode = studyMode;
@@ -236,12 +158,6 @@ export class UpdateStudyHandler implements ICommandHandler<UpdateStudyCommand> {
       await queryRunner.manager.getRepository(StudyPlan).save(studyPlanData);
 
       //학습 단원 정보 수정
-      // const studyUnit = queryRunner.manager.getRepository(StudyUnit).create({
-      //   studyPlanId: studyPlan.studyPlanId,
-      //   unitName: studyUnitData.unitName,
-      //   unitSequence: studyUnitData.unitSequence,
-      // });
-
       studyUnitData.studyPlanId = studyPlanData.studyPlanId;
       studyUnitData.unitName = unitName;
       studyUnitData.unitSequence = unitSequence;

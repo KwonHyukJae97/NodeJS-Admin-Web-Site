@@ -22,8 +22,6 @@ export class GetProjectListQueryHandler implements IQueryHandler<GetProjectListQ
   async execute(query: GetProjectListQuery) {
     const { param } = query;
 
-    console.log('핸들러 에서 찾기122!!!', param);
-
     //단어레벨아이디, 단어레벨명 조회
     const wordLevel = this.wordLevelRepository
       .createQueryBuilder('wordLevel')
@@ -51,8 +49,6 @@ export class GetProjectListQueryHandler implements IQueryHandler<GetProjectListQ
       ])
       .leftJoinAndSelect(wordLevel, 'wordLevel', 'wordLevel.wordLevelId = project.wordLevelId')
       .orderBy('project.projectId', 'DESC');
-
-    console.log('프로ㅔㅈㄱ트', project);
 
     //단어레벨명 OR 프로젝트명으로 검색 가능
     if (param.searchWord) {

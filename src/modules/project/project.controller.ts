@@ -45,8 +45,8 @@ export class ProjectController {
    */
   @Post()
   createProject(@Body() createProjectDto: CreateProjectDto) {
-    const { projectName, regBy } = createProjectDto;
-    const command = new CreateProjectCommand(projectName, regBy);
+    const { projectName, regBy, wordLevelId } = createProjectDto;
+    const command = new CreateProjectCommand(projectName, regBy, wordLevelId);
 
     return this.commandBus.execute(command);
   }

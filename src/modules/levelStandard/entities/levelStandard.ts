@@ -31,11 +31,6 @@ export class LevelStandard {
     name: 'study_id',
   })
   studyId: number;
-  // @Column({
-  //   name: 'study_id',
-  //   type: 'bigint',
-  // })
-  // studyId: number;
 
   //단어 레벨 번호
   @Column({

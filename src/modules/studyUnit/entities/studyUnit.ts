@@ -21,7 +21,7 @@ export class StudyUnit {
   })
   studyUnitId: number;
 
-  //학습관리 정보
+  //학습 구성 번호
   @ManyToOne((type) => StudyPlan, (studyPlan) => studyPlan.studyUnits, {
     createForeignKeyConstraints: false,
   })
@@ -29,13 +29,6 @@ export class StudyUnit {
     name: 'study_plan_id',
   })
   studyPlanId: number;
-
-  //학습 구성 번호
-  // @Column({
-  //   name: 'study_plan_id',
-  //   type: 'bigint',
-  // })
-  // studyPlanId: number;
 
   //단원명
   @Column({
@@ -74,9 +67,4 @@ export class StudyUnit {
     nullable: true,
   })
   delDate: Date;
-
-  //학습구성 정보 가져오기
-  // @OneToOne(() => StudyPlan)
-  // @JoinColumn({ name: 'study_plan_id' })
-  // studyPlan: StudyPlan;
 }

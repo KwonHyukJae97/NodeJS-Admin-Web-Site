@@ -22,6 +22,7 @@ export class GradeLevelRank {
   })
   gradeLevelRankId: number;
 
+  //레벨 수준 번호
   @OneToOne((type) => LevelStandard, (levelStandard) => levelStandard.gradeLevelRanks, {
     createForeignKeyConstraints: false,
   })
@@ -29,13 +30,6 @@ export class GradeLevelRank {
     name: 'level_standard_id',
   })
   levelStandardId: number;
-
-  //레벨 수준 번호
-  // @Column({
-  //   name: 'level_standard_id',
-  //   type: 'bigint',
-  // })
-  // levelStandardId: number;
 
   //백분율 번호
   @Column({

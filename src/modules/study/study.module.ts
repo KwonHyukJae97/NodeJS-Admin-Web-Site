@@ -18,16 +18,9 @@ import { GradeLevelRank } from '../gradeLevelRank/entities/gradeLevelRank';
 import { StudyUnit } from '../studyUnit/entities/studyUnit';
 import { StudyFileDb } from './study-file-db';
 import { StudyFile } from '../file/entities/study-file';
-// import { CreateFilesHandler } from '../file/command/create-file.handler';
 import { FileService } from '../file/file.service';
 
-const CommandHandler = [
-  CreateStudyHandler,
-  UpdateStudyHandler,
-  DeleteStudytHandler,
-  // CreateFilesHandler,
-  FileService,
-];
+const CommandHandler = [CreateStudyHandler, UpdateStudyHandler, DeleteStudytHandler, FileService];
 
 const QueryHandler = [GetStudyListQueryHandler, GetStudyInfoQueryHandler];
 @Module({
