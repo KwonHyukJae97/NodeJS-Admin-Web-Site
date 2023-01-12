@@ -1,12 +1,12 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { GetCommentDetailCommand } from './get-comment-detail.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from '../entities/comment';
-import { Repository } from 'typeorm';
-import { Board } from '../../entities/board';
-import { Qna } from '../../qna/entities/qna';
-import { BoardFile } from '../../../file/entities/board-file';
+import { DataSource, Repository } from 'typeorm';
+import { Board } from '../../entities/board.entity';
+import { Qna } from '../../qna/entities/qna.entity';
+import { BoardFile } from '../../../file/entities/board-file.entity';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { Account } from '../../../account/entities/account';
 import { Admin } from '../../../account/admin/entities/admin';
@@ -27,6 +27,7 @@ export class GetCommentDetailHandler implements ICommandHandler<GetCommentDetail
     @InjectRepository(Admin) private adminRepository: Repository<Admin>,
     @InjectRepository(Company) private companyRepository: Repository<Company>,
     @Inject(ConvertException) private convertException: ConvertException,
+    private dataSource: DataSource,
   ) {}
 
   /**
@@ -35,14 +36,27 @@ export class GetCommentDetailHandler implements ICommandHandler<GetCommentDetail
    * @returns : DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 답변 상세 정보 반환
    */
   async execute(command: GetCommentDetailCommand) {
-    const { qnaId, role } = command;
+    const { qnaId } = command;
 
-    // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
-    if (role !== '본사 관리자' && role !== '회원사 관리자') {
-      throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
-    }
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    const qna = await this.qnaRepository.findOneBy({ qnaId });
+    const qna = await this.qnaRepository
+      .createQueryBuilder('qna')
+      .where('qna.qnaId = :qnaId', { qnaId: qnaId })
+      .leftJoinAndSelect('qna.board', 'board')
+      .select([
+        'qna.qnaId AS qnaId',
+        'qna.boardId AS boardId',
+        'board.accountId AS accountId',
+        'board.boardTypeCode AS boardTypeCode',
+        'board.title AS title',
+        'board.content AS content',
+        'board.viewCount AS viewCount',
+        'board.regDate AS regDate',
+      ])
+      .getRawOne();
 
     if (!qna) {
       return this.convertException.notFoundError('QnA', 404);
@@ -59,80 +73,81 @@ export class GetCommentDetailHandler implements ICommandHandler<GetCommentDetail
     board.viewCount++;
 
     try {
-      await this.boardRepository.save(board);
+      await queryRunner.manager.getRepository(Board).save(board);
+
+      qna.boardId = board.boardId;
+      await queryRunner.manager.getRepository(Qna).save(qna);
+
+      const account = await this.accountRepository.findOneBy({ accountId: board.accountId });
+
+      const files = await this.fileRepository.findBy({ boardId: board.boardId });
+
+      const comments = await this.commentRepository.find({
+        where: { qnaId: qnaId },
+        order: { commentId: 'DESC' },
+      });
+
+      let commentInfo;
+
+      // 답변별 답변자 정보 담아주기
+      const commentList = await Promise.all(
+        comments.map(async (comment) => {
+          // 쿼리빌더로 한번에 admin + account 정보 조회
+          const adminAccount = await this.adminRepository
+            .createQueryBuilder('admin')
+            .leftJoinAndSelect(Account, 'account', 'account.accountId = admin.accountId')
+            .where('admin.adminId = :adminId', { adminId: comment.adminId })
+            .getRawOne();
+
+          const commenter =
+            adminAccount == null
+              ? '탈퇴 관리자(*****)'
+              : adminAccount.account_name + '(' + adminAccount.account_nickname + ')';
+
+          // 본사 관리자일 경우
+          if (adminAccount.admin_is_super == 0) {
+            commentInfo = {
+              ...comment,
+              commenter,
+            };
+
+            // 회원사 관리자일 경우
+          } else {
+            const company = await this.companyRepository.findOneBy({
+              companyId: adminAccount.admin_company_id,
+            });
+
+            const commenter =
+              adminAccount == null
+                ? '탈퇴 관리자(*****)'
+                : adminAccount.account_name + '(' + adminAccount.account_nickname + ')';
+
+            commentInfo = {
+              ...comment,
+              commenter,
+              companyName: company.companyName,
+              companyId: company.companyId,
+            };
+          }
+          return commentInfo;
+        }),
+      );
+
+      const writer =
+        account == null ? '탈퇴 회원(*****)' : account.name + '(' + account.nickname + ')';
+
+      const getCommentDetailDto = {
+        qna: { ...qna, writer, fileList: files },
+        commentList,
+      };
+
+      await queryRunner.commitTransaction();
+      return getCommentDetailDto;
     } catch (err) {
-      return this.convertException.badRequestError('게시글 정보에', 400);
+      await queryRunner.rollbackTransaction();
+      return this.convertException.CommonError(500);
+    } finally {
+      await queryRunner.release();
     }
-
-    qna.board = board;
-
-    try {
-      await this.qnaRepository.save(qna);
-    } catch (err) {
-      return this.convertException.badRequestError('QnA 정보에', 400);
-    }
-
-    const account = await this.accountRepository.findOneBy({ accountId: board.accountId });
-
-    if (!account) {
-      return this.convertException.badRequestAccountError('작성자', 400);
-    }
-
-    const files = await this.fileRepository.findBy({ boardId: board.boardId });
-
-    const commentList = await this.commentRepository.find({
-      where: { qnaId: qnaId },
-      order: { commentId: 'DESC' },
-    });
-
-    let commentInfo;
-
-    // 답변별 답변자 정보 담아주기
-    const commentListInfo = await Promise.all(
-      commentList.map(async (comment) => {
-        // const admin = await this.adminRepository.findOneBy({ adminId: comment.adminId });
-        // const adminAccount = await this.accountRepository.findOneBy({ accountId: admin.accountId });
-
-        // 쿼리빌더로 한번에 admin + account 정보 조회
-        const adminAccount = await this.adminRepository
-          .createQueryBuilder('admin')
-          .leftJoinAndSelect(Account, 'account', 'account.accountId = admin.accountId')
-          .where('admin.adminId = :adminId', { adminId: comment.adminId })
-          .getRawOne();
-
-        console.log('test query', adminAccount);
-
-        // 본사 관리자일 경우
-        if (adminAccount.admin_is_super == 0) {
-          commentInfo = {
-            comment: comment,
-            writer: adminAccount.account_name + '(' + adminAccount.account_nickname + ')',
-          };
-
-          // 회원사 관리자일 경우
-        } else {
-          const company = await this.companyRepository.findOneBy({
-            companyId: adminAccount.admin_company_id,
-          });
-
-          commentInfo = {
-            comment: comment,
-            writer: adminAccount.account_name + '(' + adminAccount.account_nickname + ')',
-            companyName: company.companyName,
-            companyId: company.companyId,
-          };
-        }
-        return commentInfo;
-      }),
-    );
-
-    const getCommentDetailDto = {
-      qna,
-      writer: account.name + '(' + account.nickname + ')',
-      fileList: files,
-      commentListInfo,
-    };
-
-    return getCommentDetailDto;
   }
 }

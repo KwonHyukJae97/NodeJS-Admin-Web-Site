@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { AdminRole } from '../entities/adminRole.entity';
 import { RolePermission } from '../entities/rolePermission.entity';
 import { DeleteAdminRoleCommand } from './delete-adminRole.command';
@@ -15,8 +15,8 @@ import { DeleteAdminRoleCommand } from './delete-adminRole.command';
 export class DeleteAdminRoleHandler implements ICommandHandler<DeleteAdminRoleCommand> {
   constructor(
     @InjectRepository(AdminRole) private adminroleRepository: Repository<AdminRole>,
-    @InjectRepository(RolePermission) private rolePermissionRepository: Repository<RolePermission>,
     @Inject(ConvertException) private convertException: ConvertException,
+    private dataSource: DataSource,
   ) {}
 
   /**
@@ -31,20 +31,25 @@ export class DeleteAdminRoleHandler implements ICommandHandler<DeleteAdminRoleCo
     if (!role) {
       return this.convertException.notFoundError('역할', 404);
     }
-    //역할정보 DB삭제
+    //transaction처리
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
-      await this.adminroleRepository.softDelete({ roleId: roleId });
-    } catch (err) {
-      return this.convertException.CommonError(500);
-    }
+      //역할정보 DB삭제
+      await queryRunner.manager.getRepository(AdminRole).softDelete({ roleId: roleId });
 
-    //역할_권한정보 DB삭제
-    try {
-      await this.rolePermissionRepository.softDelete({ roleId: roleId });
-    } catch (err) {
-      return this.convertException.CommonError(500);
-    }
+      //역할_권한정보 DB삭제
+      await queryRunner.manager.getRepository(RolePermission).softDelete({ roleId: roleId });
 
+      await queryRunner.commitTransaction();
+    } catch (err) {
+      // 실패시 rollback
+      await queryRunner.rollbackTransaction();
+      return this.convertException.CommonError(500);
+    } finally {
+      await queryRunner.release();
+    }
     return '삭제가 완료 되었습니다.';
   }
 }

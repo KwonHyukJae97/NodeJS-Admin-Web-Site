@@ -2,15 +2,14 @@ import { Module } from '@nestjs/common';
 import { FileController } from './file.controller';
 import { FileService } from './file.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Board } from '../board/entities/board';
-import { BoardFile } from './entities/board-file';
+import { Board } from '../board/entities/board.entity';
+import { BoardFile } from './entities/board-file.entity';
 import { CqrsModule } from '@nestjs/cqrs';
-import { FileEventsHandler } from './event/file-events.handler';
 import { GetAllFilesDownloadHandler } from './query/get-files-download.handler';
 import { GetFileDownloadHandler } from './query/get-file-download.handler';
 import { BoardFileDb } from '../board/board-file-db';
 import { AccountFileDb } from '../account/account-file-db';
-import { AccountFile } from './entities/account-file';
+import { AccountFile } from './entities/account-file.entity';
 import { Account } from '../account/entities/account';
 import { ConvertException } from '../../common/utils/convert-exception';
 import { StudyFileDb } from '../study/study-file-db';
@@ -39,7 +38,6 @@ const QueryHandlers = [GetAllFilesDownloadHandler, GetFileDownloadHandler];
   controllers: [FileController],
   providers: [
     FileService,
-    FileEventsHandler,
     ...QueryHandlers,
     ConvertException,
     { provide: 'boardFile', useClass: BoardFileDb },

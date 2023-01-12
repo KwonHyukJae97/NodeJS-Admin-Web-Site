@@ -3,9 +3,9 @@ import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
 import { UpdateNoticeHandler } from './update-notice.handler';
-import { Notice } from '../entities/notice';
-import { Board } from '../../entities/board';
-import { BoardFile } from 'src/modules/file/entities/board-file';
+import { Notice } from '../entities/notice.entity';
+import { Board } from '../../entities/board.entity';
+import { BoardFile } from 'src/modules/file/entities/board-file.entity';
 import { UpdateNoticeCommand } from './update-notice.command';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { BoardFileDb } from '../../board-file-db';
@@ -143,7 +143,6 @@ describe('UpdateNotice', () => {
           isTop,
           noticeGrant,
           noticeId,
-          role,
           files,
         ),
       );
@@ -168,7 +167,6 @@ describe('UpdateNotice', () => {
             isTop,
             noticeGrant,
             noticeId,
-            role,
             files,
           ),
         );
@@ -189,7 +187,6 @@ describe('UpdateNotice', () => {
             isTop,
             noticeGrant,
             noticeId,
-            role,
             files,
           ),
         );

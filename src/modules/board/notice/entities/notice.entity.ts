@@ -1,5 +1,5 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Board } from '../../entities/board';
+import { Board } from '../../entities/board.entity';
 
 /**
  * 공지사항에 대한 엔티티 정의

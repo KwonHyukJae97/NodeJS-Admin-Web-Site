@@ -1,7 +1,7 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetQnaListQuery } from './get-qna-list.query';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Qna } from '../entities/qna';
+import { Qna } from '../entities/qna.entity';
 import { Repository } from 'typeorm';
 import { Inject } from '@nestjs/common';
 import { ConvertException } from '../../../../common/utils/convert-exception';
@@ -25,7 +25,7 @@ export class GetQnaListHandler implements IQueryHandler<GetQnaListQuery> {
    * @returns : DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 1:1 문의 전체 리스트 반환
    */
   async execute(query: GetQnaListQuery) {
-    const { param } = query;
+    const { param, account } = query;
 
     // 하나의 qna에 대한 답변 여부를 판단하기 위한 서브 쿼리
     const commentQb = this.commentRepository
@@ -41,8 +41,7 @@ export class GetQnaListHandler implements IQueryHandler<GetQnaListQuery> {
       .createQueryBuilder('qna')
       .leftJoinAndSelect('qna.board', 'board')
       .leftJoin(commentQb, 'comment', 'comment.qnaId = qna.qnaId')
-      // .where('board.accountId like :accountId', { accountId: `%${account.accountId}%` })
-      .where('board.accountId like :accountId', { accountId: `%${param.accountId}%` })
+      .where('board.accountId like :accountId', { accountId: `%${account.accountId}%` })
       .select([
         'qna.qnaId AS qnaId',
         'qna.boardId AS boardId',

@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { FaqCategory } from '../entities/faq_category';
+import { FaqCategory } from '../entities/faq_category.entity';
 import { GetCategoryListHandler } from './get-category-list.handler';
 import { GetCategoryListQuery } from './get-category-list.query';
 
@@ -72,7 +72,7 @@ describe('GetNoticeList', () => {
         };
       });
 
-      const result = await getCategoryListHandler.execute(new GetCategoryListQuery(role));
+      const result = await getCategoryListHandler.execute(new GetCategoryListQuery());
       expect(result).toEqual(resultCategoryList);
     });
 
@@ -87,7 +87,7 @@ describe('GetNoticeList', () => {
             getMany: () => undefined,
           };
         });
-        const result = await getCategoryListHandler.execute(new GetCategoryListQuery(role));
+        const result = await getCategoryListHandler.execute(new GetCategoryListQuery());
         expect(result).toBeUndefined();
       } catch (err) {
         expect(err).rejects.toThrowError('카테고리 정보를 찾을 수 없습니다.');

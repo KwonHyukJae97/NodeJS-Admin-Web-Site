@@ -13,6 +13,6 @@ export class UpdateAdminCommand implements ICommand {
     readonly roleId: number,
     readonly isSuper: boolean,
     readonly adminId: number,
-    readonly file: Express.MulterS3.File,
+    readonly files: Express.MulterS3.File[],
   ) {}
 }

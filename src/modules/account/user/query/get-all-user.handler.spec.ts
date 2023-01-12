@@ -5,7 +5,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
 import { GetAllUserQueryHandler } from './get-all-user.handler';
 import { User } from '../entities/user';
-import { AccountFile } from '../../../file/entities/account-file';
+import { AccountFile } from '../../../file/entities/account-file.entity';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { GetAllUserQuery } from './get-all-user.query';
 

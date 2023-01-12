@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { Admin } from '../entities/admin';
 import { GetAllAdminQuery } from './get-all-admin.query';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { AccountFile } from '../../../file/entities/account-file';
+import { AccountFile } from '../../../file/entities/account-file.entity';
 
 /**
  * 관리자 전체 조회용 쿼리 핸들러

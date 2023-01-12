@@ -11,7 +11,7 @@ import { Admin } from './entities/admin';
 import { GetAdminInfoQueryHandler } from './query/get-admin-info.handler';
 import { GetAllAdminQueryHandler } from './query/get-all-admin.handler';
 import { AccountFileDb } from '../account-file-db';
-import { AccountFile } from '../../file/entities/account-file';
+import { AccountFile } from '../../file/entities/account-file.entity';
 import { ConvertException } from '../../../common/utils/convert-exception';
 import { Company } from 'src/modules/company/entities/company.entity';
 

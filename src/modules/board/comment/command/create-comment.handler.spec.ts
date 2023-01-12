@@ -3,12 +3,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CreateCommentHandler } from './create-comment.handler';
 import { CreateCommentCommand } from './create-comment.command';
 import { Repository } from 'typeorm';
-import { Qna } from '../../qna/entities/qna';
+import { Qna } from '../../qna/entities/qna.entity';
 import { Comment } from '../entities/comment';
 import { Admin } from '../../../account/admin/entities/admin';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
+import { Account } from '../../../account/entities/account';
 
 // Repository mocking
 const mockRepository = () => ({
@@ -79,7 +80,7 @@ describe('CreateCommnet', () => {
 
       // When
       const result = await createCommentHandler.execute(
-        new CreateCommentCommand(qnaId, qnaComment.comment),
+        new CreateCommentCommand(qnaId, qnaComment.comment, new Account()),
       );
 
       // Then
@@ -90,7 +91,7 @@ describe('CreateCommnet', () => {
       adminRepository.findOneBy.mockResolvedValue(accountId);
       try {
         const result = await createCommentHandler.execute(
-          new CreateCommentCommand(qnaId, qnaComment.comment),
+          new CreateCommentCommand(qnaId, qnaComment.comment, new Account()),
         );
         expect(result).toBeDefined();
       } catch (Err) {
@@ -103,7 +104,7 @@ describe('CreateCommnet', () => {
       qnaRepository.findOneBy.mockResolvedValue(qnaId);
       try {
         const result = await createCommentHandler.execute(
-          new CreateCommentCommand(qnaId, qnaComment.comment),
+          new CreateCommentCommand(qnaId, qnaComment.comment, new Account()),
         );
         expect(result).toBeDefined();
       } catch (Err) {
@@ -119,7 +120,7 @@ describe('CreateCommnet', () => {
       commentRepository.save.mockRejectedValue(qnaComment);
       try {
         const result = await createCommentHandler.execute(
-          new CreateCommentCommand(qnaId, qnaComment.comment),
+          new CreateCommentCommand(qnaId, qnaComment.comment, new Account()),
         );
         expect(result).toBeDefined();
       } catch (Err) {

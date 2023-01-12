@@ -3,9 +3,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
-import { Qna } from '../entities/qna';
-import { Board } from '../../entities/board';
-import { BoardFile } from '../../../file/entities/board-file';
+import { Qna } from '../entities/qna.entity';
+import { Board } from '../../entities/board.entity';
+import { BoardFile } from '../../../file/entities/board-file.entity';
 import { Comment } from '../../comment/entities/comment';
 import { Admin } from '../../../account/admin/entities/admin';
 import { Account } from '../../../account/entities/account';
@@ -214,7 +214,9 @@ describe('GetDetailAdmin', () => {
       });
 
       // When
-      const result = await getQnaDetailHandler.execute(new GetQnaDetailCommand(qnaId));
+      const result = await getQnaDetailHandler.execute(
+        new GetQnaDetailCommand(qnaId, new Account()),
+      );
 
       // Then
       expect(result).toEqual(resultQnaInfo);
@@ -235,7 +237,9 @@ describe('GetDetailAdmin', () => {
         });
         boardRepository.save.mockRejectedValue(undefined);
 
-        const result = await getQnaDetailHandler.execute(new GetQnaDetailCommand(qnaId));
+        const result = await getQnaDetailHandler.execute(
+          new GetQnaDetailCommand(qnaId, new Account()),
+        );
         expect(result).toBeUndefined();
       } catch (err) {
         expect(err.status).toBe(400);

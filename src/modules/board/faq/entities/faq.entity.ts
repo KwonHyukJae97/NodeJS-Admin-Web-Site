@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Board } from '../../entities/board';
-import { FaqCategory } from './faq_category';
+import { Board } from '../../entities/board.entity';
+import { FaqCategory } from './faq_category.entity';
 
 /**
  * FAQ에 대한 엔티티 정의

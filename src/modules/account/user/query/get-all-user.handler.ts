@@ -5,7 +5,7 @@ import { ConvertException } from 'src/common/utils/convert-exception';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user';
 import { GetAllUserQuery } from './get-all-user.query';
-import { AccountFile } from '../../../file/entities/account-file';
+import { AccountFile } from '../../../file/entities/account-file.entity';
 
 /**
  * 앱 사용자 전체 조회용 쿼리 핸들러

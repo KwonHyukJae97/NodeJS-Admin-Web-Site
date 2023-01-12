@@ -4,11 +4,9 @@ import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { title } from 'process';
 import { GetFaqListHandler } from './get-faq-list.handler';
-import { Faq } from '../entities/faq';
+import { Faq } from '../entities/faq.entity';
 import { GetFaqListQuery } from './get-faq-list.query';
-import { FaqCategory } from '../entities/faq_category';
 
 const mockRepository = () => ({
   createQueryBuilder: jest.fn().mockReturnValue({

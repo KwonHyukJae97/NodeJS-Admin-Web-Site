@@ -5,20 +5,16 @@ import {
   Get,
   Param,
   Patch,
-  Post,
-  UploadedFile,
+  UploadedFiles,
   UseInterceptors,
-  ValidationPipe,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { SignUpUserCommand } from '../auth/command/signup-user.command';
-import { SignUpUserDto } from '../auth/dto/signup-user.dto';
 import { DeleteUserCommand } from './command/delete-user.command';
 import { UpdateUserCommand } from './command/update-user.command';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { GetAllUserQuery } from './query/get-all-user.query';
 import { GetUserInfoQuery } from './query/get-user-info.query';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/files.interceptor';
 
 /**
  * 앱사용자 정보 조회, 수정, 삭제 처리 API Controller
@@ -54,14 +50,14 @@ export class UserController {
    * @return : 앱 사용자 정보 수정 커맨드 전송
    */
   @Patch(':id')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FilesInterceptor('files', 1))
   updateUser(
     @Param('id') userId: number,
     @Body() dto: UpdateUserDto,
-    @UploadedFile() file: Express.MulterS3.File,
+    @UploadedFiles() files: Express.MulterS3.File[],
   ) {
     const { password, email, phone, nickname, grade } = dto;
-    const command = new UpdateUserCommand(password, email, phone, nickname, grade, userId, file);
+    const command = new UpdateUserCommand(password, email, phone, nickname, grade, userId, files);
 
     return this.commandBus.execute(command);
   }

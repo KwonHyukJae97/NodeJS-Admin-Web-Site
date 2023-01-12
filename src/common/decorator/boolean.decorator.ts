@@ -8,7 +8,7 @@ export const ToBoolean = () => {
 };
 
 const valueToBoolean = (value: any) => {
-  if (value === 'true') {
+  if (value === 'true' || value == true) {
     return true;
   }
   return false;

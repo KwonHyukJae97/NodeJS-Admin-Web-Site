@@ -8,6 +8,7 @@ export class CreateAdminRoleCommand implements ICommand {
   constructor(
     readonly roleName: string,
     readonly companyId: number,
+    readonly regBy: string,
     readonly roleDto: rolePermissionDto[],
   ) {}
 }

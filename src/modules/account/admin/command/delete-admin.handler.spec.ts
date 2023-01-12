@@ -3,14 +3,13 @@ import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
 import { Account } from '../../entities/account';
-import { AccountFile } from '../../../file/entities/account-file';
+import { AccountFile } from '../../../file/entities/account-file.entity';
 import { EventBus } from '@nestjs/cqrs';
 import { AccountFileDb } from '../../account-file-db';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { DeleteAdminHandler } from './delete-admin.handler';
 import { Admin } from '../entities/admin';
 import { DeleteAdminCommand } from './delete-admin.command';
-import { GetAdminInfoQuery } from '../query/get-admin-info.query';
 
 const mockRepository = () => ({
   softDelete: jest.fn(),

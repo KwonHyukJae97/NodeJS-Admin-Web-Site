@@ -3,12 +3,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
-import { Board } from '../../entities/board';
-import { BoardFile } from '../../../file/entities/board-file';
+import { Board } from '../../entities/board.entity';
+import { BoardFile } from '../../../file/entities/board-file.entity';
 import { Account } from '../../../account/entities/account';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { GetNoticeDetailHandler } from './get-notice-detail.handler';
-import { Notice } from '../entities/notice';
+import { Notice } from '../entities/notice.entity';
 import { GetNoticeDetailCommand } from './get-notice-detail.command';
 
 const mockRepository = () => ({
@@ -114,9 +114,7 @@ describe('GetNoticeDetail', () => {
       boardFileRepository.findBy.mockReturnValue(boardId);
 
       // When
-      const result = await getNoticeDetailHandler.execute(
-        new GetNoticeDetailCommand(noticeId, role),
-      );
+      const result = await getNoticeDetailHandler.execute(new GetNoticeDetailCommand(noticeId));
 
       // Then
       expect(result).toEqual(resultNoticeInfo);
@@ -125,9 +123,7 @@ describe('GetNoticeDetail', () => {
     it('공지사항 조회 실패', async () => {
       try {
         const noticeId = 999;
-        const result = await getNoticeDetailHandler.execute(
-          new GetNoticeDetailCommand(noticeId, role),
-        );
+        const result = await getNoticeDetailHandler.execute(new GetNoticeDetailCommand(noticeId));
         expect(result).toBeUndefined();
       } catch (err) {
         expect(err.status).toBe(404);
@@ -140,9 +136,7 @@ describe('GetNoticeDetail', () => {
         const boardId = 999;
         noticeRepository.findOneBy.mockReturnValue(notice);
 
-        const result = await getNoticeDetailHandler.execute(
-          new GetNoticeDetailCommand(noticeId, role),
-        );
+        const result = await getNoticeDetailHandler.execute(new GetNoticeDetailCommand(noticeId));
         expect(result).toBeUndefined();
       } catch (err) {
         expect(err.status).toBe(404);

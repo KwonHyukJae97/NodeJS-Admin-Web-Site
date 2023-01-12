@@ -8,6 +8,11 @@ export class UpdateAdminRoleDto {
   @IsNotEmpty()
   @IsString()
   readonly roleName: string;
+
+  @IsNotEmpty()
+  @IsString()
+  readonly updateBy: string;
+
   @IsArray()
   readonly roleDto: rolePermissionDto[];
 }

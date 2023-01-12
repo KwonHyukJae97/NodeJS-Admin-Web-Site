@@ -1,10 +1,10 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateCommentCommand } from './update-comment.command';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from '../entities/comment';
 import { Repository } from 'typeorm';
-import { Board } from '../../entities/board';
+import { Board } from '../../entities/board.entity';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { Admin } from '../../../account/admin/entities/admin';
 
@@ -28,14 +28,6 @@ export class UpdateCommentHandler implements ICommandHandler<UpdateCommentComman
    */
   async execute(command: UpdateCommentCommand) {
     const { commentId, comment, account } = command;
-
-    // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
-    // 본사 관리자만 접근 가능
-    // const admin = await this.adminRepository.findOneBy({ adminId: adminId });
-    //
-    // if ( !admin ) {
-    //   throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
-    // }
 
     const commentDetail = await this.commentRepository.findOneBy({ commentId });
 

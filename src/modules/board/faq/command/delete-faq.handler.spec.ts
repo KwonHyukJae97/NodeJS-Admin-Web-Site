@@ -2,13 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
-import { Board } from '../../entities/board';
-import { BoardFile } from 'src/modules/file/entities/board-file';
+import { Board } from '../../entities/board.entity';
+import { BoardFile } from 'src/modules/file/entities/board-file.entity';
 import { BoardFileDb } from '../../board-file-db';
 import { EventBus } from '@nestjs/cqrs';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { DeleteFaqHandler } from './delete-faq.handler';
-import { Faq } from '../entities/faq';
+import { Faq } from '../entities/faq.entity';
 import { DeleteFaqCommand } from './delete-faq.command';
 
 const mockRepository = () => ({

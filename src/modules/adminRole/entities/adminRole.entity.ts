@@ -38,6 +38,22 @@ export class AdminRole extends BaseEntity {
   })
   roleName: string;
 
+  //등록자 이름
+  @Column({
+    name: 'reg_by',
+    type: 'varchar',
+    length: '20',
+  })
+  regBy: string;
+
+  //수정자 이름
+  @Column({
+    name: 'update_by',
+    type: 'varchar',
+    length: '20',
+  })
+  updateBy: string;
+
   //등록 일시
   @CreateDateColumn({
     name: 'reg_date',

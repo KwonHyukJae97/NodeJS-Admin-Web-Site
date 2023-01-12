@@ -2,13 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
-import { Board } from '../../entities/board';
-import { BoardFile } from '../../../file/entities/board-file';
+import { Board } from '../../entities/board.entity';
+import { BoardFile } from '../../../file/entities/board-file.entity';
 import { Account } from '../../../account/entities/account';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { GetFaqDetailHandler } from './get-faq-detail.handler';
-import { Faq } from '../entities/faq';
-import { FaqCategory } from '../entities/faq_category';
+import { Faq } from '../entities/faq.entity';
+import { FaqCategory } from '../entities/faq_category.entity';
 import { GetFaqDetailCommand } from './get-faq-detail.command';
 
 const mockRepository = () => ({
@@ -128,7 +128,7 @@ describe('GetFaqDetail', () => {
       boardFileRepository.findBy.mockReturnValue(boardId);
 
       // When
-      const result = await getFaqDetailHandler.execute(new GetFaqDetailCommand(faqId, role));
+      const result = await getFaqDetailHandler.execute(new GetFaqDetailCommand(faqId));
 
       // Then
       expect(result).toEqual(resultFaqInfo);
@@ -139,7 +139,7 @@ describe('GetFaqDetail', () => {
         const faqId = 999;
         faqRepository.findOneBy.mockReturnValue(faq);
 
-        const result = await getFaqDetailHandler.execute(new GetFaqDetailCommand(faqId, role));
+        const result = await getFaqDetailHandler.execute(new GetFaqDetailCommand(faqId));
         expect(result).toBeUndefined();
       } catch (err) {
         expect(err.status).toBe(404);
