@@ -3,9 +3,9 @@ import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
 import { DeleteNoticeHandler } from './delete-notice.handler';
-import { Notice } from '../entities/notice';
-import { Board } from '../../entities/board';
-import { BoardFile } from 'src/modules/file/entities/board-file';
+import { Notice } from '../entities/notice.entity';
+import { Board } from '../../entities/board.entity';
+import { BoardFile } from 'src/modules/file/entities/board-file.entity';
 import { BoardFileDb } from '../../board-file-db';
 import { EventBus } from '@nestjs/cqrs';
 import { ConvertException } from 'src/common/utils/convert-exception';
@@ -89,7 +89,7 @@ describe('DeleteNotice', () => {
       boardRepository.softDelete.mockResolvedValue(softDeleteBoardId);
 
       // When
-      const result = await deleteNoticeHandler.execute(new DeleteNoticeCommand(noticeId, role));
+      const result = await deleteNoticeHandler.execute(new DeleteNoticeCommand(noticeId));
 
       // Then
       expect(eventBus.publish).toHaveBeenCalledTimes(1);
@@ -99,7 +99,7 @@ describe('DeleteNotice', () => {
     it('공지사항 조회 실패', async () => {
       try {
         const noticeId = 999;
-        const result = await deleteNoticeHandler.execute(new DeleteNoticeCommand(noticeId, role));
+        const result = await deleteNoticeHandler.execute(new DeleteNoticeCommand(noticeId));
         expect(result).toBeUndefined();
       } catch (err) {
         expect(err.status).toBe(404);
@@ -114,7 +114,7 @@ describe('DeleteNotice', () => {
         fileRepository.findBy.mockResolvedValue(findOneBoardId);
         noticeRepository.delete.mockRejectedValue(softDeleteNoticeId);
         boardRepository.softDelete.mockRejectedValue(softDeleteBoardId);
-        const result = await deleteNoticeHandler.execute(new DeleteNoticeCommand(noticeId, role));
+        const result = await deleteNoticeHandler.execute(new DeleteNoticeCommand(noticeId));
         expect(result).toBeUndefined();
       } catch (err) {
         expect(err.status).toBe(500);

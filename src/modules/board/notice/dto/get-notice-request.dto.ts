@@ -7,10 +7,6 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class GetNoticeRequestDto extends PageRequest {
   @IsNotEmpty()
   @IsString()
-  role: string;
-
-  @IsNotEmpty()
-  @IsString()
   noticeGrant: string;
 
   @IsString()
@@ -22,7 +18,6 @@ export class GetNoticeRequestDto extends PageRequest {
   }
 
   static create(
-    role: string,
     noticeGrant: string,
     searchWord: string | null,
     pageNo: number,
@@ -30,7 +25,6 @@ export class GetNoticeRequestDto extends PageRequest {
     totalData: boolean,
   ) {
     const param = new GetNoticeRequestDto();
-    param.role = role;
     param.noticeGrant = noticeGrant;
     param.searchWord = searchWord;
     param.pageNo = pageNo;

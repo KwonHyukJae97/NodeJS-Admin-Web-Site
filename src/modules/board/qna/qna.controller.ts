@@ -6,7 +6,6 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -42,10 +41,10 @@ export class QnaController {
   createQna(
     @Body() createQnaDto: CreateQnaDto,
     @UploadedFiles() files: Express.MulterS3.File[],
-    // @GetUser() account: Account,
+    @GetUser() account: Account,
   ) {
     const { title, content } = createQnaDto;
-    const command = new CreateQnaCommand(title, content, files);
+    const command = new CreateQnaCommand(title, content, account, files);
     return this.commandBus.execute(command);
   }
 
@@ -55,12 +54,9 @@ export class QnaController {
    * @returns : 1:1 문의 상세 정보 조회 커맨드 전송
    */
   @Get(':id')
-  // @UseGuards(JwtAuthGuard)
-  async getQnaDetail(
-    @Param('id') qnaId: number,
-    // @GetUser() account: Account,
-  ) {
-    const command = new GetQnaDetailCommand(qnaId);
+  @UseGuards(JwtAuthGuard)
+  async getQnaDetail(@Param('id') qnaId: number, @GetUser() account: Account) {
+    const command = new GetQnaDetailCommand(qnaId, account);
     return this.commandBus.execute(command);
   }
 
@@ -69,12 +65,9 @@ export class QnaController {
    * @returns : 1:1 문의 리스트 조회 쿼리 전송
    */
   @Get()
-  // @UseGuards(JwtAuthGuard)
-  async getAllQna(
-    // @GetUser() account: Account,
-    @Body() param: GetQnaRequestDto,
-  ) {
-    const getQnaInfoQuery = new GetQnaListQuery(param);
+  @UseGuards(JwtAuthGuard)
+  async getAllQna(@GetUser() account: Account, @Body() param: GetQnaRequestDto) {
+    const getQnaInfoQuery = new GetQnaListQuery(param, account);
     return this.queryBus.execute(getQnaInfoQuery);
   }
 

@@ -4,7 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
 import { Admin } from '../entities/admin';
 import { GetAllAdminQueryHandler } from './get-all-admin.handler';
-import { AccountFile } from '../../../file/entities/account-file';
+import { AccountFile } from '../../../file/entities/account-file.entity';
 import { GetAllAdminQuery } from './get-all-admin.query';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 

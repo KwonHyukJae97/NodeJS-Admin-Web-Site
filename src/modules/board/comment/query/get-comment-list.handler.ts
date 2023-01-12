@@ -4,9 +4,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Comment } from '../entities/comment';
 import { Brackets, Repository } from 'typeorm';
 import { Inject } from '@nestjs/common';
-import { Qna } from '../../qna/entities/qna';
+import { Qna } from '../../qna/entities/qna.entity';
 import { ConvertException } from '../../../../common/utils/convert-exception';
-import { Board } from '../../entities/board';
+import { Board } from '../../entities/board.entity';
 import { Admin } from '../../../account/admin/entities/admin';
 import { Page } from '../../../../common/utils/page';
 import { Account } from '../../../account/entities/account';
@@ -20,6 +20,7 @@ export class GetCommentListHandler implements IQueryHandler<GetCommentListQuery>
     @InjectRepository(Comment) private commentRepository: Repository<Comment>,
     @InjectRepository(Qna) private qnaRepository: Repository<Qna>,
     @InjectRepository(Admin) private adminRepository: Repository<Admin>,
+    @InjectRepository(Account) private accountRepository: Repository<Account>,
     @Inject(ConvertException) private convertException: ConvertException,
   ) {}
 
@@ -31,65 +32,69 @@ export class GetCommentListHandler implements IQueryHandler<GetCommentListQuery>
   async execute(query: GetCommentListQuery) {
     const { param } = query;
 
-    // 하나의 qna에 대한 답변 여부를 판단하기 위한 서브 쿼리
+    // 각 qna별 최신 답변 정보를 조회하기 위한 서브 쿼리 (최신 commentId만 조회)
     const commentQb = this.commentRepository
-      .createQueryBuilder()
+      .createQueryBuilder('comment')
       .subQuery()
-      .select([
-        'comment.commentId AS commentId',
-        'comment.qnaId AS qnaId',
-        'comment.adminId AS adminId',
-      ])
+      .select(['MAX(comment.commentId) AS commentId', 'comment.qnaId AS qnaId'])
       .from(Comment, 'comment')
       .groupBy('comment.qnaId')
       .getQuery();
 
-    // 전체 문의내역 조회 (본사관리자 기준)
-    const qna = await this.qnaRepository
+    const qna = this.qnaRepository
       .createQueryBuilder('qna')
       .leftJoin(Board, 'board', 'qna.boardId = board.boardId')
+      .leftJoin(Account, 'userAc', 'board.accountId = userAc.accountId ')
+      // commentQb 서브 쿼리로 최신 commentId 조회 후
       .leftJoin(commentQb, 'comment', 'qna.qnaId = comment.qnaId')
+      // Comment에서 최신 commentId로 최신 comment 정보 조인
+      .leftJoin(Comment, 'lastComment', 'comment.commentId = lastComment.commentId')
+      // 최신 comment에 대한 admin 정보 조인
+      .leftJoin(Admin, 'admin', 'lastComment.adminId = admin.adminId')
+      .leftJoin(Account, 'adminAc', 'admin.accountId = adminAc.accountId')
       .select([
         'qna.qnaId AS qnaId',
-        'board.accountId AS accountId',
         'board.title AS title',
         'board.viewCount AS viewCount',
         'board.regDate AS regDate',
+        'userAc.name AS writerName',
+        'userAc.nickname AS writerNickname',
+        'IF(comment.commentId IS NOT NULL, true, false) AS isComment',
+        'comment.commentId AS lastCommentId',
+        'admin.adminId AS adminId',
+        'adminAc.name AS commenterName',
+        'adminAc.nickname AS commenterNickname',
       ])
-      .addSelect(['IF(comment.commentId IS NOT NULL, true, false) AS isComment'])
       .where('board.delDate IS NULL')
       .orderBy({ 'qna.qnaId': 'DESC' });
 
     // 작성자 검색
-    if (param.writer) {
-      qna.leftJoin(Account, 'account', 'board.accountId = account.accountId');
+    if (param.searchKey === 'writer') {
       qna.andWhere(
         new Brackets((qb) => {
-          qb.where('account.name like name', { name: `%${param.commenter}%` }).orWhere(
-            'account.nickname like :nickname',
-            { nickname: `%${param.commenter}%` },
+          qb.where('userAc.name like :name', { name: `%${param.searchWord}%` }).orWhere(
+            'userAc.nickname like :nickname',
+            { nickname: `%${param.searchWord}%` },
           );
         }),
       );
     }
 
     // 답변자 검색
-    if (param.commenter) {
-      qna.leftJoin(Admin, 'admin', 'comment.adminId = admin.adminId');
-      qna.leftJoin(Account, 'account', 'admin.accountId = account.accountId');
+    if (param.searchKey === 'commenter') {
       qna.andWhere(
         new Brackets((qb) => {
-          qb.where('account.name like name', { name: `%${param.commenter}%` }).orWhere(
-            'account.nickname like :nickname',
-            { nickname: `%${param.commenter}%` },
+          qb.where('adminAc.name like :name', { name: `%${param.searchWord}%` }).orWhere(
+            'adminAc.nickname like :nickname',
+            { nickname: `%${param.searchWord}%` },
           );
         }),
       );
     }
 
     // 답변 상태 검색
-    if (param.isComment != null) {
-      if (!param.isComment) {
+    if (param.searchKey === 'isComment') {
+      if (param.searchWord === 'false') {
         qna.andWhere('comment.commentId IS NULL');
       } else {
         qna.andWhere('comment.commentId');
@@ -97,9 +102,9 @@ export class GetCommentListHandler implements IQueryHandler<GetCommentListQuery>
     }
 
     // 등록일 검색
-    if (param.regDate) {
+    if (param.searchKey === 'regDate') {
       qna.andWhere('board.regDate like :regDate', {
-        regDate: `%${param.regDate}%`,
+        regDate: `%${param.searchWord}%`,
       });
     }
 

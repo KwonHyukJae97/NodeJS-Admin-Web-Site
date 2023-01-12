@@ -16,9 +16,4 @@ export class CreateFaqDto {
   @IsNotEmpty()
   @IsString()
   categoryName: string;
-
-  // 등록 권한 확인을 위해 임시 사용
-  @IsNotEmpty()
-  @IsString()
-  role: string;
 }

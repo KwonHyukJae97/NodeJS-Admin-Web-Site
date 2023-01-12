@@ -4,17 +4,13 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
-  Put,
-  UploadedFile,
+  UploadedFiles,
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { SignUpAdminCommand } from '../auth/command/signup-admin.command';
-import { SignUpAdminDto } from '../auth/dto/signup-admin.dto';
 import { CreateAdminCommand } from './command/create-admin.command';
 import { DeleteAdminCommand } from './command/delete-admin.command';
 import { UpdateAdminCommand } from './command/update-admin.command';
@@ -22,9 +18,9 @@ import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { GetAdminInfoQuery } from './query/get-admin-info.query';
 import { GetAllAdminQuery } from './query/get-all-admin.query';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { AdminUpdateInfoDto } from '../auth/dto/admin-update-info.dto';
 import { AdminUpdateInfoCommand } from './command/admin-update-info.command';
+import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/files.interceptor';
 
 /**
  * 관리자 정보 조회, 수정, 삭제 처리 API Controller
@@ -59,12 +55,12 @@ export class AdminController {
    * @param : adminId
    * @returns : 관리자 정보 수정 커맨드 전송
    */
-  @Put(':id')
-  @UseInterceptors(FileInterceptor('file'))
+  @Patch(':id')
+  @UseInterceptors(FilesInterceptor('files', 1))
   updateAdmin(
     @Param('id') adminId: number,
     @Body() dto: UpdateAdminDto,
-    @UploadedFile() file: Express.MulterS3.File,
+    @UploadedFiles() files: Express.MulterS3.File[],
   ) {
     const { password, email, phone, nickname, roleId, isSuper } = dto;
     const command = new UpdateAdminCommand(
@@ -75,7 +71,7 @@ export class AdminController {
       roleId,
       isSuper,
       adminId,
-      file,
+      files,
     );
 
     return this.commandBus.execute(command);
@@ -86,10 +82,10 @@ export class AdminController {
    * @returns : 관리자 정보 수정 커맨드 전송
    */
   @Patch('me')
-  @UseInterceptors(FileInterceptor('file'))
-  updateInfo(@Body() dto: AdminUpdateInfoDto, @UploadedFile() file: Express.MulterS3.File) {
+  @UseInterceptors(FilesInterceptor('files', 1))
+  updateInfo(@Body() dto: AdminUpdateInfoDto, @UploadedFiles() files: Express.MulterS3.File[]) {
     const { accountId, email, phone, nickname } = dto;
-    const command = new AdminUpdateInfoCommand(accountId, email, phone, nickname, file);
+    const command = new AdminUpdateInfoCommand(accountId, email, phone, nickname, files);
 
     return this.commandBus.execute(command);
   }

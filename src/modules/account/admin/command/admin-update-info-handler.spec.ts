@@ -4,7 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
 import { Account } from '../../entities/account';
 import { Admin } from '../entities/admin';
-import { AccountFile } from '../../../file/entities/account-file';
+import { AccountFile } from '../../../file/entities/account-file.entity';
 import { AccountFileDb } from '../../account-file-db';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { EventBus } from '@nestjs/cqrs';
@@ -75,14 +75,16 @@ describe('AdminUpdateInfo', () => {
   });
 
   describe('관리자 상세정보 정상 수정 여부', () => {
-    const mockFile = {
-      fieldname: 'file',
-      originalname: 'medal.png',
-      encoding: '7bit',
-      mimetype: 'image/png',
-      buffer: Buffer.from(__dirname + '/../../medal.png', 'utf8'),
-      size: 51828,
-    } as Express.MulterS3.File;
+    const mockFile = [
+      {
+        fieldname: 'file',
+        originalname: 'medal.png',
+        encoding: '7bit',
+        mimetype: 'image/png',
+        buffer: Buffer.from(__dirname + '/../../medal.png', 'utf8'),
+        size: 51828,
+      },
+    ] as Express.MulterS3.File[];
 
     // 수정하고자 하는 값
     const newAdminInfo = {

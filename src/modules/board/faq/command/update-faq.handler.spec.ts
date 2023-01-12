@@ -2,14 +2,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
-import { Board } from '../../entities/board';
-import { BoardFile } from 'src/modules/file/entities/board-file';
+import { Board } from '../../entities/board.entity';
+import { BoardFile } from 'src/modules/file/entities/board-file.entity';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { BoardFileDb } from '../../board-file-db';
 import { EventBus } from '@nestjs/cqrs';
 import { UpdateFaqHandler } from './update-faq.handler';
-import { Faq } from '../entities/faq';
-import { FaqCategory } from '../entities/faq_category';
+import { Faq } from '../entities/faq.entity';
+import { FaqCategory } from '../entities/faq_category.entity';
 import { UpdateFaqCommand } from './update-faq.command';
 
 const mockRepository = () => ({
@@ -127,14 +127,7 @@ describe('UpdateFaq', () => {
 
       // When
       const result = await updateFaqHandler.execute(
-        new UpdateFaqCommand(
-          updateBoard.title,
-          updateBoard.content,
-          categoryName,
-          role,
-          faqId,
-          files,
-        ),
+        new UpdateFaqCommand(updateBoard.title, updateBoard.content, categoryName, faqId, files),
       );
 
       // Then
@@ -151,14 +144,7 @@ describe('UpdateFaq', () => {
       try {
         const faqId = 999;
         const result = await updateFaqHandler.execute(
-          new UpdateFaqCommand(
-            updateBoard.title,
-            updateBoard.content,
-            categoryName,
-            role,
-            faqId,
-            files,
-          ),
+          new UpdateFaqCommand(updateBoard.title, updateBoard.content, categoryName, faqId, files),
         );
         expect(result).toBeUndefined();
       } catch (err) {
@@ -171,14 +157,7 @@ describe('UpdateFaq', () => {
       try {
         const role = '';
         const result = await updateFaqHandler.execute(
-          new UpdateFaqCommand(
-            updateBoard.title,
-            updateBoard.content,
-            categoryName,
-            role,
-            faqId,
-            files,
-          ),
+          new UpdateFaqCommand(updateBoard.title, updateBoard.content, categoryName, faqId, files),
         );
         expect(result).toBeUndefined();
       } catch (err) {

@@ -2,16 +2,16 @@ import { EventBus } from '@nestjs/cqrs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
-import { async } from 'rxjs';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { BoardFile } from 'src/modules/file/entities/board-file';
+import { BoardFile } from 'src/modules/file/entities/board-file.entity';
 import { Repository } from 'typeorm';
 import { BoardFileDb } from '../../board-file-db';
-import { Board } from '../../entities/board';
-import { Faq } from '../entities/faq';
-import { FaqCategory } from '../entities/faq_category';
+import { Board } from '../../entities/board.entity';
+import { Faq } from '../entities/faq.entity';
+import { FaqCategory } from '../entities/faq_category.entity';
 import { CreateFaqCommand } from './create-faq.command';
 import { CreateFaqHandler } from './create-faq.handler';
+import { Account } from '../../../account/entities/account';
 
 const mockRepository = () => ({
   save: jest.fn(),
@@ -110,7 +110,7 @@ describe('createFaq', () => {
       faqRepository.save.mockReturnValue(faq);
 
       const result = await createFaqHandler.execute(
-        new CreateFaqCommand(title, content, categoryName, role, files),
+        new CreateFaqCommand(title, content, categoryName, new Account(), files),
       );
       expect(result).toEqual(faq);
     });
@@ -120,7 +120,7 @@ describe('createFaq', () => {
         boardRepository.save.mockRejectedValue(board);
 
         const result = await createFaqHandler.execute(
-          new CreateFaqCommand(title, content, categoryName, role, files),
+          new CreateFaqCommand(title, content, categoryName, new Account(), files),
         );
         expect(result).toBeUndefined();
       } catch (err) {
@@ -134,7 +134,7 @@ describe('createFaq', () => {
         const categoryName = '';
         categoryRepository.findOneBy.mockReturnValue(undefined);
         const result = await createFaqHandler.execute(
-          new CreateFaqCommand(title, content, categoryName, role, files),
+          new CreateFaqCommand(title, content, categoryName, new Account(), files),
         );
         expect(result).toBeUndefined();
       } catch (err) {
@@ -151,7 +151,7 @@ describe('createFaq', () => {
         faqRepository.save.mockRejectedValue(faq);
 
         const result = await createFaqHandler.execute(
-          new CreateFaqCommand(title, content, categoryName, role, files),
+          new CreateFaqCommand(title, content, categoryName, new Account(), files),
         );
         expect(result).toBeUndefined();
       } catch (err) {

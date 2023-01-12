@@ -1,15 +1,12 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { GetFileDownloadQuery } from './get-file-download.query';
-import { BoardFile } from '../entities/board-file';
+import { BoardFile } from '../entities/board-file.entity';
 import * as AWS from 'aws-sdk';
 import { ConvertException } from '../../../common/utils/convert-exception';
 
-/**
- * 단일 파일 다운로드용 쿼리 핸들러
- */
 // S3 연결을 위한 설정
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -17,6 +14,9 @@ const s3 = new AWS.S3({
   region: process.env.AWS_REGION,
 });
 
+/**
+ * 단일 파일 다운로드용 쿼리 핸들러
+ */
 @QueryHandler(GetFileDownloadQuery)
 export class GetFileDownloadHandler implements IQueryHandler<GetFileDownloadQuery> {
   constructor(

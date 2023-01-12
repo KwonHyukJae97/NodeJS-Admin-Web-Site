@@ -1,15 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
+import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DeleteQnaCommand } from './delete-qna.command';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Qna } from '../entities/qna';
-import { Board } from '../../entities/board';
-import { BoardFile } from '../../../file/entities/board-file';
+import { DataSource, Repository } from 'typeorm';
+import { Qna } from '../entities/qna.entity';
+import { Board } from '../../entities/board.entity';
+import { BoardFile } from '../../../file/entities/board-file.entity';
 import { Comment } from '../../comment/entities/comment';
-import { FilesDeleteEvent } from '../../../file/event/files-delete-event';
 import { BoardFileDb } from '../../board-file-db';
 import { ConvertException } from '../../../../common/utils/convert-exception';
+import { DeleteFilesCommand } from '../../../file/command/delete-files.command';
 
 /**
  * 1:1 문의 삭제용 커맨드 핸들러
@@ -22,9 +22,10 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
     @InjectRepository(Board) private boardRepository: Repository<Board>,
     @InjectRepository(BoardFile) private fileRepository: Repository<BoardFile>,
     @InjectRepository(Comment) private commentRepository: Repository<Comment>,
-    @Inject('qnaFile') private boardFileDb: BoardFileDb,
+    @Inject('boardFile') private boardFileDb: BoardFileDb,
     @Inject(ConvertException) private convertException: ConvertException,
-    private eventBus: EventBus,
+    private commandBus: CommandBus,
+    private dataSource: DataSource,
   ) {}
 
   /**
@@ -34,6 +35,10 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
    */
   async execute(command: DeleteQnaCommand) {
     const { qnaId, account } = command;
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     const qna = await this.qnaRepository.findOneBy({ qnaId });
 
@@ -53,33 +58,28 @@ export class DeleteQnaHandler implements ICommandHandler<DeleteQnaCommand> {
 
     const boardFiles = await this.fileRepository.findBy({ boardId: board.boardId });
 
-    if (boardFiles.length !== 0) {
-      // 파일 삭제 이벤트 처리
-      this.eventBus.publish(new FilesDeleteEvent(board.boardId, this.boardFileDb));
-    }
-
-    const comments = await this.commentRepository.findBy({ qnaId });
-
-    comments.map((comment) => {
-      try {
-        this.commentRepository.softDelete({ commentId: comment.commentId });
-      } catch (err) {
-        return this.convertException.CommonError(500);
+    try {
+      if (boardFiles.length !== 0) {
+        // 파일 삭제 이벤트 처리
+        const command = new DeleteFilesCommand(board.boardId, this.boardFileDb, queryRunner);
+        await this.commandBus.execute(command);
       }
-    });
 
-    try {
-      await this.qnaRepository.delete(qna);
+      const comments = await this.commentRepository.findBy({ qnaId });
+
+      comments.map((comment) => {
+        queryRunner.manager.getRepository(Comment).softDelete({ commentId: comment.commentId });
+      });
+
+      await queryRunner.manager.getRepository(Qna).delete(qna);
+      await queryRunner.manager.getRepository(Board).softDelete({ boardId: board.boardId });
+      await queryRunner.commitTransaction();
+      return '삭제가 완료 되었습니다.';
     } catch (err) {
+      await queryRunner.rollbackTransaction();
       return this.convertException.CommonError(500);
+    } finally {
+      await queryRunner.release();
     }
-
-    try {
-      await this.boardRepository.softDelete({ boardId: board.boardId });
-    } catch (err) {
-      return this.convertException.CommonError(500);
-    }
-
-    return '삭제가 완료 되었습니다.';
   }
 }

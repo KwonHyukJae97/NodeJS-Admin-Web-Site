@@ -6,12 +6,12 @@ import { TranslatorModule } from 'nestjs-translator';
 import { GetCommentDetailHandler } from './get-comment-detail.handler';
 import { GetCommentDetailCommand } from './get-comment-detail.command';
 import { Comment } from '../entities/comment';
-import { Qna } from '../../qna/entities/qna';
+import { Qna } from '../../qna/entities/qna.entity';
 import { Admin } from '../../../account/admin/entities/admin';
-import { Board } from '../../entities/board';
+import { Board } from '../../entities/board.entity';
 import { Account } from '../../../account/entities/account';
-import { BoardFile } from '../../../file/entities/board-file';
 import { Company } from '../../../company/entities/company.entity';
+import { BoardFile } from '../../../file/entities/board-file.entity';
 
 // Repository에서 사용되는 함수 복제
 const mockRepository = () => ({
@@ -206,9 +206,7 @@ describe('GetCommentDetail', () => {
       });
 
       // When
-      const result = await getCommentDetailHandler.execute(
-        new GetCommentDetailCommand(qnaId, role),
-      );
+      const result = await getCommentDetailHandler.execute(new GetCommentDetailCommand(qnaId));
 
       // Then
       expect(result).toEqual(resultCommentInfo);
@@ -218,9 +216,7 @@ describe('GetCommentDetail', () => {
       boardRepository.findOneBy.mockResolvedValue(qnaId);
 
       try {
-        const result = await getCommentDetailHandler.execute(
-          new GetCommentDetailCommand(qnaId, role),
-        );
+        const result = await getCommentDetailHandler.execute(new GetCommentDetailCommand(qnaId));
         expect(result).toBeDefined();
       } catch (Err) {
         expect(Err.status).toBe(404);
@@ -231,9 +227,7 @@ describe('GetCommentDetail', () => {
     it('게시글 정보 없을 경우 404 에러 발생', async () => {
       qnaRepository.findOneBy.mockResolvedValue(boardId);
       try {
-        const result = await getCommentDetailHandler.execute(
-          new GetCommentDetailCommand(qnaId, role),
-        );
+        const result = await getCommentDetailHandler.execute(new GetCommentDetailCommand(qnaId));
         expect(result).toBeDefined();
       } catch (Err) {
         expect(Err.status).toBe(404);
@@ -247,9 +241,7 @@ describe('GetCommentDetail', () => {
       accountRepository.save.mockRejectedValue(accountId);
 
       try {
-        const result = await getCommentDetailHandler.execute(
-          new GetCommentDetailCommand(qnaId, role),
-        );
+        const result = await getCommentDetailHandler.execute(new GetCommentDetailCommand(qnaId));
         expect(result).toBeDefined();
       } catch (Err) {
         expect(Err.status).toBe(400);
@@ -267,9 +259,7 @@ describe('GetCommentDetail', () => {
       companyRepository.findOneBy.mockResolvedValue(companyId);
 
       try {
-        const result = await getCommentDetailHandler.execute(
-          new GetCommentDetailCommand(qnaId, role),
-        );
+        const result = await getCommentDetailHandler.execute(new GetCommentDetailCommand(qnaId));
         expect(result).toBeDefined();
       } catch (Err) {
         expect(Err.status).toBe(400);
@@ -287,9 +277,7 @@ describe('GetCommentDetail', () => {
       companyRepository.findOneBy.mockResolvedValue(companyId);
 
       try {
-        const result = await getCommentDetailHandler.execute(
-          new GetCommentDetailCommand(qnaId, role),
-        );
+        const result = await getCommentDetailHandler.execute(new GetCommentDetailCommand(qnaId));
         expect(result).toBeDefined();
       } catch (Err) {
         expect(Err.status).toBe(400);

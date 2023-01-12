@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
+import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateUserCommand } from './update-user.command';
 import { User } from '../entities/user';
@@ -8,10 +8,10 @@ import { DataSource, Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { AccountFileDb } from '../../account-file-db';
 import { FileType } from '../../../file/entities/file-type.enum';
-import { FileUpdateEvent } from '../../../file/event/file-update-event';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { AccountFile } from '../../../file/entities/account-file';
-import { FileCreateEvent } from '../../../file/event/file-create-event';
+import { AccountFile } from '../../../file/entities/account-file.entity';
+import { UpdateFilesCommand } from '../../../file/command/update-files.command';
+import { CreateFilesCommand } from '../../../file/command/create-files.command';
 
 /**
  * 앱 사용자 정보 수정용 커맨드 핸들러
@@ -24,10 +24,9 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
     @InjectRepository(Account) private accountRepository: Repository<Account>,
     @InjectRepository(AccountFile) private fileRepository: Repository<AccountFile>,
     @Inject('accountFile') private accountFileDb: AccountFileDb,
-    private eventBus: EventBus,
     @Inject(ConvertException) private convertException: ConvertException,
-
     private dataSource: DataSource,
+    private commandBus: CommandBus,
   ) {}
 
   /**
@@ -36,7 +35,7 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
    * @returns : DB처리 실패 시 에러 메시지 반환 / 수정 성공 시 수정된 정보 반환
    */
   async execute(command: UpdateUserCommand) {
-    const { password, email, phone, nickname, grade, userId, file } = command;
+    const { password, email, phone, nickname, grade, userId, files } = command;
 
     const user = await this.userRepository.findOneBy({ userId: userId });
     const accountId = user.accountId;
@@ -66,17 +65,29 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
 
       const accountFile = await this.fileRepository.findOneBy({ accountId: account.accountId });
 
-      if (file) {
+      if (files.length !== 0) {
         // 저장되어 있는 프로필 이미지가 있다면 '수정' 이벤트 호출
         if (accountFile) {
-          this.eventBus.publish(
-            new FileUpdateEvent(account.accountId, FileType.ACCOUNT, file, this.accountFileDb),
+          const command = new UpdateFilesCommand(
+            account.accountId,
+            FileType.ACCOUNT,
+            null,
+            files,
+            this.accountFileDb,
+            queryRunner,
           );
+          await this.commandBus.execute(command);
           // 저장되어 있는 프로필 이미지가 없다면 '등록' 이벤트 호출
         } else {
-          this.eventBus.publish(
-            new FileCreateEvent(account.accountId, FileType.ACCOUNT, file, this.accountFileDb),
+          const command = new CreateFilesCommand(
+            account.accountId,
+            FileType.ACCOUNT,
+            null,
+            files,
+            this.accountFileDb,
+            queryRunner,
           );
+          await this.commandBus.execute(command);
         }
       }
 

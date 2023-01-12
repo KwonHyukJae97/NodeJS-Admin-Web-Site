@@ -1,14 +1,14 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
+import { Inject, Injectable } from '@nestjs/common';
+import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreateNoticeCommand } from './create-notice.command';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Notice } from '../entities/notice';
-import { Repository } from 'typeorm';
-import { Board } from '../../entities/board';
-import { FilesCreateEvent } from '../../../file/event/files-create-event';
+import { Notice } from '../entities/notice.entity';
+import { DataSource, Repository } from 'typeorm';
+import { Board } from '../../entities/board.entity';
 import { BoardFileDb } from '../../board-file-db';
 import { FileType } from '../../../file/entities/file-type.enum';
 import { ConvertException } from '../../../../common/utils/convert-exception';
+import { CreateFilesCommand } from '../../../file/command/create-files.command';
 
 /**
  * 공지사항 등록용 커맨드 핸들러
@@ -19,9 +19,10 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
   constructor(
     @InjectRepository(Notice) private noticeRepository: Repository<Notice>,
     @InjectRepository(Board) private boardRepository: Repository<Board>,
-    @Inject('noticeFile') private boardFileDb: BoardFileDb,
+    @Inject('boardFile') private boardFileDb: BoardFileDb,
     @Inject(ConvertException) private convertException: ConvertException,
-    private eventBus: EventBus,
+    private commandBus: CommandBus,
+    private dataSource: DataSource,
   ) {}
 
   /**
@@ -30,47 +31,52 @@ export class CreateNoticeHandler implements ICommandHandler<CreateNoticeCommand>
    * @returns : DB처리 실패 시 에러 메시지 반환 / 등록 완료 시 공지사항 정보 반환
    */
   async execute(command: CreateNoticeCommand) {
-    const { title, content, isTop, noticeGrant, role, files } = command;
+    const { title, content, isTop, noticeGrant, files, account } = command;
 
-    // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
-    if (role !== '본사 관리자' && role !== '회원사 관리자') {
-      throw new BadRequestException('본사 및 회원사 관리자만 접근 가능합니다.');
-    }
-
-    const board = this.boardRepository.create({
-      accountId: 27,
-      boardTypeCode: '0',
-      title,
-      content,
-      viewCount: 0,
-    });
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     try {
-      await this.boardRepository.save(board);
+      const board = queryRunner.manager.getRepository(Board).create({
+        accountId: account.accountId,
+        boardTypeCode: '0',
+        title,
+        content,
+        viewCount: 0,
+      });
+
+      await queryRunner.manager.getRepository(Board).save(board);
+
+      const notice = queryRunner.manager.getRepository(Notice).create({
+        noticeGrant,
+        isTop,
+        boardId: board.boardId,
+        board: board,
+      });
+
+      await queryRunner.manager.getRepository(Notice).save(notice);
+
+      // board-file 트랜잭션 처리를 위해 event 방식에서 command 방식으로 변경
+      if (files.length !== 0) {
+        const command = new CreateFilesCommand(
+          board.boardId,
+          FileType.NOTICE,
+          null,
+          files,
+          this.boardFileDb,
+          queryRunner,
+        );
+        await this.commandBus.execute(command);
+      }
+
+      await queryRunner.commitTransaction();
+      return notice;
     } catch (err) {
-      return this.convertException.badRequestError('게시글 정보에', 400);
+      await queryRunner.rollbackTransaction();
+      return this.convertException.badInput('공지사항 정보에', 400);
+    } finally {
+      await queryRunner.release();
     }
-
-    const notice = this.noticeRepository.create({
-      noticeGrant,
-      isTop,
-      boardId: board.boardId,
-      board: board,
-    });
-
-    try {
-      await this.noticeRepository.save(notice);
-    } catch (err) {
-      return this.convertException.badRequestError('공지사항 정보에', 400);
-    }
-
-    if (files.length !== 0) {
-      // 파일 업로드 이벤트 처리
-      this.eventBus.publish(
-        new FilesCreateEvent(board.boardId, FileType.NOTICE, files, this.boardFileDb),
-      );
-    }
-
-    return notice;
   }
 }

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 import { ToBoolean } from '../../../../common/decorator/boolean.decorator';
 
 /**
@@ -22,9 +22,4 @@ export class CreateNoticeDto {
   @IsString()
   @MaxLength(10)
   noticeGrant: string;
-
-  // 등록 권한 확인을 위해 임시 사용
-  @IsNotEmpty()
-  @IsString()
-  role: string;
 }

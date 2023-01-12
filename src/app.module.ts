@@ -27,6 +27,7 @@ import { UserModule } from './modules/account/user/user.module';
 import { AdminModule } from './modules/account/admin/admin.module';
 import { WordLevelModule } from './modules/wordLevel/wordLevel.module';
 import { ProjectModule } from './modules/project/project.module';
+import { WordModule } from './modules/word/word.module';
 
 @Module({
   imports: [
@@ -99,6 +100,7 @@ import { ProjectModule } from './modules/project/project.module';
     UserModule,
     AdminModule,
     ExceptionModule,
+    WordModule,
     WordLevelModule,
     ProjectModule,
   ],

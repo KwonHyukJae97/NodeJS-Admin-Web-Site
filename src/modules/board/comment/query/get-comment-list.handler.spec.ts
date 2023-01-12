@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
 import { ConvertException } from '../../../../common/utils/convert-exception';
@@ -7,9 +6,9 @@ import { TranslatorModule } from 'nestjs-translator';
 import { GetCommentListHandler } from './get-comment-list.handler';
 import { GetCommentListQuery } from './get-comment-list.query';
 import { Comment } from '../entities/comment';
-import { Qna } from '../../qna/entities/qna';
+import { Qna } from '../../qna/entities/qna.entity';
 import { Admin } from '../../../account/admin/entities/admin';
-import { Board } from '../../entities/board';
+import { Board } from '../../entities/board.entity';
 
 // Repository에서 사용되는 함수 복제
 const mockRepository = () => ({
@@ -78,6 +77,7 @@ describe('GetCommentList', () => {
   describe('전체 코멘트 정보 정상 조회 여부', () => {
     it('조회 성공', async () => {
       const param = {
+        searchKey: null,
         searchWord: null,
         pageNo: 1,
         pageSize: 10,
@@ -154,6 +154,7 @@ describe('GetCommentList', () => {
     //GetCommentListQuery 에 넘겨줄 param값 정의
     const param = {
       searchWord: null,
+      searchKey: null,
       pageNo: 1,
       pageSize: 10,
       totalData: false,

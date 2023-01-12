@@ -16,9 +16,4 @@ export class UpdateFaqDto {
   @IsNotEmpty()
   @IsString()
   categoryName: string;
-
-  // 수정 권한 확인을 위해 임시 사용
-  @IsNotEmpty()
-  @IsString()
-  role: string;
 }

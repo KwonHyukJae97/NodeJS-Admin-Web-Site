@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateCommentCommand } from './command/create-comment.command';
@@ -6,7 +6,6 @@ import { GetCommentListQuery } from './query/get-comment-list.query';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { UpdateCommentCommand } from './command/update-comment.command';
 import { GetCommentDetailCommand } from './command/get-comment-detail.command';
-import { GetCommentInfoDto } from './dto/get-comment-info.dto';
 import { Account } from '../../account/entities/account';
 import { GetUser } from '../../account/decorator/account.decorator';
 import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
@@ -29,10 +28,10 @@ export class CommentController {
   createComment(
     @Param('id') qnaId: number,
     @Body() createCommentDto: CreateCommentDto,
-    // @GetUser() account: Account,
+    @GetUser() account: Account,
   ) {
     const { comment } = createCommentDto;
-    const command = new CreateCommentCommand(qnaId, comment);
+    const command = new CreateCommentCommand(qnaId, comment, account);
     return this.commandBus.execute(command);
   }
 
@@ -41,11 +40,9 @@ export class CommentController {
    * @returns : 답변 리스트 조회 쿼리 전송
    */
   @Get()
-  // @UseGuards(JwtAuthGuard)
-  async getAllComment(
-    @Body() param: GetCommentRequestDto,
-    // @GetUser() account: Account
-  ) {
+  @UseGuards(JwtAuthGuard)
+  async getAllComment(@Body() param: GetCommentRequestDto) {
+    console.log(param);
     const getCommentListQuery = new GetCommentListQuery(param);
     return this.queryBus.execute(getCommentListQuery);
   }
@@ -57,9 +54,8 @@ export class CommentController {
    */
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  async getCommentDetail(@Param('id') qnaId: number, @Body() getCommentInfoDto: GetCommentInfoDto) {
-    const { role } = getCommentInfoDto;
-    const command = new GetCommentDetailCommand(qnaId, role);
+  async getCommentDetail(@Param('id') qnaId: number) {
+    const command = new GetCommentDetailCommand(qnaId);
     return this.commandBus.execute(command);
   }
 

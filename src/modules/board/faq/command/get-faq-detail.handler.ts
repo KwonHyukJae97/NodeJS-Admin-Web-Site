@@ -1,12 +1,12 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { GetFaqDetailCommand } from './get-faq-detail.command';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Faq } from '../entities/faq';
-import { Repository } from 'typeorm';
-import { Board } from '../../entities/board';
-import { BoardFile } from '../../../file/entities/board-file';
-import { FaqCategory } from '../entities/faq_category';
+import { Faq } from '../entities/faq.entity';
+import { DataSource, Repository } from 'typeorm';
+import { Board } from '../../entities/board.entity';
+import { BoardFile } from '../../../file/entities/board-file.entity';
+import { FaqCategory } from '../entities/faq_category.entity';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { Account } from '../../../account/entities/account';
 
@@ -23,6 +23,7 @@ export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand>
     @InjectRepository(FaqCategory) private categoryRepository: Repository<FaqCategory>,
     @InjectRepository(Account) private accountRepository: Repository<Account>,
     @Inject(ConvertException) private convertException: ConvertException,
+    private dataSource: DataSource,
   ) {}
 
   /**
@@ -31,18 +32,17 @@ export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand>
    * @returns : DB처리 실패 시 에러 메시지 반환 / 조회 성공 시 FAQ 상세 정보 반환
    */
   async execute(command: GetFaqDetailCommand) {
-    const { faqId, role } = command;
+    const { faqId } = command;
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     const faq = await this.faqRepository.findOneBy({ faqId });
 
     const category = await this.categoryRepository.findOneBy({
       categoryId: faq.categoryId,
     });
-
-    // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
-    // if (!category.isUse && role !== '본사 관리자') {
-    //   throw new BadRequestException('본사 관리자만 접근 가능합니다.');
-    // }
 
     if (!faq) {
       return this.convertException.notFoundError('FAQ', 404);
@@ -59,30 +59,26 @@ export class GetFaqDetailHandler implements ICommandHandler<GetFaqDetailCommand>
     board.viewCount++;
 
     try {
-      await this.boardRepository.save(board);
-    } catch (err) {
-      return this.convertException.badRequestError('게시글 정보에', 400);
-    }
+      await queryRunner.manager.getRepository(Board).save(board);
 
-    faq.board = board;
+      faq.board = board;
+      await queryRunner.manager.getRepository(Faq).save(faq);
 
-    try {
-      await this.faqRepository.save(faq);
+      await queryRunner.commitTransaction();
     } catch (err) {
-      return this.convertException.badRequestError('FAQ', 400);
+      await queryRunner.rollbackTransaction();
+      return this.convertException.CommonError(500);
+    } finally {
+      await queryRunner.release();
     }
 
     const account = await this.accountRepository.findOneBy({ accountId: board.accountId });
-
-    if (!account) {
-      return this.convertException.notFoundError('작성자', 404);
-    }
 
     const files = await this.fileRepository.findBy({ boardId: board.boardId });
 
     const getFaqDetailDto = {
       faq,
-      writer: account.name + '(' + account.nickname + ')',
+      writer: account == null ? '탈퇴 회원(*****)' : account.name + '(' + account.nickname + ')',
       fileList: files,
       category: category,
     };

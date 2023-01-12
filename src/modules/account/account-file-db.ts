@@ -1,9 +1,9 @@
 import { FileDbInterface } from '../file/file-db.interface';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryRunner, Repository } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import { Account } from './entities/account';
-import { AccountFile } from '../file/entities/account-file';
+import { AccountFile } from '../file/entities/account-file.entity';
 import { ConvertException } from '../../common/utils/convert-exception';
 
 /**
@@ -23,20 +23,20 @@ export class AccountFileDb implements FileDbInterface {
    * @param fileInfo : 파일 정보
    * @returns : DB처리 실패 시 에러 메시지 반환 / 저장 성공 시 void 반환
    */
-  async save(id: number, fileInfo: any) {
+  async save(id: number, fileInfo: any, queryRunner: QueryRunner) {
     const { originalFileName, fileName, fileExt, filePath, fileSize } = fileInfo;
 
-    const accountFile = this.fileRepository.create({
-      accountId: id,
-      originalFileName,
-      fileName,
-      fileExt,
-      filePath,
-      fileSize,
-    });
-
     try {
-      await this.fileRepository.save(accountFile);
+      const accountFile = queryRunner.manager.getRepository(AccountFile).create({
+        accountId: id,
+        originalFileName,
+        fileName,
+        fileExt,
+        filePath,
+        fileSize,
+      });
+
+      await queryRunner.manager.getRepository(AccountFile).save(accountFile);
     } catch (err) {
       console.log('DB 파일 저장 실패');
       return this.convertException.badRequestError('계정 파일 정보에', 400);
@@ -48,13 +48,15 @@ export class AccountFileDb implements FileDbInterface {
    * @param id : account_id
    * @returns : DB처리 실패 시 에러 메시지 반환 / 삭제 성공 시 void 반환
    */
-  async delete(id: number) {
+  async delete(id: number, fieldName: null, queryRunner: QueryRunner) {
     // 기존 파일 조회
     const file = await this.fileRepository.findOneBy({ accountId: id });
 
+    const deleteList = [];
+
     // S3 key값으로 사용될 속성 추출
     if (file) {
-      const deleteFile = file.fileName;
+      deleteList.push(file.fileName);
 
       try {
         await this.fileRepository.softDelete({ accountFileId: file.accountFileId });
@@ -63,7 +65,7 @@ export class AccountFileDb implements FileDbInterface {
         return this.convertException.CommonError(500);
       }
       // S3 key값 반환
-      return deleteFile;
+      return deleteList;
     }
   }
 }

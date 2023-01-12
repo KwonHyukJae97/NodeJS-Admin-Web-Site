@@ -8,7 +8,7 @@ export class CreateQnaCommand implements ICommand {
   constructor(
     readonly title: string,
     readonly content: string,
-    // readonly account: Account,
+    readonly account: Account,
     readonly files: Express.MulterS3.File[],
   ) {}
 }

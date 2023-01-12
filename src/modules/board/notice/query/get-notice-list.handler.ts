@@ -1,8 +1,8 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Notice } from '../entities/notice';
+import { Notice } from '../entities/notice.entity';
 import { Repository } from 'typeorm';
-import { BadRequestException, Inject } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { GetNoticeListQuery } from './get-notice-list.query';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { Page } from '../../../../common/utils/page';
@@ -26,19 +26,6 @@ export class GetNoticeListHandler implements IQueryHandler<GetNoticeListQuery> {
    */
   async execute(query: GetNoticeListQuery) {
     const { param } = query;
-
-    // TODO : 권한 정보 데코레이터 적용시 확인 후, 삭제 예정
-    // 본사 관리자만 조회 권한이 있을 경우
-    if (param.noticeGrant === '0') {
-      if (param.role !== '본사 관리자') {
-        throw new BadRequestException('본사 관리자만 접근 가능합니다.');
-      }
-      // 본사 및 회원사 관리자만 조회 권한이 있을 경우
-    } else if (param.noticeGrant === '0|1') {
-      if (param.role !== '본사 관리자' && param.role !== '회원사 관리자') {
-        throw new BadRequestException('본사 또는 회원사 관리자만 접근 가능합니다.');
-      }
-    }
 
     const notice = await this.noticeRepository
       .createQueryBuilder('notice')

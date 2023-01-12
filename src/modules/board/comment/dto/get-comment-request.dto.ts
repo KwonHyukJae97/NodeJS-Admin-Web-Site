@@ -1,5 +1,5 @@
 import { PageRequest } from '../../../../common/utils/page-request';
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 /**
  * 답변 전체 리스트 조회에 필요한 요청 Dto 정의
@@ -7,26 +7,25 @@ import { IsBoolean, IsOptional, IsString } from 'class-validator';
 export class GetCommentRequestDto extends PageRequest {
   @IsString()
   @IsOptional()
-  writer: string | null;
+  searchKey: string | null;
 
-  @IsString()
   @IsOptional()
-  commenter: string | null;
-
-  @IsString()
-  @IsOptional()
-  regDate: string | null;
-
-  @IsBoolean()
-  @IsOptional()
-  isComment: boolean | null;
+  searchWord: string | null;
 
   constructor() {
     super();
   }
 
-  static create(pageNo: number, pageSize: number, totalData: boolean) {
+  static create(
+    searchKey: string | null,
+    searchWord: string | null,
+    pageNo: number,
+    pageSize: number,
+    totalData: boolean,
+  ) {
     const param = new GetCommentRequestDto();
+    param.searchKey = searchKey;
+    param.searchWord = searchWord;
     param.pageNo = pageNo;
     param.pageSize = pageSize;
     param.totalData = totalData;

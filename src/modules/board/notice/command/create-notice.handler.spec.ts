@@ -3,13 +3,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TranslatorModule } from 'nestjs-translator';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { BoardFile } from 'src/modules/file/entities/board-file';
+import { BoardFile } from 'src/modules/file/entities/board-file.entity';
 import { Repository } from 'typeorm';
 import { BoardFileDb } from '../../board-file-db';
-import { Board } from '../../entities/board';
-import { Notice } from '../entities/notice';
+import { Board } from '../../entities/board.entity';
+import { Notice } from '../entities/notice.entity';
 import { CreateNoticeCommand } from './create-notice.command';
 import { CreateNoticeHandler } from './create-notice.handler';
+import { Account } from '../../../account/entities/account';
 
 const mockRepository = () => ({
   save: jest.fn(),
@@ -98,7 +99,7 @@ describe('createNotice', () => {
       boardRepository.save.mockReturnValue(board);
 
       const result = await createNoticeHandler.execute(
-        new CreateNoticeCommand(title, content, isTop, noticeGrant, role, files),
+        new CreateNoticeCommand(title, content, isTop, noticeGrant, new Account(), files),
       );
       expect(result).toEqual(notice);
       expect(eventBus.publish).toHaveBeenCalledTimes(0);
@@ -109,7 +110,7 @@ describe('createNotice', () => {
         boardRepository.save.mockRejectedValue(board);
 
         const result = await createNoticeHandler.execute(
-          new CreateNoticeCommand(title, content, isTop, noticeGrant, role, files),
+          new CreateNoticeCommand(title, content, isTop, noticeGrant, new Account(), files),
         );
         expect(result).toBeUndefined();
       } catch (err) {
@@ -125,7 +126,7 @@ describe('createNotice', () => {
         noticeRepository.save.mockRejectedValue(notice);
 
         const result = await createNoticeHandler.execute(
-          new CreateNoticeCommand(title, content, isTop, noticeGrant, role, files),
+          new CreateNoticeCommand(title, content, isTop, noticeGrant, new Account(), files),
         );
         expect(result).toBeUndefined();
       } catch (err) {
