@@ -7,14 +7,10 @@ import {
   Patch,
   Post,
   UploadedFiles,
-  Put,
-  UploadedFile,
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { SignUpAdminCommand } from '../auth/command/signup-admin.command';
-import { SignUpAdminDto } from '../auth/dto/signup-admin.dto';
 import { CreateAdminCommand } from './command/create-admin.command';
 import { DeleteAdminCommand } from './command/delete-admin.command';
 import { UpdateAdminCommand } from './command/update-admin.command';
