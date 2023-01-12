@@ -6,7 +6,15 @@ import { PercentDto } from './percent.dto';
  */
 export class CreateStudyDto {
   //학습영역코드
+  @IsNotEmpty()
+  @IsString()
   readonly studyTypeCode: string;
+
+  //단어레벨 번호
+  @IsNotEmpty()
+  @IsNumber()
+  readonly wordLevelId: number;
+
   //학습명
   @IsNotEmpty()
   @IsString()

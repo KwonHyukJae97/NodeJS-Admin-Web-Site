@@ -19,6 +19,8 @@ import { StudyUnit } from '../studyUnit/entities/studyUnit';
 import { StudyFileDb } from './study-file-db';
 import { StudyFile } from '../file/entities/study-file';
 import { FileService } from '../file/file.service';
+import { StudyPlanFile } from '../file/entities/studyPlan-file';
+import { StudyPlanFileDb } from '../studyPlan/studyPlan-file-db';
 
 const CommandHandler = [CreateStudyHandler, UpdateStudyHandler, DeleteStudytHandler, FileService];
 
@@ -35,6 +37,7 @@ const QueryHandler = [GetStudyListQueryHandler, GetStudyInfoQueryHandler];
       WordLevel,
       StudyType,
       StudyFile,
+      StudyPlanFile,
     ]),
     CqrsModule,
   ],
@@ -45,6 +48,7 @@ const QueryHandler = [GetStudyListQueryHandler, GetStudyInfoQueryHandler];
     ...QueryHandler,
     ConvertException,
     { provide: 'studyFile', useClass: StudyFileDb },
+    { provide: 'studyPlanFile', useClass: StudyPlanFileDb },
   ],
 })
 export class StudyModule {}

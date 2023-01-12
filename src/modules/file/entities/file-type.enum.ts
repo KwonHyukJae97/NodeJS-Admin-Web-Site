@@ -7,4 +7,6 @@ export enum FileType {
   QNA = 'qna',
   ACCOUNT = 'account',
   WORD = 'word',
+  STUDY = 'study',
+  STUDYPLAN = 'studyPlan',
 }

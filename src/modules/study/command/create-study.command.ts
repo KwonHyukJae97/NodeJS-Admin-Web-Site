@@ -7,6 +7,7 @@ import { PercentDto } from '../dto/percent.dto';
 export class CreateStudyCommand implements ICommand {
   constructor(
     readonly studyTypeCode: string,
+    readonly wordLevelId: number,
     readonly studyName: string,
     readonly studyTarget: string,
     readonly studyInformation: string,

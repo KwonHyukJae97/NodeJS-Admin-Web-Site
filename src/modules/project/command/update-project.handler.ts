@@ -51,7 +51,6 @@ export class UpdateProjectHandler implements ICommandHandler<UpdateProjectComman
     } catch (err) {
       console.log(err);
       await queryRunner.rollbackTransaction();
-
       return this.convertException.badRequestError('프로젝트 정보 수정에 ', 400);
     } finally {
       await queryRunner.release();

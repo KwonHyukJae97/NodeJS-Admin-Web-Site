@@ -1,7 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
+import { UpdateFilesCommand } from 'src/modules/file/command/update-files.command';
+import { FileType } from 'src/modules/file/entities/file-type.enum';
 import { GradeLevelRank } from 'src/modules/gradeLevelRank/entities/gradeLevelRank';
 import { LevelStandard } from 'src/modules/levelStandard/entities/levelStandard';
 import { Percent } from 'src/modules/percent/entities/percent';
@@ -10,6 +12,7 @@ import { StudyType } from 'src/modules/studyType/entities/studyType';
 import { StudyUnit } from 'src/modules/studyUnit/entities/studyUnit';
 import { DataSource, Repository } from 'typeorm';
 import { Study } from '../entities/study';
+import { StudyFileDb } from '../study-file-db';
 import { UpdateStudyCommand } from './update-study.command';
 
 /**
@@ -26,8 +29,10 @@ export class UpdateStudyHandler implements ICommandHandler<UpdateStudyCommand> {
     @InjectRepository(StudyPlan) private studyPlanRepository: Repository<StudyPlan>,
     @InjectRepository(StudyUnit) private studyUnitRepository: Repository<StudyUnit>,
     @InjectRepository(StudyType) private studyTypeRepository: Repository<StudyType>,
+    @Inject('studyFile') private studyFileDb: StudyFileDb,
     @Inject(ConvertException) private convertException: ConvertException,
     private dataSource: DataSource,
+    private commandBus: CommandBus,
   ) {}
 
   async execute(command: UpdateStudyCommand) {
@@ -67,7 +72,7 @@ export class UpdateStudyHandler implements ICommandHandler<UpdateStudyCommand> {
     await queryRunner.startTransaction();
 
     const studyType = await this.studyTypeRepository.findOneBy({ studyTypeCode });
-    const studyData = await this.studyRepository.findOneBy({ studyId });
+    const study = await this.studyRepository.findOneBy({ studyId });
     const percentData = await this.percentRepository.findOneBy({ percentId });
     const levelStandardData = await this.levelStandardRepository.findOneBy({ levelStandardId });
     const gradeLevelRankData = await this.gradeLevelRankRepository.findOneBy({ gradeLevelRankId });
@@ -75,7 +80,7 @@ export class UpdateStudyHandler implements ICommandHandler<UpdateStudyCommand> {
     const studyUnitData = await this.studyUnitRepository.findOneBy({ studyUnitId });
 
     if (
-      !studyData ||
+      !study ||
       !percentData ||
       !levelStandardData ||
       !gradeLevelRankData ||
@@ -87,16 +92,16 @@ export class UpdateStudyHandler implements ICommandHandler<UpdateStudyCommand> {
 
     try {
       //학습관리 정보 수정
-      studyData.studyTypeCode = studyType.studyTypeCode;
-      studyData.studyName = studyName;
-      studyData.studyTarget = studyTarget;
-      studyData.studyInformation = studyInformation;
-      studyData.testScore = testScore;
-      studyData.isService = isService;
-      studyData.checkLevelUnder = checkLevelUnder;
-      studyData.checkLevel = checkLevel;
-      studyData.regBy = regBy;
-      await queryRunner.manager.getRepository(Study).save(studyData);
+      study.studyTypeCode = studyTypeCode;
+      study.studyName = studyName;
+      study.studyTarget = studyTarget;
+      study.studyInformation = studyInformation;
+      study.testScore = testScore;
+      study.isService = isService;
+      study.checkLevelUnder = checkLevelUnder;
+      study.checkLevel = checkLevel;
+      study.regBy = regBy;
+      await queryRunner.manager.getRepository(Study).save(study);
 
       //백분율 정보 수정
       if (percentList) {
@@ -104,7 +109,7 @@ export class UpdateStudyHandler implements ICommandHandler<UpdateStudyCommand> {
           //백분율 정보가 없으면 새로 생성
           if (!percentInfo.percentId) {
             const newPercent = queryRunner.manager.getRepository(Percent).create({
-              studyId: studyData.studyId,
+              studyId: study.studyId,
               rankName: percentInfo.rankName,
               percent: percentInfo.percent,
               percentSequence: percentInfo.percentSequence,
@@ -132,8 +137,20 @@ export class UpdateStudyHandler implements ICommandHandler<UpdateStudyCommand> {
         }
       }
 
+      if (files) {
+        const command = new UpdateFilesCommand(
+          Number(study.studyId),
+          FileType.STUDY,
+          null,
+          files,
+          this.studyFileDb,
+          queryRunner,
+        );
+        await this.commandBus.execute(command);
+      }
+
       //레벨 수준 정보 수정
-      levelStandardData.studyId = studyData.studyId;
+      levelStandardData.studyId = study.studyId;
       levelStandardData.wordLevelId = 18;
       levelStandardData.standard = standard;
       levelStandardData.knownError = knownError;
@@ -149,7 +166,7 @@ export class UpdateStudyHandler implements ICommandHandler<UpdateStudyCommand> {
       await queryRunner.manager.getRepository(GradeLevelRank).save(gradeLevelRankData);
 
       //학습 구성 정보 수정
-      studyPlanData.studyId = studyData.studyId;
+      studyPlanData.studyId = study.studyId;
       studyPlanData.registerMode = registerMode;
       studyPlanData.studyMode = studyMode;
       studyPlanData.textbookName = textbookName;
@@ -167,7 +184,7 @@ export class UpdateStudyHandler implements ICommandHandler<UpdateStudyCommand> {
       await queryRunner.commitTransaction();
 
       return {
-        studyData,
+        study,
         percentData,
         levelStandardData,
         gradeLevelRankData,

@@ -62,6 +62,7 @@ export class StudyController {
   ) {
     const {
       studyTypeCode,
+      wordLevelId,
       studyName,
       studyTarget,
       studyInformation,
@@ -85,6 +86,7 @@ export class StudyController {
 
     const command = new CreateStudyCommand(
       studyTypeCode,
+      wordLevelId,
       studyName,
       studyTarget,
       studyInformation,
