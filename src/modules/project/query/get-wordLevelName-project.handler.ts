@@ -23,8 +23,6 @@ export class GetWordLevelNameProjectQueryHandler
 
   async execute(query: GetWordLevelNameProjcetQuery) {
     const { param, wordLevelName } = query;
-
-    console.log('핸들러 에서 찾기1221202!!!', wordLevelName);
     //여기 워드레벨 아이디랑 프로젝트.워드레벨아이디랑 같은 값으로 조회
 
     //단어레벨아이디, 단어레벨명 조회

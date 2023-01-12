@@ -33,8 +33,6 @@ export class ProjectController {
   getWordLevelProjectList(@Param('id') wordLevelName: string, @Body() param: GetProjectRequestDto) {
     // const getWordLevelProject = new GetProjectListQuery(param);
     const wordLevelNameTest = new GetWordLevelNameProjcetQuery(wordLevelName, param);
-    console.log('선택한 단어레벨명 : ', param.wordLevelName);
-    console.log('선택한 단어레벨명 : ', wordLevelNameTest);
     return this.queryBus.execute(wordLevelNameTest);
   }
 

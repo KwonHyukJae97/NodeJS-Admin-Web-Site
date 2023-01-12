@@ -93,7 +93,6 @@ export class CreateStudyHandler implements ICommandHandler<CreateStudyCommand> {
         this.commandBus,
         files,
       );
-      console.log(studyData);
       // }
       await queryRunner.commitTransaction();
       return '학습관리 등록이 완료되었습니다.';

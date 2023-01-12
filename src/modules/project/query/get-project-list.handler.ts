@@ -34,8 +34,6 @@ export class GetProjectListQueryHandler implements IQueryHandler<GetProjectListQ
       .groupBy('wordLevel.wordLevelId')
       .getQuery();
 
-    console.log('단어레벨', wordLevel);
-
     //단어레벨번호, 단어레벨명, 프로젝트번호, 프로젝트명, 서비스 여부 조회
     const project = await this.projectRepository
       .createQueryBuilder('project')
@@ -71,8 +69,6 @@ export class GetProjectListQueryHandler implements IQueryHandler<GetProjectListQ
     // 최종 데이터의 총 개수 반환
     const total = await tempQuery.getCount();
 
-    console.log('리스트', list);
-    console.log('토탈데이터', total);
     // 전체 조회 값 여부에 따른 pageNo/pageSize 반환값 설정
     const pageNo = param.totalData ? 1 : param.pageNo;
     const pageSize = param.totalData ? total : param.pageSize;
