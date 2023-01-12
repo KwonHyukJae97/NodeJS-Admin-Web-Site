@@ -1,6 +1,6 @@
-import { GradeLevelRank } from 'src/modules/gradeLevelRank/entities/gradeLevelRank';
-import { Study } from 'src/modules/study/entities/study';
-import { WordLevel } from 'src/modules/wordLevel/entities/wordLevel';
+import { GradeLevelRank } from 'src/modules/gradeLevelRank/entities/gradeLevelRank.entity';
+import { Study } from 'src/modules/study/entities/study.entity';
+import { WordLevel } from 'src/modules/wordLevel/entities/wordLevel.entity';
 import {
   Column,
   CreateDateColumn,

@@ -2,9 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { WordLevel } from 'src/modules/wordLevel/entities/wordLevel';
+import { WordLevel } from 'src/modules/wordLevel/entities/wordLevel.entity';
 import { DataSource, Repository } from 'typeorm';
-import { Project } from '../entities/project';
+import { Project } from '../entities/project.entity';
 
 import { UpdateProjectCommand } from './update-project.command';
 

@@ -6,7 +6,7 @@ import { Company } from './entities/company.entity';
 import { GetCompanyInfoQueryHandler } from './query/get-company-info.handler';
 import { DeleteCompanyHandler } from './command/deleate-company.handler';
 import { UpdateCompanyHandler } from './command/update-company.handler';
-import { Admin } from '../account/admin/entities/admin';
+import { Admin } from '../account/admin/entities/admin.entity';
 import { RolePermission } from '../adminRole/entities/rolePermission.entity';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { GetAllCompanyQueryHandler } from './query/get-all-company.handler';

@@ -1,5 +1,5 @@
-import { Admin } from 'src/modules/account/admin/entities/admin';
-import { Account } from 'src/modules/account/entities/account';
+import { Admin } from 'src/modules/account/admin/entities/admin.entity';
+import { Account } from 'src/modules/account/entities/account.entity';
 import { Permission } from 'src/modules/permission/entities/permission.entity';
 import {
   BaseEntity,

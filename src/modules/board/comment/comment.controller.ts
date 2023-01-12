@@ -6,7 +6,7 @@ import { GetCommentListQuery } from './query/get-comment-list.query';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { UpdateCommentCommand } from './command/update-comment.command';
 import { GetCommentDetailCommand } from './command/get-comment-detail.command';
-import { Account } from '../../account/entities/account';
+import { Account } from '../../account/entities/account.entity';
 import { GetUser } from '../../account/decorator/account.decorator';
 import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
 import { GetCommentRequestDto } from './dto/get-comment-request.dto';

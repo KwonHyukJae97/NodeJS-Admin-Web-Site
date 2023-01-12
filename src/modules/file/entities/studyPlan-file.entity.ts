@@ -1,4 +1,4 @@
-import { StudyPlan } from 'src/modules/studyPlan/entities/studyPlan';
+import { StudyPlan } from 'src/modules/studyPlan/entities/studyPlan.entity';
 import {
   Column,
   CreateDateColumn,

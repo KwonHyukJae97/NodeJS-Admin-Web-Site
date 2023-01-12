@@ -1,4 +1,4 @@
-import { WordLevel } from 'src/modules/wordLevel/entities/wordLevel';
+import { WordLevel } from 'src/modules/wordLevel/entities/wordLevel.entity';
 import {
   Column,
   CreateDateColumn,

@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { Admin } from 'src/modules/account/admin/entities/admin';
+import { Admin } from 'src/modules/account/admin/entities/admin.entity';
 import { Repository } from 'typeorm';
 import { Company } from '../entities/company.entity';
 import { DeleteCompanyCommand } from './delete-company.command';

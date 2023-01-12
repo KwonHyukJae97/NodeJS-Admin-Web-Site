@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-local';
 import { AuthService } from 'src/modules/account/auth/auth.service';
-import { Account } from 'src/modules/account/entities/account';
+import { Account } from 'src/modules/account/entities/account.entity';
 
 //로그인시 아이디와 패스워드 유효성검사를 하는 Strategy
 @Injectable()

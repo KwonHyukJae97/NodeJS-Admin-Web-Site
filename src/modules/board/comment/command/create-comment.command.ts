@@ -1,5 +1,5 @@
 import { ICommand } from '@nestjs/cqrs';
-import { Account } from '../../../account/entities/account';
+import { Account } from '../../../account/entities/account.entity';
 
 /**
  * 답변 등록용 커맨드 정의

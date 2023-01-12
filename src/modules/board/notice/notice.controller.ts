@@ -20,7 +20,7 @@ import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/f
 import { GetNoticeDetailCommand } from './command/get-notice-detail.command';
 import { GetNoticeListQuery } from './query/get-notice-list.query';
 import { GetUser } from '../../account/decorator/account.decorator';
-import { Account } from '../../account/entities/account';
+import { Account } from '../../account/entities/account.entity';
 import { GetNoticeRequestDto } from './dto/get-notice-request.dto';
 import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
 

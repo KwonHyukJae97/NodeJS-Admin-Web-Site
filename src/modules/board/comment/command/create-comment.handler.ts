@@ -6,7 +6,7 @@ import { Comment } from '../entities/comment';
 import { DataSource, Repository } from 'typeorm';
 import { Qna } from '../../qna/entities/qna.entity';
 import { ConvertException } from '../../../../common/utils/convert-exception';
-import { Admin } from '../../../account/admin/entities/admin';
+import { Admin } from '../../../account/admin/entities/admin.entity';
 
 /**
  * 답변 등록용 커맨드 핸들러

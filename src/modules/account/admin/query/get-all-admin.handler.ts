@@ -2,7 +2,7 @@ import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Admin } from '../entities/admin';
+import { Admin } from '../entities/admin.entity';
 import { GetAllAdminQuery } from './get-all-admin.query';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { AccountFile } from '../../../file/entities/account-file.entity';

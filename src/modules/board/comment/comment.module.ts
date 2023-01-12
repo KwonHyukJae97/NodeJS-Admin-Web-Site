@@ -11,11 +11,11 @@ import { BoardFile } from '../../file/entities/board-file.entity';
 import { GetCommentDetailHandler } from './command/get-comment-detail.handler';
 import { Qna } from '../qna/entities/qna.entity';
 import { ConvertException } from '../../../common/utils/convert-exception';
-import { Admin } from '../../account/admin/entities/admin';
+import { Admin } from '../../account/admin/entities/admin.entity';
 import { Company } from '../../company/entities/company.entity';
-import { Account } from '../../account/entities/account';
+import { Account } from '../../account/entities/account.entity';
 import { UserCompany } from '../../account/user/entities/user-company';
-import { User } from '../../account/user/entities/user';
+import { User } from '../../account/user/entities/user.entity';
 
 const CommandHandlers = [CreateCommentHandler, UpdateCommentHandler, GetCommentDetailHandler];
 const QueryHandlers = [GetCommentListHandler];

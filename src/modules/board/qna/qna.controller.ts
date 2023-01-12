@@ -20,7 +20,7 @@ import { DeleteQnaCommand } from './command/delete-qna.command';
 import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/files.interceptor';
 import { GetQnaDetailCommand } from './command/get-qna-detail.command';
 import { GetUser } from '../../account/decorator/account.decorator';
-import { Account } from '../../account/entities/account';
+import { Account } from '../../account/entities/account.entity';
 import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
 import { GetQnaRequestDto } from './dto/get-qna-request.dto';
 

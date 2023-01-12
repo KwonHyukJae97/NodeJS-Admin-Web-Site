@@ -1,4 +1,4 @@
-import { Study } from 'src/modules/study/entities/study';
+import { Study } from 'src/modules/study/entities/study.entity';
 import {
   Column,
   CreateDateColumn,

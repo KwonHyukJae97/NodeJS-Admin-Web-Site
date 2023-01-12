@@ -2,8 +2,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Admin } from 'src/modules/account/admin/entities/admin';
-import { Account } from 'src/modules/account/entities/account';
+import { Admin } from 'src/modules/account/admin/entities/admin.entity';
+import { Account } from 'src/modules/account/entities/account.entity';
 import { DataSource, Repository } from 'typeorm';
 import { SignUpAdminCommand } from './signup-admin.command';
 import { ConvertException } from 'src/common/utils/convert-exception';

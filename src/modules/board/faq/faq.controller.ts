@@ -20,7 +20,7 @@ import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/f
 import { GetFaqDetailCommand } from './command/get-faq-detail.command';
 import { GetCategoryListQuery } from './query/get-category-list.query';
 import { GetFaqListQuery } from './query/get-faq-list.query';
-import { Account } from '../../account/entities/account';
+import { Account } from '../../account/entities/account.entity';
 import { GetUser } from '../../account/decorator/account.decorator';
 import { JwtAuthGuard } from '../../../guard/jwt/jwt-auth.guard';
 import { GetFaqRequestDto } from './dto/get-faq-request.dto';

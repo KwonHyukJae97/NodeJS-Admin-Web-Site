@@ -7,9 +7,9 @@ import { Inject } from '@nestjs/common';
 import { Qna } from '../../qna/entities/qna.entity';
 import { ConvertException } from '../../../../common/utils/convert-exception';
 import { Board } from '../../entities/board.entity';
-import { Admin } from '../../../account/admin/entities/admin';
+import { Admin } from '../../../account/admin/entities/admin.entity';
 import { Page } from '../../../../common/utils/page';
-import { Account } from '../../../account/entities/account';
+import { Account } from '../../../account/entities/account.entity';
 
 /**
  * 답변 전체 리스트 조회용 쿼리 핸들러

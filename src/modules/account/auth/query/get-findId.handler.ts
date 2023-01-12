@@ -3,7 +3,7 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { Repository } from 'typeorm';
-import { Account } from '../../entities/account';
+import { Account } from '../../entities/account.entity';
 import { GetFindIdQuery } from './get-findId.query';
 
 @QueryHandler(GetFindIdQuery)

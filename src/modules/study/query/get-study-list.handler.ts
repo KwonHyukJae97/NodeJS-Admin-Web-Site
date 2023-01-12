@@ -3,9 +3,9 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { Page } from 'src/common/utils/page';
-import { StudyPlan } from 'src/modules/studyPlan/entities/studyPlan';
+import { StudyPlan } from 'src/modules/studyPlan/entities/studyPlan.entity';
 import { Repository } from 'typeorm';
-import { Study } from '../entities/study';
+import { Study } from '../entities/study.entity';
 import { GetStudyListQuery } from './get-study-list.query';
 
 /**

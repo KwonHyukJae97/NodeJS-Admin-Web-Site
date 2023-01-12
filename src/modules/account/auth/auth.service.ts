@@ -3,7 +3,7 @@ import * as bcrypt from 'bcrypt';
 import { compare, hash } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Account } from 'src/modules/account/entities/account';
+import { Account } from 'src/modules/account/entities/account.entity';
 import { DataSource, Repository } from 'typeorm';
 import { SignInUserDto } from './dto/signin-user.dto';
 import { SignInAdminDto } from './dto/signin-admin.dto';

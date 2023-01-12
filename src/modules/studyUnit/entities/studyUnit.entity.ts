@@ -1,5 +1,5 @@
-import { Study } from 'src/modules/study/entities/study';
-import { StudyPlan } from 'src/modules/studyPlan/entities/studyPlan';
+import { Study } from 'src/modules/study/entities/study.entity';
+import { StudyPlan } from 'src/modules/studyPlan/entities/studyPlan.entity';
 import {
   Column,
   CreateDateColumn,

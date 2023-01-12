@@ -1,4 +1,4 @@
-import { Account } from 'src/modules/account/entities/account';
+import { Account } from 'src/modules/account/entities/account.entity';
 import { AdminRole } from 'src/modules/adminRole/entities/adminRole.entity';
 import { RolePermission } from 'src/modules/adminRole/entities/rolePermission.entity';
 import { Company } from 'src/modules/company/entities/company.entity';

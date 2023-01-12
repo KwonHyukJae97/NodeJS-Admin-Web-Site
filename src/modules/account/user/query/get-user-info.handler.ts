@@ -3,7 +3,7 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { Repository } from 'typeorm';
-import { User } from '../entities/user';
+import { User } from '../entities/user.entity';
 import { GetUserInfoQuery } from './get-user-info.query';
 import { AccountFile } from '../../../file/entities/account-file.entity';
 

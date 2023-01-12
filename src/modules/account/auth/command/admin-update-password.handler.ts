@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { Account } from '../../entities/account';
+import { Account } from '../../entities/account.entity';
 import { AdminUpdatePasswordCommand } from './admin-update-password.command';
 import * as bcrypt from 'bcryptjs';
 import { Repository } from 'typeorm';

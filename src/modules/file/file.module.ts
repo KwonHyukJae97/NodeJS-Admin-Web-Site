@@ -10,14 +10,14 @@ import { GetFileDownloadHandler } from './query/get-file-download.handler';
 import { BoardFileDb } from '../board/board-file-db';
 import { AccountFileDb } from '../account/account-file-db';
 import { AccountFile } from './entities/account-file.entity';
-import { Account } from '../account/entities/account';
+import { Account } from '../account/entities/account.entity';
 import { ConvertException } from '../../common/utils/convert-exception';
 import { StudyFileDb } from '../study/study-file-db';
 import { StudyPlanFileDb } from '../studyPlan/studyPlan-file-db';
-import { Study } from '../study/entities/study';
-import { StudyFile } from './entities/study-file';
-import { StudyPlan } from '../studyPlan/entities/studyPlan';
-import { StudyPlanFile } from './entities/studyPlan-file';
+import { Study } from '../study/entities/study.entity';
+import { StudyFile } from './entities/study-file.entity';
+import { StudyPlan } from '../studyPlan/entities/studyPlan.entity';
+import { StudyPlanFile } from './entities/studyPlan-file.entity';
 
 const QueryHandlers = [GetAllFilesDownloadHandler, GetFileDownloadHandler];
 

@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { Page } from 'src/common/utils/page';
 import { Repository } from 'typeorm';
-import { WordLevel } from '../entities/wordLevel';
+import { WordLevel } from '../entities/wordLevel.entity';
 import { GetWordLevelListQuery } from './get-wordLevel-list.query';
 
 /**

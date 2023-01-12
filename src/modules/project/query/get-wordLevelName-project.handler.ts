@@ -3,9 +3,9 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { Page } from 'src/common/utils/page';
-import { WordLevel } from 'src/modules/wordLevel/entities/wordLevel';
+import { WordLevel } from 'src/modules/wordLevel/entities/wordLevel.entity';
 import { Repository } from 'typeorm';
-import { Project } from '../entities/project';
+import { Project } from '../entities/project.entity';
 import { GetWordLevelNameProjcetQuery } from './get-wordLevelName-project.query';
 
 /**

@@ -1,4 +1,4 @@
-import { Account } from 'src/modules/account/entities/account';
+import { Account } from 'src/modules/account/entities/account.entity';
 import { BaseEntity, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('temporary')

@@ -3,7 +3,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
 // import { AccountFileDb } from '../account/account-file-db'
-import { WordLevel } from '../wordLevel/entities/wordLevel';
+import { WordLevel } from './entities/wordLevel.entity';
 import { CreateWordLevelHandler } from './command/create-wordLevel.handler';
 import { DeleteWordLevelHandler } from './command/delete-wordLevel.handler';
 import { UpdateWordLevelHandler } from './command/update-wordLevel.handler';

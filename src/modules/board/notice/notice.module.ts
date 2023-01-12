@@ -12,7 +12,7 @@ import { GetNoticeListHandler } from './query/get-notice-list.handler';
 import { BoardFileDb } from '../board-file-db';
 import { GetNoticeDetailHandler } from './command/get-notice-detail.handler';
 import { ConvertException } from '../../../common/utils/convert-exception';
-import { Account } from '../../account/entities/account';
+import { Account } from '../../account/entities/account.entity';
 import { CreateFilesHandler } from '../../file/command/create-files.handler';
 import { FileService } from '../../file/file.service';
 import { UpdateFilesHandler } from '../../file/command/update-files.handler';
