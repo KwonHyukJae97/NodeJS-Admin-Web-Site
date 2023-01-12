@@ -25,6 +25,8 @@ import { APP_FILTER } from '@nestjs/core';
 import { TranslatorFilter } from 'nestjs-translator';
 import { UserModule } from './modules/account/user/user.module';
 import { AdminModule } from './modules/account/admin/admin.module';
+import { WordLevelModule } from './modules/wordLevel/wordLevel.module';
+import { ProjectModule } from './modules/project/project.module';
 import { WordModule } from './modules/word/word.module';
 
 @Module({
@@ -99,6 +101,8 @@ import { WordModule } from './modules/word/word.module';
     AdminModule,
     ExceptionModule,
     WordModule,
+    WordLevelModule,
+    ProjectModule,
   ],
   controllers: [AppController],
   providers: [

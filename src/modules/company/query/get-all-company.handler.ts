@@ -40,7 +40,13 @@ export class GetAllCompanyQueryHandler implements IQueryHandler<GetAllCompanyQue
       .leftJoin('company.userCompany', 'userCompany')
       .leftJoin('company.admin', 'admin')
       .addSelect('COUNT(userCompany.companyId) AS userCount')
-      .addSelect('COUNT(admin.adminId) AS adminCount');
+      .addSelect((subQuery) => {
+        return subQuery
+          .select('COUNT(admin.adminId)')
+          .from('admin', 'admin')
+          .where('admin.companyId = companyId')
+          .limit(1);
+      }, 'adminCount');
 
     // 검색 키워드가 있을 경우
     if (param.searchWord) {

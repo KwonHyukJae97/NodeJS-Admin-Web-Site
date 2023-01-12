@@ -7,10 +7,14 @@ import {
   Patch,
   Post,
   UploadedFiles,
+  Put,
+  UploadedFile,
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { SignUpAdminCommand } from '../auth/command/signup-admin.command';
+import { SignUpAdminDto } from '../auth/dto/signup-admin.dto';
 import { CreateAdminCommand } from './command/create-admin.command';
 import { DeleteAdminCommand } from './command/delete-admin.command';
 import { UpdateAdminCommand } from './command/update-admin.command';
@@ -55,7 +59,7 @@ export class AdminController {
    * @param : adminId
    * @returns : 관리자 정보 수정 커맨드 전송
    */
-  @Patch('/update/:id')
+  @Patch(':id')
   @UseInterceptors(FilesInterceptor('files', 1))
   updateAdmin(
     @Param('id') adminId: number,
@@ -79,21 +83,14 @@ export class AdminController {
 
   /**
    * 관리자 상세 내정보 수정
-   * @param : adminId
    * @returns : 관리자 정보 수정 커맨드 전송
    */
-  @Patch(':id')
+  @Patch('me')
   @UseInterceptors(FilesInterceptor('files', 1))
-  updateInfo(
-    @Param('id') accountId: number,
-    @Body() dto: AdminUpdateInfoDto,
-    @UploadedFiles() files: Express.MulterS3.File[],
-  ) {
-    const { email, phone, nickname } = dto;
-    console.log('수정 데이터 email?', email);
-    console.log('수정 데이터 phone?', phone);
-    console.log('수정 데이터 nickname?', nickname);
+  updateInfo(@Body() dto: AdminUpdateInfoDto, @UploadedFiles() files: Express.MulterS3.File[]) {
+    const { accountId, email, phone, nickname } = dto;
     const command = new AdminUpdateInfoCommand(accountId, email, phone, nickname, files);
+
     return this.commandBus.execute(command);
   }
 

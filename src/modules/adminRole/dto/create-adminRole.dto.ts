@@ -13,6 +13,10 @@ export class CreateAdminRoleDto {
   @IsNumber()
   readonly companyId: number;
 
+  @IsNotEmpty()
+  @IsString()
+  readonly regBy: string;
+
   @IsArray()
   readonly roleDto: rolePermissionDto[];
 }

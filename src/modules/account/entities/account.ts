@@ -1,7 +1,6 @@
 import { Temporary } from 'src/modules/temporary/entities/temporary';
 // import { Sleeper } from 'src/modules/sleeper/entities/sleeper';
 import {
-  BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -19,7 +18,7 @@ import { User } from '../user/entities/user';
  */
 
 @Entity('account')
-export class Account extends BaseEntity {
+export class Account {
   //계정번호
   @PrimaryGeneratedColumn({
     name: 'account_id',

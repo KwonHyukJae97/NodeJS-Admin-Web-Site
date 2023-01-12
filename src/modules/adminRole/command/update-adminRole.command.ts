@@ -9,5 +9,6 @@ export class UpdateAdminRoleCommand implements ICommand {
     readonly roleName: string,
     readonly roleDto: rolePermissionDto[],
     readonly roleId: number,
+    readonly updateBy: string,
   ) {}
 }

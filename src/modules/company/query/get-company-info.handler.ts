@@ -43,7 +43,13 @@ export class GetCompanyInfoQueryHandler implements IQueryHandler<GetCompanyInfoQ
       .leftJoin('company.userCompany', 'userCompany')
       .leftJoin('company.admin', 'admin')
       .addSelect('COUNT(userCompany.companyId) AS userCount')
-      .addSelect('COUNT(admin.adminId) AS adminCount')
+      .addSelect((subQuery) => {
+        return subQuery
+          .select('COUNT(admin.adminId)')
+          .from('admin', 'admin')
+          .where('admin.companyId = companyId')
+          .limit(1);
+      }, 'adminCount')
       .where('company.company_id = :companyId', { companyId: companyId })
       .groupBy('company.companyId, userCompany.companyId, admin.adminId')
       .getRawMany();
