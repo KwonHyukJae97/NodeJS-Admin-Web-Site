@@ -2,9 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { WordLevel } from 'src/modules/wordLevel/entities/wordLevel';
+import { WordLevel } from 'src/modules/wordLevel/entities/wordLevel.entity';
 import { DataSource, Repository } from 'typeorm';
-import { Project } from '../entities/project';
+import { Project } from '../entities/project.entity';
 import { CreateProjectCommand } from './create-project.command';
 
 /**
@@ -26,13 +26,10 @@ export class CreateProjectHandler implements ICommandHandler<CreateProjectComman
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    const wordLevel = await this.wordLevelRepository.findOneBy({ wordLevelId });
-
-    //현재는 wordLevelId 값을 하드코딩으로 주입, 프론트 연동 이후에 선택박스에서 해당 단어레벨에 맞는 단어레벨 번호를 가져와서 wordLevelId에 주입
     try {
       const project = queryRunner.manager.getRepository(Project).create({
         projectName,
-        wordLevelId: wordLevel.wordLevelId,
+        wordLevelId,
         regBy,
       });
 

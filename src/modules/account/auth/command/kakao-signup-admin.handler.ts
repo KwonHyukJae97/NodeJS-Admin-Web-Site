@@ -5,8 +5,8 @@ import { string } from 'joi';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { Company } from 'src/modules/company/entities/company.entity';
 import { DataSource, Repository } from 'typeorm';
-import { Admin } from '../../admin/entities/admin';
-import { Account } from '../../entities/account';
+import { Admin } from '../../admin/entities/admin.entity';
+import { Account } from '../../entities/account.entity';
 import { KakaoSignUpAdminCommand } from './kakao-signup-admin.command';
 
 /**

@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Account } from 'src/modules/account/entities/account';
-import { User } from 'src/modules/account/user/entities/user';
+import { Account } from 'src/modules/account/entities/account.entity';
+import { User } from 'src/modules/account/user/entities/user.entity';
 import { DataSource, Repository } from 'typeorm';
 import { SignUpUserCommand } from './signup-user.command';
 import { ConvertException } from 'src/common/utils/convert-exception';

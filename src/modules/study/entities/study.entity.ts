@@ -1,9 +1,9 @@
-import { GradeLevelRank } from 'src/modules/gradeLevelRank/entities/gradeLevelRank';
-import { LevelStandard } from 'src/modules/levelStandard/entities/levelStandard';
-import { Percent } from 'src/modules/percent/entities/percent';
-import { StudyPlan } from 'src/modules/studyPlan/entities/studyPlan';
-import { StudyType } from 'src/modules/studyType/entities/studyType';
-import { StudyUnit } from 'src/modules/studyUnit/entities/studyUnit';
+import { GradeLevelRank } from 'src/modules/gradeLevelRank/entities/gradeLevelRank.entity';
+import { LevelStandard } from 'src/modules/levelStandard/entities/levelStandard.entity';
+import { Percent } from 'src/modules/percent/entities/percent.entity';
+import { StudyPlan } from 'src/modules/studyPlan/entities/studyPlan.entity';
+import { StudyType } from 'src/modules/studyType/entities/studyType.entity';
+import { StudyUnit } from 'src/modules/studyUnit/entities/studyUnit.entity';
 import {
   Column,
   CreateDateColumn,

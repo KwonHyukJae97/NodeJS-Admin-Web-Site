@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Account } from '../../entities/account';
+import { Account } from '../../entities/account.entity';
 import { SignInAdminCommand } from './signin-admin.command';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from '../auth.service';

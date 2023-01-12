@@ -2,13 +2,13 @@ import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { GradeLevelRank } from 'src/modules/gradeLevelRank/entities/gradeLevelRank';
-import { LevelStandard } from 'src/modules/levelStandard/entities/levelStandard';
-import { Percent } from 'src/modules/percent/entities/percent';
-import { StudyPlan } from 'src/modules/studyPlan/entities/studyPlan';
-import { StudyUnit } from 'src/modules/studyUnit/entities/studyUnit';
+import { GradeLevelRank } from 'src/modules/gradeLevelRank/entities/gradeLevelRank.entity';
+import { LevelStandard } from 'src/modules/levelStandard/entities/levelStandard.entity';
+import { Percent } from 'src/modules/percent/entities/percent.entity';
+import { StudyPlan } from 'src/modules/studyPlan/entities/studyPlan.entity';
+import { StudyUnit } from 'src/modules/studyUnit/entities/studyUnit.entity';
 import { DataSource, Repository } from 'typeorm';
-import { Study } from '../entities/study';
+import { Study } from '../entities/study.entity';
 import { GetStudyInfoQuery } from './get-study-info.query';
 
 /**

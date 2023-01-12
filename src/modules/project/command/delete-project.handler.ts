@@ -3,7 +3,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { Repository } from 'typeorm';
-import { Project } from '../entities/project';
+import { Project } from '../entities/project.entity';
 import { DeleteProjectCommand } from './delete-project.command';
 
 /**

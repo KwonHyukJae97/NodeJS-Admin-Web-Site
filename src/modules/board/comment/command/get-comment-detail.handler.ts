@@ -8,8 +8,8 @@ import { Board } from '../../entities/board.entity';
 import { Qna } from '../../qna/entities/qna.entity';
 import { BoardFile } from '../../../file/entities/board-file.entity';
 import { ConvertException } from '../../../../common/utils/convert-exception';
-import { Account } from '../../../account/entities/account';
-import { Admin } from '../../../account/admin/entities/admin';
+import { Account } from '../../../account/entities/account.entity';
+import { Admin } from '../../../account/admin/entities/admin.entity';
 import { Company } from '../../../company/entities/company.entity';
 
 /**

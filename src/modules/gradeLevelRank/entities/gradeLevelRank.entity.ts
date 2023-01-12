@@ -1,6 +1,6 @@
-import { LevelStandard } from 'src/modules/levelStandard/entities/levelStandard';
-import { Percent } from 'src/modules/percent/entities/percent';
-import { Study } from 'src/modules/study/entities/study';
+import { LevelStandard } from 'src/modules/levelStandard/entities/levelStandard.entity';
+import { Percent } from 'src/modules/percent/entities/percent.entity';
+import { Study } from 'src/modules/study/entities/study.entity';
 import {
   Column,
   CreateDateColumn,

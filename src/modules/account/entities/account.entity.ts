@@ -10,8 +10,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Admin } from '../admin/entities/admin';
-import { User } from '../user/entities/user';
+import { Admin } from '../admin/entities/admin.entity';
+import { User } from '../user/entities/user.entity';
 
 /**
  * account에 대한 엔티티 정의

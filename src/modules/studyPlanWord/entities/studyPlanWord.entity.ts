@@ -1,6 +1,6 @@
 import { Word } from 'aws-sdk/clients/cloudsearch';
-import { StudyPlan } from 'src/modules/studyPlan/entities/studyPlan';
-import { StudyUnit } from 'src/modules/studyUnit/entities/studyUnit';
+import { StudyPlan } from 'src/modules/studyPlan/entities/studyPlan.entity';
+import { StudyUnit } from 'src/modules/studyUnit/entities/studyUnit.entity';
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('study_plan_word')

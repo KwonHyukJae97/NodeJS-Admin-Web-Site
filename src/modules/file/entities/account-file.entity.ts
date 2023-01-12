@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Account } from '../../account/entities/account';
+import { Account } from '../../account/entities/account.entity';
 
 /**
  * 계정 파일에 대한 엔티티 정의

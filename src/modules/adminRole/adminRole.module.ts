@@ -12,7 +12,7 @@ import { GetAllAdminRoleQueryHandler } from './query/get-all-adminRole.handler';
 import { RolePermission } from './entities/rolePermission.entity';
 import { Permission } from '../permission/entities/permission.entity';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { Admin } from '../account/admin/entities/admin';
+import { Admin } from '../account/admin/entities/admin.entity';
 
 const CommandHandlers = [CreateAdminRoleHandler, UpdateAdminRoleHandler, DeleteAdminRoleHandler];
 const QueryHandlers = [GetAdminRoleInfoQueryHandler, GetAllAdminRoleQueryHandler];

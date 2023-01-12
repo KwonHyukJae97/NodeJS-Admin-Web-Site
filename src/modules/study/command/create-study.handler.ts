@@ -2,14 +2,17 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { GradeLevelRank } from 'src/modules/gradeLevelRank/entities/gradeLevelRank';
-import { LevelStandard } from 'src/modules/levelStandard/entities/levelStandard';
-import { Percent } from 'src/modules/percent/entities/percent';
-import { StudyPlan } from 'src/modules/studyPlan/entities/studyPlan';
-import { StudyType } from 'src/modules/studyType/entities/studyType';
-import { StudyUnit } from 'src/modules/studyUnit/entities/studyUnit';
+import { CreateFilesCommand } from 'src/modules/file/command/create-files.command';
+import { FileType } from 'src/modules/file/entities/file-type.enum';
+import { GradeLevelRank } from 'src/modules/gradeLevelRank/entities/gradeLevelRank.entity';
+import { LevelStandard } from 'src/modules/levelStandard/entities/levelStandard.entity';
+import { Percent } from 'src/modules/percent/entities/percent.entity';
+import { StudyPlan } from 'src/modules/studyPlan/entities/studyPlan.entity';
+import { StudyType } from 'src/modules/studyType/entities/studyType.entity';
+import { StudyUnit } from 'src/modules/studyUnit/entities/studyUnit.entity';
+import { WordLevel } from 'src/modules/wordLevel/entities/wordLevel.entity';
 import { DataSource, Repository } from 'typeorm';
-import { Study } from '../entities/study';
+import { Study } from '../entities/study.entity';
 import { StudyFileDb } from '../study-file-db';
 import { CreateStudyCommand } from './create-study.command';
 
@@ -21,6 +24,7 @@ import { CreateStudyCommand } from './create-study.command';
 export class CreateStudyHandler implements ICommandHandler<CreateStudyCommand> {
   constructor(
     @InjectRepository(Study) private studyRepository: Repository<Study>,
+    @InjectRepository(WordLevel) private wordLevelRepository: Repository<WordLevel>,
     @InjectRepository(Percent) private percentRepository: Repository<Percent>,
     @InjectRepository(StudyPlan) private studyPlanRepository: Repository<StudyPlan>,
     @InjectRepository(StudyUnit) private studyUnitRepository: Repository<StudyUnit>,
@@ -35,6 +39,7 @@ export class CreateStudyHandler implements ICommandHandler<CreateStudyCommand> {
   async execute(command: CreateStudyCommand) {
     const {
       studyTypeCode,
+      wordLevelId,
       studyName,
       studyTarget,
       studyInformation,
@@ -61,13 +66,10 @@ export class CreateStudyHandler implements ICommandHandler<CreateStudyCommand> {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    const studyType = await this.studyTypeRepository.findOneBy({ studyTypeCode });
-
     try {
-      //파일 설정넣기
-
       const studyData = await saveStudy(
-        studyType.studyTypeCode,
+        studyTypeCode,
+        wordLevelId,
         studyName,
         studyTarget,
         studyInformation,
@@ -108,6 +110,7 @@ export class CreateStudyHandler implements ICommandHandler<CreateStudyCommand> {
 
 export const saveStudy = async (
   studyTypeCode,
+  wordLevelId,
   studyName,
   studyTarget,
   studyInformation,
@@ -147,21 +150,21 @@ export const saveStudy = async (
   await queryRunner.manager.getRepository(Study).save(study);
 
   //파일정보저장
-  // if (files) {
-  //   const command = new CreateFilesCommand(
-  //     study.studyId,
-  //     FileType.STUDY,
-  //     files,
-  //     studyFileDb,
-  //     queryRunner,
-  //   );
-  //   await commandBus.execute(command);
-  // }
+  if (files) {
+    const command = new CreateFilesCommand(
+      study.studyId,
+      FileType.STUDY,
+      null,
+      files,
+      studyFileDb,
+      queryRunner,
+    );
+    await commandBus.execute(command);
+  }
 
   const levelStandard = queryRunner.manager.getRepository(LevelStandard).create({
     studyId: study.studyId,
-    //단어레벨 정보 가져오기
-    wordLevelId: 18,
+    wordLevelId,
     standard,
     knownError,
     levelStandardSequence,

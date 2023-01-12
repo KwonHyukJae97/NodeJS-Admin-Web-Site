@@ -2,9 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { WordLevel } from 'src/modules/wordLevel/entities/wordLevel';
+import { WordLevel } from 'src/modules/wordLevel/entities/wordLevel.entity';
 import { DataSource, Repository } from 'typeorm';
-import { Project } from '../entities/project';
+import { Project } from '../entities/project.entity';
 
 import { UpdateProjectCommand } from './update-project.command';
 
@@ -51,7 +51,6 @@ export class UpdateProjectHandler implements ICommandHandler<UpdateProjectComman
     } catch (err) {
       console.log(err);
       await queryRunner.rollbackTransaction();
-
       return this.convertException.badRequestError('프로젝트 정보 수정에 ', 400);
     } finally {
       await queryRunner.release();

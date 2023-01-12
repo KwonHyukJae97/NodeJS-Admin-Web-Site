@@ -3,7 +3,7 @@ import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { DataSource, Repository } from 'typeorm';
-import { Account } from '../../entities/account';
+import { Account } from '../../entities/account.entity';
 import { AdminUpdateInfoCommand } from './admin-update-info.command';
 import { FileType } from '../../../file/entities/file-type.enum';
 import { AccountFile } from '../../../file/entities/account-file.entity';

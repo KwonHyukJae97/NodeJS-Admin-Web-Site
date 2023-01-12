@@ -14,7 +14,7 @@ import { GetCategoryListHandler } from './query/get-category-list.handler';
 import { GetFaqListHandler } from './query/get-faq-list.handler';
 import { BoardFileDb } from '../board-file-db';
 import { ConvertException } from '../../../common/utils/convert-exception';
-import { Account } from '../../account/entities/account';
+import { Account } from '../../account/entities/account.entity';
 
 const CommandHandlers = [CreateFaqHandler, UpdateFaqHandler, DeleteFaqHandler, GetFaqDetailHandler];
 const QueryHandlers = [GetFaqListHandler, GetCategoryListHandler];

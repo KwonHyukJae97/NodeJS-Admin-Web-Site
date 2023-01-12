@@ -7,7 +7,7 @@ import { DataSource, Repository } from 'typeorm';
 import { Board } from '../../entities/board.entity';
 import { BoardFile } from '../../../file/entities/board-file.entity';
 import { ConvertException } from '../../../../common/utils/convert-exception';
-import { Account } from '../../../account/entities/account';
+import { Account } from '../../../account/entities/account.entity';
 
 /**
  * 공지사항 상세 정보 조회용 커맨드 핸들러

@@ -2,8 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
-import { WordLevel } from 'src/modules/wordLevel/entities/wordLevel';
-import { Repository } from 'typeorm';
+import { WordLevel } from 'src/modules/wordLevel/entities/wordLevel.entity';
+import { DataSource, Repository } from 'typeorm';
 import { CreateWordLevelCommand } from './create-wordLevel.command';
 import { UpdateWordLevelCommand } from './update-wordLevel.command';
 
@@ -17,6 +17,7 @@ export class UpdateWordLevelHandler implements ICommandHandler<UpdateWordLevelCo
     @InjectRepository(WordLevel)
     private wordLevelRepository: Repository<WordLevel>,
     @Inject(ConvertException) private convertException: ConvertException,
+    private dataSource: DataSource,
   ) {}
 
   //수정자는 프론트에서 넘어오는 값에서 추출하여 대입
@@ -29,14 +30,30 @@ export class UpdateWordLevelHandler implements ICommandHandler<UpdateWordLevelCo
       return this.convertException.notFoundError('단어레벨', 404);
     }
 
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      await this.wordLevelRepository.update(
-        { wordLevelId },
-        { wordLevelSequence, wordLevelName, isService },
+      await queryRunner.manager.getRepository(WordLevel).update(
+        {
+          wordLevelId,
+        },
+        {
+          wordLevelSequence,
+          wordLevelName,
+          isService,
+        },
       );
+
+      await queryRunner.commitTransaction();
+
+      return '단어레벨 수정이 완료되었습니다.';
     } catch (err) {
       console.log(err);
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
     }
-    return '단어레벨 수정이 완료되었습니다.';
   }
 }

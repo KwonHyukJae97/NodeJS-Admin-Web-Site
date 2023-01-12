@@ -28,6 +28,12 @@ import { AdminModule } from './modules/account/admin/admin.module';
 import { WordLevelModule } from './modules/wordLevel/wordLevel.module';
 import { ProjectModule } from './modules/project/project.module';
 import { WordModule } from './modules/word/word.module';
+import { StudyModule } from './modules/study/study.module';
+import { StudyTypeModule } from './modules/studyType/studyType.module';
+import { PercentModule } from './modules/percent/percent.module';
+import { LevelStandardModule } from './modules/levelStandard/levelStandard.module';
+import { GradeLevelRankModule } from './modules/gradeLevelRank/gradeLevelRank.module';
+import { StudyUnitModule } from './modules/studyUnit/studyUnit.module';
 
 @Module({
   imports: [
@@ -103,6 +109,12 @@ import { WordModule } from './modules/word/word.module';
     WordModule,
     WordLevelModule,
     ProjectModule,
+    StudyModule,
+    StudyTypeModule,
+    PercentModule,
+    LevelStandardModule,
+    GradeLevelRankModule,
+    StudyUnitModule,
   ],
   controllers: [AppController],
   providers: [

@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { GetAccountCommand } from './command/get-account.command';
 import { GetAccountDto } from './dto/get-account.dto';
-import { Account } from './entities/account';
+import { Account } from './entities/account.entity';
 import { GetAccountQuery } from './query/get-account.query';
 
 /**

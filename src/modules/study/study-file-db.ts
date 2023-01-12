@@ -2,9 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConvertException } from 'src/common/utils/convert-exception';
 import { Repository } from 'typeorm';
-import { StudyFile } from '../file/entities/study-file';
+import { StudyFile } from '../file/entities/study-file.entity';
 import { FileDbInterface } from '../file/file-db.interface';
-import { Study } from './entities/study';
+import { Study } from './entities/study.entity';
 
 /**
  * 학습관리 관련 파일 DB 저장/수정/삭제용 인터페이스 구현체

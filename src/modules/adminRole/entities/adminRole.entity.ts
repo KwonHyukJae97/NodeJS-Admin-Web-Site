@@ -1,4 +1,4 @@
-import { Admin } from 'src/modules/account/admin/entities/admin';
+import { Admin } from 'src/modules/account/admin/entities/admin.entity';
 import {
   BaseEntity,
   Column,

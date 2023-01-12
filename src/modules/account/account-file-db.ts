@@ -2,7 +2,7 @@ import { FileDbInterface } from '../file/file-db.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryRunner, Repository } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
-import { Account } from './entities/account';
+import { Account } from './entities/account.entity';
 import { AccountFile } from '../file/entities/account-file.entity';
 import { ConvertException } from '../../common/utils/convert-exception';
 
