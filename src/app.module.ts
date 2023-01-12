@@ -27,12 +27,6 @@ import { UserModule } from './modules/account/user/user.module';
 import { AdminModule } from './modules/account/admin/admin.module';
 import { WordLevelModule } from './modules/wordLevel/wordLevel.module';
 import { ProjectModule } from './modules/project/project.module';
-import { StudyTypeModule } from './modules/studyType/studyType.module';
-import { StudyModule } from './modules/study/study.module';
-import { PercentModule } from './modules/percent/percent.module';
-import { LevelStandardModule } from './modules/levelStandard/levelStandard.module';
-import { GradeLevelRankModule } from './modules/gradeLevelRank/gradeLevelRank.module';
-import { StudyUnitModule } from './modules/studyUnit/studyUnit.module';
 
 @Module({
   imports: [
@@ -107,12 +101,6 @@ import { StudyUnitModule } from './modules/studyUnit/studyUnit.module';
     ExceptionModule,
     WordLevelModule,
     ProjectModule,
-    StudyModule,
-    StudyTypeModule,
-    PercentModule,
-    LevelStandardModule,
-    GradeLevelRankModule,
-    StudyUnitModule,
   ],
   controllers: [AppController],
   providers: [
