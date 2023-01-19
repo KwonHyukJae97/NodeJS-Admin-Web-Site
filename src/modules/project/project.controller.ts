@@ -25,15 +25,13 @@ export class ProjectController {
   getProjectList(@Body() param: GetProjectRequestDto) {
     const getProjectListQuery = new GetProjectListQuery(param);
 
-    console.log('검색어 조회 테스트', getProjectListQuery);
     return this.queryBus.execute(getProjectListQuery);
   }
 
   @Get(':id')
-  getWordLevelProjectList(@Param('id') wordLevelName: string, @Body() param: GetProjectRequestDto) {
-    // const getWordLevelProject = new GetProjectListQuery(param);
-    const wordLevelNameTest = new GetWordLevelNameProjcetQuery(wordLevelName, param);
-    return this.queryBus.execute(wordLevelNameTest);
+  getWordLevelProjectList(@Param('id') wordLevelId: number, @Body() param: GetProjectRequestDto) {
+    const wordLevelName = new GetWordLevelNameProjcetQuery(wordLevelId, param);
+    return this.queryBus.execute(wordLevelName);
   }
 
   /**

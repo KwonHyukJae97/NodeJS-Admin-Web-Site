@@ -1,4 +1,5 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { ToBoolean } from 'src/common/decorator/boolean.decorator';
 
 /**
  * 단어레벨 정보 수정 dto 정의
@@ -12,7 +13,7 @@ export class UpdateWordLevelDto {
   @IsOptional()
   readonly wordLevelName: string;
 
-  @IsBoolean()
+  @ToBoolean()
   @IsOptional()
   readonly isService: boolean;
 

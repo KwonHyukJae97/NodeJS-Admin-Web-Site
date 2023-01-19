@@ -21,7 +21,7 @@ export class CreateWordLevelHandler implements ICommandHandler<CreateWordLevelCo
   ) {}
 
   async execute(command: CreateWordLevelCommand) {
-    const { wordLevelName, isService, wordLevelSequence, regBy } = command;
+    const { wordLevelName, wordLevelSequence, regBy } = command;
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -30,7 +30,6 @@ export class CreateWordLevelHandler implements ICommandHandler<CreateWordLevelCo
     try {
       const wordLevel = queryRunner.manager.getRepository(WordLevel).create({
         wordLevelName,
-        isService,
         wordLevelSequence,
         regBy,
       });

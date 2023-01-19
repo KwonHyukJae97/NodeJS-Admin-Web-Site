@@ -29,7 +29,7 @@ export class GetWordLevelListQueryHandler implements IQueryHandler<GetWordLevelL
       wordLevel.isService AS isService,
       wordLevel.regBy AS regBy`,
       ])
-      .orderBy('wordLevel.wordLevelId', 'ASC');
+      .orderBy('wordLevel.wordLevelId', 'DESC');
 
     if (param.searchWord) {
       wordLevel.where('wordLevel.wordLevelName like :wordLevelName', {

@@ -12,9 +12,6 @@ export class CreateWordLevelDto {
   @IsNumber()
   readonly wordLevelSequence: number;
 
-  @IsBoolean()
-  readonly isService: boolean;
-
   @IsNotEmpty()
   @IsString()
   readonly regBy: string;

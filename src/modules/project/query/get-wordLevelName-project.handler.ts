@@ -22,8 +22,7 @@ export class GetWordLevelNameProjectQueryHandler
   ) {}
 
   async execute(query: GetWordLevelNameProjcetQuery) {
-    const { param, wordLevelName } = query;
-    //여기 워드레벨 아이디랑 프로젝트.워드레벨아이디랑 같은 값으로 조회
+    const { param, wordLevelId } = query;
 
     //단어레벨아이디, 단어레벨명 조회
     const wordLevel = this.wordLevelRepository
@@ -51,9 +50,9 @@ export class GetWordLevelNameProjectQueryHandler
       .leftJoinAndSelect(wordLevel, 'wordLevel', 'wordLevel.wordLevelId = project.wordLevelId')
       .orderBy('project.projectId', 'DESC');
 
-    if (wordLevelName) {
-      project.where('wordLevel.wordLevelName like :wordLevelName', {
-        wordLevelName: `%${wordLevelName}%`,
+    if (wordLevelId) {
+      project.where('project.wordLevelId like :wordLevelId', {
+        wordLevelId: `%${wordLevelId}%`,
         // projectName: `%${param.searchWord}%`,
       });
     }

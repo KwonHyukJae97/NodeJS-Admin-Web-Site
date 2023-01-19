@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   UploadedFiles,
   UseInterceptors,
   ValidationPipe,
@@ -51,11 +52,11 @@ export class AdminController {
   }
 
   /**
-   * 관리자 전체 정보 수정
+   * TODO: 관리자 전체 정보 수정
    * @param : adminId
    * @returns : 관리자 정보 수정 커맨드 전송
    */
-  @Patch(':id')
+  @Put(':id')
   @UseInterceptors(FilesInterceptor('files', 1))
   updateAdmin(
     @Param('id') adminId: number,

@@ -6,7 +6,6 @@ import { ICommand } from '@nestjs/cqrs';
 export class CreateWordLevelCommand implements ICommand {
   constructor(
     readonly wordLevelName: string,
-    readonly isService: boolean,
     readonly wordLevelSequence: number,
     readonly regBy: string,
   ) {}

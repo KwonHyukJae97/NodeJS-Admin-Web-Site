@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { PageRequest } from 'src/common/utils/page-request';
 
 /**
@@ -13,9 +13,9 @@ export class GetProjectRequestDto extends PageRequest {
   @IsOptional()
   searchWord: string | null;
 
-  @IsString()
+  @IsNumber()
   @IsOptional()
-  wordLevelName: number | null;
+  wordLevelId: number | null;
 
   constructor() {
     super();
@@ -24,7 +24,7 @@ export class GetProjectRequestDto extends PageRequest {
   static create(
     searchKey: string | null,
     searchWord: string | null,
-    wordLevelName: number | null,
+    wordLevelId: number | null,
     pageNo: number,
     pageSize: number,
     totalData: boolean,
@@ -32,7 +32,7 @@ export class GetProjectRequestDto extends PageRequest {
     const param = new GetProjectRequestDto();
     param.searchKey = searchKey;
     param.searchWord = searchWord;
-    param.wordLevelName = wordLevelName;
+    param.wordLevelId = wordLevelId;
     param.pageNo = pageNo;
     param.pageSize = pageSize;
     param.totalData = totalData;

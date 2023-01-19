@@ -37,6 +37,8 @@ export class AdminUpdateInfoHandler implements ICommandHandler<AdminUpdateInfoCo
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
+    console.log('핸들러 체크', accountId);
+    console.log('핸들러 체크', email);
 
     const account = await this.accountRepository.findOneBy({ accountId: accountId });
 
@@ -130,7 +132,8 @@ export class AdminUpdateInfoHandler implements ICommandHandler<AdminUpdateInfoCo
         return this.convertException.badRequestAccountError(errorMsg, 400);
       } else {
         const updateResult = this.accountRepository.update({ accountId }, updateObj);
-        console.log(updateResult);
+
+        return updateResult;
       }
     } catch (err) {
       console.log(err);

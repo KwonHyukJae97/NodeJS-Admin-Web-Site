@@ -43,6 +43,7 @@ export class UpdateWordLevelHandler implements ICommandHandler<UpdateWordLevelCo
           wordLevelSequence,
           wordLevelName,
           isService,
+          updateBy,
         },
       );
 

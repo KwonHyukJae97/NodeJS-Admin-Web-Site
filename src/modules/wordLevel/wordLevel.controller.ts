@@ -1,11 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { JwtAuthGuard } from 'src/guard/jwt/jwt-auth.guard';
+import JwtRefreshAuthGuard from 'src/guard/jwt/jwt-refresh-auth.guard';
 import { CreateWordLevelCommand } from './command/create-wordLevel.command';
 import { DeleteWordLevelCommand } from './command/delete-wordLevel.command';
+import { GetWordLevelDetailCommand } from './command/get-wordLevel-detail.command';
 import { UpdateWordLevelCommand } from './command/update-wordLevel.command';
 import { CreateWordLevelDto } from './dto/create-wordLevel.dto';
 import { GetWordLevelRequestDto } from './dto/get-wordLevel-request.dto';
 import { UpdateWordLevelDto } from './dto/update-wordLevel.dto';
+import { GetAllWordLevelQuery } from './query/get-all-wordLevel-list.query';
 import { GetWordLevelListQuery } from './query/get-wordLevel-list.query';
 
 /**
@@ -20,10 +24,28 @@ export class WordLevelController {
    * @returns : 단어레벨 리스트 조회 쿼리 전송
    */
   @Get()
+  // @UseGuards(JwtAuthGuard)
   getWordLevelList(@Body() param: GetWordLevelRequestDto) {
     const getWordLevelListQuery = new GetWordLevelListQuery(param);
-    console.log('검색어 테스트', param);
     return this.queryBus.execute(getWordLevelListQuery);
+  }
+
+  /**
+   * 단어레벨 전체 리스트 조회
+   * @returns : 단어레벨 리스트 조회 쿼리 전송
+   */
+  @Get('/all')
+  getAllWordLevelList() {
+    const allWordLevel = new GetAllWordLevelQuery();
+    return this.queryBus.execute(allWordLevel);
+  }
+  /**
+   * 단어레벨 상세 조회
+   */
+  @Get(':id')
+  async getWordLevelDetail(@Param('id') wordLevelId: number) {
+    const command = new GetWordLevelDetailCommand(wordLevelId);
+    return this.commandBus.execute(command);
   }
 
   /**
@@ -32,9 +54,9 @@ export class WordLevelController {
    * @returns  단어레벨 등록 정보 커맨드 전송
    */
   @Post()
-  async createWordLevel(@Body() createWordLevelDto: CreateWordLevelDto): Promise<void> {
-    const { wordLevelName, isService, wordLevelSequence, regBy } = createWordLevelDto;
-    const command = new CreateWordLevelCommand(wordLevelName, isService, wordLevelSequence, regBy);
+  createWordLevel(@Body() createWordLevelDto: CreateWordLevelDto): Promise<void> {
+    const { wordLevelName, wordLevelSequence, regBy } = createWordLevelDto;
+    const command = new CreateWordLevelCommand(wordLevelName, wordLevelSequence, regBy);
     return this.commandBus.execute(command);
   }
 
@@ -53,6 +75,8 @@ export class WordLevelController {
       isService,
       updateBy,
     );
+    console.log('서비스여부 체크', isService);
+    console.log('수정데이터', wordLevelName);
     return this.commandBus.execute(command);
   }
 
