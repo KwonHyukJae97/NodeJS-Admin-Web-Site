@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 import { PageRequest } from 'src/common/utils/page-request';
 
 /**
@@ -9,16 +9,26 @@ export class GetWordLevelRequestDto extends PageRequest {
   @IsOptional()
   searchWord: string | null;
 
+  @IsBoolean()
+  @IsOptional()
+  isTotal: boolean | null;
   constructor() {
     super();
   }
 
-  static create(searchWord: string | null, pageNo: number, pageSize: number, totalData: boolean) {
+  static create(
+    searchWord: string | null,
+    pageNo: number,
+    pageSize: number,
+    totalData: boolean,
+    isTotal: boolean,
+  ) {
     const param = new GetWordLevelRequestDto();
     param.searchWord = searchWord;
     param.pageNo = pageNo;
     param.pageSize = pageSize;
     param.totalData = totalData;
+    param.isTotal = isTotal;
     return param;
   }
 }

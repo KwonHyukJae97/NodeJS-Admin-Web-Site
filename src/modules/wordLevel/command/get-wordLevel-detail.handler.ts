@@ -22,10 +22,6 @@ export class GetWordLevelDetailHandler implements ICommandHandler<GetWordLevelDe
   async execute(command: GetWordLevelDetailCommand) {
     const { wordLevelId } = command;
 
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
     const wordLevel = await this.wordLevelRepository.findOneBy({ wordLevelId });
 
     if (!wordLevel) {

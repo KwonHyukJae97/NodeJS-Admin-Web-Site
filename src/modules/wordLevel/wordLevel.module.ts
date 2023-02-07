@@ -10,14 +10,12 @@ import { UpdateWordLevelHandler } from './command/update-wordLevel.handler';
 import { GetWordLevelListQueryHandler } from './query/get-wordLevel-list.handler';
 import { WordLevelController } from './wordLevel.controller';
 import { GetWordLevelDetailHandler } from './command/get-wordLevel-detail.handler';
-import { GetAllWordLevelQueryHandler } from './query/get-all-wordLevel-list.handler';
 
 const CommandHandler = [
   CreateWordLevelHandler,
   UpdateWordLevelHandler,
   DeleteWordLevelHandler,
   GetWordLevelDetailHandler,
-  GetAllWordLevelQueryHandler,
 ];
 
 const QueryHandler = [GetWordLevelListQueryHandler];

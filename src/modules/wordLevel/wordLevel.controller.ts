@@ -9,7 +9,6 @@ import { UpdateWordLevelCommand } from './command/update-wordLevel.command';
 import { CreateWordLevelDto } from './dto/create-wordLevel.dto';
 import { GetWordLevelRequestDto } from './dto/get-wordLevel-request.dto';
 import { UpdateWordLevelDto } from './dto/update-wordLevel.dto';
-import { GetAllWordLevelQuery } from './query/get-all-wordLevel-list.query';
 import { GetWordLevelListQuery } from './query/get-wordLevel-list.query';
 
 /**
@@ -27,18 +26,10 @@ export class WordLevelController {
   // @UseGuards(JwtAuthGuard)
   getWordLevelList(@Body() param: GetWordLevelRequestDto) {
     const getWordLevelListQuery = new GetWordLevelListQuery(param);
+    console.log('무슨값이려ㅑ나', param.isTotal);
     return this.queryBus.execute(getWordLevelListQuery);
   }
 
-  /**
-   * 단어레벨 전체 리스트 조회
-   * @returns : 단어레벨 리스트 조회 쿼리 전송
-   */
-  @Get('/all')
-  getAllWordLevelList() {
-    const allWordLevel = new GetAllWordLevelQuery();
-    return this.queryBus.execute(allWordLevel);
-  }
   /**
    * 단어레벨 상세 조회
    */
